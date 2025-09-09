@@ -452,7 +452,7 @@ import {
   mdiPill,
   mdiTestTube,
   mdiRadioboxMarked, // FIX: Replaced mdiRadiobox with mdiRadioboxMarked
-  mdiScalpel,
+  mdiSurgicalKnife,
   mdiPhysicalTherapy,
   mdiHospitalBuilding,
   mdiFileDocument,
