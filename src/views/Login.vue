@@ -7,9 +7,6 @@
           <mdi-icon :path="mdiHospital" size="48" color="#0066B2" />
         </div>
         <h1 class="system-title">MORGENSTER HOSPITAL MANAGEMENT SYSTEM</h1>
-        <div class="client-section">
-          <div class="client-placeholder">CLIENT LOGO AND NAME</div>
-        </div>
       </div>
 
       <!-- Login Form -->
@@ -85,8 +82,8 @@
       </div>
 
       <!-- Footer -->
-      <div class="login-footer">
-        THIS IS A PRODUCT OF MORGENSTER SYSTEMS. ALL COPYRIGHTS RESERVED (2025)
+      <div class="hidden sm:flex items-center justify-center p-6 bg-gray-50 text-xs text-gray-500 font-medium tracking-wider">
+        &copy; 2025 Alfa Systems. All Rights Reserved.
       </div>
     </div>
   </div>
@@ -114,10 +111,10 @@ const handleLogin = async () => {
     loading.value = true
     error.value = ''
 
-    await authStore.login(email.value, password.value)
+    const { claims } = await authStore.login(email.value, password.value)
     
     // Verify the user has the selected role
-    if (authStore.userRole !== selectedRole.value) {
+    if (claims.role !== selectedRole.value) {
       error.value = 'You do not have permission to access this role.'
       await authStore.logout()
       return
@@ -183,18 +180,6 @@ const handleRoleChange = () => {
   font-weight: 700;
   margin: 0 0 24px 0;
   line-height: 1.2;
-}
-
-.client-section {
-  padding: 16px;
-  border: 2px dashed rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-}
-
-.client-placeholder {
-  font-size: 14px;
-  opacity: 0.8;
-  font-style: italic;
 }
 
 .login-form-container {
@@ -276,16 +261,6 @@ const handleRoleChange = () => {
 .forgot-password:hover {
   color: #0052A3;
   text-decoration: underline;
-}
-
-.login-footer {
-  padding: 24px 32px;
-  background: #F9FAFB;
-  text-align: center;
-  font-size: 12px;
-  color: #6B7280;
-  font-weight: 500;
-  letter-spacing: 0.5px;
 }
 
 @media (max-width: 640px) {
