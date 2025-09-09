@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import App from './App.vue'
+import App from './components/layout/AppShell.vue'
 import router from './router'
 import apiService from './services/api'
 
@@ -30,7 +30,7 @@ const initializeApp = async () => {
 }
 
 // Mount app
-app.mount('#app')
+app.mount('#root')
 
 // Initialize after mount
 initializeApp()
