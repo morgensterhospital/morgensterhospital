@@ -113,9 +113,18 @@ export const useAuthStore = defineStore('auth', () => {
   // Initialize auth state listener
   onAuthStateChanged(auth, async (firebaseUser) => {
     if (firebaseUser) {
-      user.value = firebaseUser
-      const tokenResult = await getIdTokenResult(firebaseUser)
-      userClaims.value = tokenResult.claims
+      const tokenResult = await getIdTokenResult(firebaseUser, true) // Force refresh
+
+      // Check for role claim. If not present, user is not fully set up.
+      if (tokenResult.claims.role) {
+        user.value = firebaseUser
+        userClaims.value = tokenResult.claims
+      } else {
+        // Log out user if they don't have a role claim.
+        // This can happen if a user is created in Firebase console but not assigned a role,
+        // or if custom claims haven't propagated yet.
+        await logout()
+      }
     } else {
       user.value = null
       userClaims.value = null
