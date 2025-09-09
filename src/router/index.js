@@ -100,12 +100,6 @@ const routes = [
     meta: { requiresAuth: true, roles: ['Rehabilitation Technician'] }
   },
   {
-    path: '/dispensary',
-    name: 'DispensaryDashboard',
-    component: () => import('@/views/dashboards/DispensaryDashboard.vue'),
-    meta: { requiresAuth: true, roles: ['Dispensary Assistant'] }
-  },
-  {
     path: '/inventory',
     name: 'InventoryManagement',
     component: () => import('@/views/inventory/InventoryManagement.vue'),
@@ -126,7 +120,7 @@ const routes = [
   {
     path: '/patient/:id/billing',
     name: 'PatientBilling',
-    component: () => import('@/views/patient/PatientBilling.vue'),
+    component: () => import('@/views/patient/Billing.vue'),
     meta: { requiresAuth: true, permissions: ['billing:create'] }
   },
   {
