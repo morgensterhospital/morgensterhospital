@@ -1,11 +1,10 @@
 <template>
   <div class="dashboard">
-    <!-- Page Header -->
     <div class="dashboard-header">
       <div class="header-info">
         <h1 class="page-title">MORGENSTER HOSPITAL MANAGEMENT SYSTEM</h1>
         <div class="user-info">
-          LOGGED IN AS: {{ authStore.user?.displayName || 'USER' }}: DISPENSARY ASSISTANT
+          LOGGED IN AS: {{ authStore.user?.displayName || 'USER' }}: PHARMACIST
         </div>
       </div>
       
@@ -16,12 +15,20 @@
       </div>
     </div>
 
-    <!-- Main Dashboard Content -->
     <div class="dashboard-content">
-      <!-- Left Section - Navigation & Actions -->
       <div class="left-section">
         <div class="main-actions">
-          <!-- Patient Search -->
+          <m3-button
+            variant="filled"
+            size="large"
+            full-width
+            :icon="mdiPackageVariant"
+            @click="navigateTo('/stock-management')"
+            class="main-action-btn"
+          >
+            STOCK MANAGEMENT
+          </m3-button>
+
           <div class="search-section">
             <m3-text-field
               v-model="searchQuery"
@@ -58,23 +65,10 @@
           >
             DISPENSARY
           </m3-button>
-
-          <m3-button
-            variant="filled"
-            size="large"
-            full-width
-            :icon="mdiPackageVariant"
-            @click="navigateTo('/inventory')"
-            class="main-action-btn"
-          >
-            VIEW INVENTORY
-          </m3-button>
         </div>
       </div>
 
-      <!-- Right Section - Welcome & DateTime -->
       <div class="right-section">
-        <!-- Date and Time -->
         <div class="datetime-section">
           <div class="datetime-card">
             <div class="datetime-label">DATE</div>
@@ -86,26 +80,21 @@
           </div>
         </div>
 
-        <!-- Welcome Message -->
         <div class="welcome-section">
           <div class="welcome-card">
             <div class="client-logo">
-              <mdi-icon :path="mdiPills" size="64" color="#0066B2" />
+              <mdi-icon :path="mdiPill" size="64" color="#0066B2" />
             </div>
             <h3>CLIENT NAME AND LOGO</h3>
             <p>WELCOME MESSAGE</p>
-            <div class="dispensary-stats">
+            <div class="pharmacy-stats">
               <div class="stat-item">
-                <span class="stat-number">{{ todayStats.medicationsDispensed }}</span>
-                <span class="stat-label">Medications Dispensed</span>
+                <span class="stat-number">{{ todayStats.prescriptionsDispensed }}</span>
+                <span class="stat-label">Prescriptions Dispensed</span>
               </div>
               <div class="stat-item">
-                <span class="stat-number">{{ todayStats.patientsServed }}</span>
-                <span class="stat-label">Patients Served</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-number">{{ todayStats.pendingPrescriptions }}</span>
-                <span class="stat-label">Pending Prescriptions</span>
+                <span class="stat-number">{{ todayStats.lowStockItems }}</span>
+                <span class="stat-label">Low Stock Alerts</span>
               </div>
             </div>
           </div>
@@ -124,10 +113,9 @@ import MdiIcon from '@/components/common/MdiIcon.vue'
 import M3Button from '@/components/common/M3Button.vue'
 import M3TextField from '@/components/common/M3TextField.vue'
 import {
-  mdiMagnify,
-  mdiPill,
   mdiPackageVariant,
-  mdiPills
+  mdiMagnify,
+  mdiPill
 } from '@mdi/js'
 
 const router = useRouter()
@@ -139,9 +127,8 @@ const searchResults = ref([])
 const currentDate = ref('')
 const currentTime = ref('')
 const todayStats = ref({
-  medicationsDispensed: 18,
-  patientsServed: 15,
-  pendingPrescriptions: 7
+  prescriptionsDispensed: 24,
+  lowStockItems: 3
 })
 
 let timeInterval = null
@@ -378,10 +365,10 @@ onUnmounted(() => {
   margin: 0 0 32px 0;
 }
 
-.dispensary-stats {
+.pharmacy-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
   margin-top: 24px;
 }
 
@@ -393,17 +380,16 @@ onUnmounted(() => {
 }
 
 .stat-number {
-  font-size: 24px;
+  font-size: 32px;
   font-weight: 800;
   color: #0066B2;
 }
 
 .stat-label {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
   color: #6B7280;
   text-align: center;
-  line-height: 1.2;
 }
 
 /* Responsive Design */
@@ -439,9 +425,9 @@ onUnmounted(() => {
     font-size: 14px;
   }
 
-  .dispensary-stats {
+  .pharmacy-stats {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 16px;
   }
 }
 </style>
