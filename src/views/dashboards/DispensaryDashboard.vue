@@ -1,0 +1,447 @@
+<template>
+  <div class="dashboard">
+    <!-- Page Header -->
+    <div class="dashboard-header">
+      <div class="header-info">
+        <h1 class="page-title">MORGENSTER HOSPITAL MANAGEMENT SYSTEM</h1>
+        <div class="user-info">
+          LOGGED IN AS: {{ authStore.user?.displayName || 'USER' }}: DISPENSARY ASSISTANT
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <m3-button variant="outlined" @click="navigateTo('/stationery')">
+          STATIONERY
+        </m3-button>
+      </div>
+    </div>
+
+    <!-- Main Dashboard Content -->
+    <div class="dashboard-content">
+      <!-- Left Section - Navigation & Actions -->
+      <div class="left-section">
+        <div class="main-actions">
+          <!-- Patient Search -->
+          <div class="search-section">
+            <m3-text-field
+              v-model="searchQuery"
+              placeholder="SEARCH PATIENT NAME AND SURNAME"
+              :icon-leading="mdiMagnify"
+              variant="outlined"
+              @input="handleSearch"
+            />
+            
+            <div v-if="searchResults.length > 0" class="search-results">
+              <div
+                v-for="patient in searchResults"
+                :key="patient.id"
+                class="search-result-item"
+                @click="selectPatient(patient)"
+              >
+                <div class="patient-name">
+                  {{ patient.name }} {{ patient.surname }}
+                </div>
+                <div class="patient-details">
+                  {{ patient.hospitalNumber }} • {{ patient.age }} years
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <m3-button
+            variant="filled"
+            size="large"
+            full-width
+            :icon="mdiPill"
+            @click="navigateTo('/dispensary')"
+            class="main-action-btn"
+          >
+            DISPENSARY
+          </m3-button>
+
+          <m3-button
+            variant="filled"
+            size="large"
+            full-width
+            :icon="mdiPackageVariant"
+            @click="navigateTo('/inventory')"
+            class="main-action-btn"
+          >
+            VIEW INVENTORY
+          </m3-button>
+        </div>
+      </div>
+
+      <!-- Right Section - Welcome & DateTime -->
+      <div class="right-section">
+        <!-- Date and Time -->
+        <div class="datetime-section">
+          <div class="datetime-card">
+            <div class="datetime-label">DATE</div>
+            <div class="datetime-value">{{ currentDate }}</div>
+          </div>
+          <div class="datetime-card">
+            <div class="datetime-label">TIME</div>
+            <div class="datetime-value">{{ currentTime }}</div>
+          </div>
+        </div>
+
+        <!-- Welcome Message -->
+        <div class="welcome-section">
+          <div class="welcome-card">
+            <div class="client-logo">
+              <mdi-icon :path="mdiPills" size="64" color="#0066B2" />
+            </div>
+            <h3>CLIENT NAME AND LOGO</h3>
+            <p>WELCOME MESSAGE</p>
+            <div class="dispensary-stats">
+              <div class="stat-item">
+                <span class="stat-number">{{ todayStats.medicationsDispensed }}</span>
+                <span class="stat-label">Medications Dispensed</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">{{ todayStats.patientsServed }}</span>
+                <span class="stat-label">Patients Served</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">{{ todayStats.pendingPrescriptions }}</span>
+                <span class="stat-label">Pending Prescriptions</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
+import { usePatientStore } from '@/stores/patientStore'
+import MdiIcon from '@/components/common/MdiIcon.vue'
+import M3Button from '@/components/common/M3Button.vue'
+import M3TextField from '@/components/common/M3TextField.vue'
+import {
+  mdiMagnify,
+  mdiPill,
+  mdiPackageVariant,
+  mdiPills
+} from '@mdi/js'
+
+const router = useRouter()
+const authStore = useAuthStore()
+const patientStore = usePatientStore()
+
+const searchQuery = ref('')
+const searchResults = ref([])
+const currentDate = ref('')
+const currentTime = ref('')
+const todayStats = ref({
+  medicationsDispensed: 18,
+  patientsServed: 15,
+  pendingPrescriptions: 7
+})
+
+let timeInterval = null
+
+// Initialize datetime display
+const updateDateTime = () => {
+  const now = new Date()
+  currentDate.value = now.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  })
+  currentTime.value = now.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  })
+}
+
+// Handle patient search
+const handleSearch = async () => {
+  if (searchQuery.value.length < 2) {
+    searchResults.value = []
+    return
+  }
+
+  try {
+    const results = await patientStore.searchPatients(searchQuery.value)
+    searchResults.value = results
+  } catch (error) {
+    console.error('Search error:', error)
+  }
+}
+
+// Navigate to patient profile
+const selectPatient = (patient) => {
+  router.push(`/patient/${patient.id}`)
+  searchQuery.value = ''
+  searchResults.value = []
+}
+
+// Navigation helper
+const navigateTo = (path) => {
+  router.push(path)
+}
+
+onMounted(() => {
+  updateDateTime()
+  timeInterval = setInterval(updateDateTime, 1000)
+})
+
+onUnmounted(() => {
+  if (timeInterval) {
+    clearInterval(timeInterval)
+  }
+})
+</script>
+
+<style scoped>
+.dashboard {
+  min-height: 100vh;
+  background: #F7F9FC;
+  font-family: 'Roboto', sans-serif;
+}
+
+.dashboard-header {
+  background: white;
+  padding: 24px 32px;
+  border-bottom: 1px solid #E5E7EB;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-info {
+  flex: 1;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0066B2;
+  margin: 0 0 8px 0;
+}
+
+.user-info {
+  font-size: 14px;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.dashboard-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  padding: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.left-section,
+.right-section {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Main Actions */
+.main-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.main-action-btn {
+  height: 64px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Search Section */
+.search-section {
+  position: relative;
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.search-result-item {
+  padding: 16px;
+  border-bottom: 1px solid #F3F4F6;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search-result-item:hover {
+  background: #F9FAFB;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.patient-name {
+  font-weight: 600;
+  color: #1F2937;
+  margin-bottom: 4px;
+}
+
+.patient-details {
+  font-size: 14px;
+  color: #6B7280;
+}
+
+/* DateTime Section */
+.datetime-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.datetime-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.datetime-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.datetime-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0066B2;
+}
+
+/* Welcome Section */
+.welcome-section {
+  flex: 1;
+}
+
+.welcome-card {
+  background: white;
+  padding: 32px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.client-logo {
+  margin-bottom: 24px;
+}
+
+.welcome-card h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0066B2;
+  margin: 0 0 12px 0;
+}
+
+.welcome-card p {
+  font-size: 14px;
+  color: #6B7280;
+  margin: 0 0 32px 0;
+}
+
+.dispensary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0066B2;
+}
+
+.stat-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: #6B7280;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .dashboard-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 24px 16px;
+  }
+
+  .dashboard-header {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .datetime-section {
+    grid-template-columns: 1fr;
+  }
+
+  .main-action-btn {
+    height: 56px;
+    font-size: 14px;
+  }
+
+  .dispensary-stats {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+</style>
