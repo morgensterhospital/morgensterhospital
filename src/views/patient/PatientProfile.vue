@@ -286,7 +286,7 @@
         <!-- Radiology Module -->
         <div v-if="hasPermission('radiology_requests:view')" class="module-card radiology">
           <div class="module-header">
-            <mdi-icon :path="mdiRadiobox" size="32" />
+            <mdi-icon :path="mdiRadioboxMarked" size="32" /> <!-- FIX: Replaced mdiRadiobox with mdiRadioboxMarked -->
             <h3>RADIOLOGY</h3>
           </div>
           <div class="module-actions">
@@ -451,7 +451,7 @@ import {
   mdiHeart,
   mdiPill,
   mdiTestTube,
-  mdiRadiobox,
+  mdiRadioboxMarked, // FIX: Replaced mdiRadiobox with mdiRadioboxMarked
   mdiScalpel,
   mdiPhysicalTherapy,
   mdiHospitalBuilding,
