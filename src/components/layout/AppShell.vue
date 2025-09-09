@@ -156,7 +156,7 @@ const allNavigationItems = [
     name: 'physiotherapy',
     label: 'Physiotherapy',
     shortLabel: 'Physio',
-    icon: mdiPhysicalTherapy,
+    icon: mdiHumanPhysicalTherapy,
     path: '/physiotherapy',
     roles: ['Doctor', 'Nurse', 'Physiotherapist']
   },
