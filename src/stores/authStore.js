@@ -85,7 +85,7 @@ export const useAuthStore = defineStore('auth', () => {
       const tokenResult = await getIdTokenResult(userCredential.user)
       userClaims.value = tokenResult.claims
       
-      return userCredential.user
+      return { user: userCredential.user, claims: tokenResult.claims }
     } catch (err) {
       error.value = err.message
       throw err
