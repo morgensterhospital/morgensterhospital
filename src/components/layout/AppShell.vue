@@ -85,7 +85,7 @@ import {
   mdiAccountGroup,
   mdiPill,
   mdiTestTube,
-  mdiRadiobox,
+  mdiRadioboxBlank,
   mdiPhysicalTherapy,
   mdiCog,
   mdiMotherNurse
