@@ -86,7 +86,7 @@ import {
   mdiPill,
   mdiTestTube,
   mdiRadioboxBlank,
-  mdiPhysicalTherapy,
+  mdiHumanPhysicalTherapy,
   mdiCog,
   mdiMotherNurse
 } from '@mdi/js'
