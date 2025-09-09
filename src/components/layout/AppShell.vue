@@ -1,6 +1,5 @@
 <template>
   <div class="app-shell">
-    <!-- Desktop Navigation Rail -->
     <nav v-if="!isMobile" class="nav-rail">
       <div class="nav-header">
         <div class="logo">
@@ -11,7 +10,7 @@
 
       <div class="nav-items">
         <router-link
-          v-for="item in navigationItems"
+          v-for="item in filteredNavigationItems"
           :key="item.name"
           :to="item.path"
           class="nav-item"
@@ -40,9 +39,7 @@
       </div>
     </nav>
 
-    <!-- Main Content Area -->
     <main class="main-content" :class="{ 'mobile': isMobile }">
-      <!-- Mobile Header -->
       <header v-if="isMobile" class="mobile-header">
         <div class="mobile-title">
           <mdi-icon :path="mdiHospital" size="24" color="#0066B2" />
@@ -53,16 +50,14 @@
         </button>
       </header>
 
-      <!-- Page Content -->
       <div class="page-content">
         <router-view />
       </div>
     </main>
 
-    <!-- Mobile Bottom Navigation -->
     <nav v-if="isMobile" class="bottom-nav">
       <router-link
-        v-for="item in navigationItems.slice(0, 5)"
+        v-for="item in filteredNavigationItems.slice(0, 5)"
         :key="item.name"
         :to="item.path"
         class="bottom-nav-item"
@@ -88,7 +83,7 @@ import {
   mdiAccountPlus,
   mdiChartLine,
   mdiAccountGroup,
-  mdiPills,
+  mdiPill,
   mdiTestTube,
   mdiRadiobox,
   mdiPhysicalTherapy,
@@ -115,81 +110,97 @@ onUnmounted(() => {
   window.removeEventListener('resize', checkScreenSize)
 })
 
-// Navigation items based on user role
-const navigationItems = computed(() => {
-  const role = authStore.userRole
-  const baseItems = []
-
-  // Add dashboard for all roles
-  baseItems.push({
+// Full list of all possible navigation items
+const allNavigationItems = [
+  {
     name: 'dashboard',
     label: 'Dashboard',
     shortLabel: 'Home',
     icon: mdiViewDashboard,
-    path: '/'
-  })
-
-  // Role-specific navigation items
-  if (role === 'Accounts Clerk') {
-    baseItems.push(
-      {
-        name: 'register',
-        label: 'New Patient',
-        shortLabel: 'Register',
-        icon: mdiAccountPlus,
-        path: '/patient/register'
-      },
-      {
-        name: 'reports',
-        label: 'Reports',
-        shortLabel: 'Reports',
-        icon: mdiChartLine,
-        path: '/reports'
-      }
-    )
-  }
-
-  if (['Doctor', 'Nurse'].includes(role)) {
-    baseItems.push(
-      {
-        name: 'register',
-        label: 'New Patient',
-        shortLabel: 'Register',
-        icon: mdiAccountPlus,
-        path: '/patient/register'
-      }
-    )
-  }
-
-  if (['Admin', 'Accountant', 'Account Assistant'].includes(role)) {
-    baseItems.push(
-      {
-        name: 'users',
-        label: 'User Management',
-        shortLabel: 'Users',
-        icon: mdiAccountGroup,
-        path: '/users'
-      },
-      {
-        name: 'reports',
-        label: 'Reports',
-        shortLabel: 'Reports',
-        icon: mdiChartLine,
-        path: '/reports'
-      }
-    )
-  }
-
-  // Add settings for all users
-  baseItems.push({
+    path: '/',
+    roles: ['Admin', 'Accountant', 'Account Assistant', 'Doctor', 'Nurse', 'Pharmacy', 'Dispensary Assistant']
+  },
+  {
+    name: 'register',
+    label: 'New Patient',
+    shortLabel: 'Register',
+    icon: mdiAccountPlus,
+    path: '/patient/register',
+    roles: ['Accounts Clerk', 'Doctor', 'Nurse']
+  },
+  {
+    name: 'prescriptions',
+    label: 'Prescriptions',
+    shortLabel: 'Rx',
+    icon: mdiPill,
+    path: '/prescriptions',
+    roles: ['Doctor', 'Nurse', 'Dispensary Assistant']
+  },
+  {
+    name: 'lab',
+    label: 'Lab Requests',
+    shortLabel: 'Lab',
+    icon: mdiTestTube,
+    path: '/lab-requests',
+    roles: ['Doctor', 'Nurse', 'Lab Scientist']
+  },
+  {
+    name: 'radiology',
+    label: 'Radiology',
+    shortLabel: 'Rad',
+    icon: mdiRadiobox,
+    path: '/radiology',
+    roles: ['Doctor', 'Nurse', 'Radiographer']
+  },
+  {
+    name: 'physiotherapy',
+    label: 'Physiotherapy',
+    shortLabel: 'Physio',
+    icon: mdiPhysicalTherapy,
+    path: '/physiotherapy',
+    roles: ['Doctor', 'Nurse', 'Physiotherapist']
+  },
+  {
+    name: 'maternity',
+    label: 'Maternity',
+    shortLabel: 'Maternity',
+    icon: mdiMotherNurse,
+    path: '/maternity',
+    roles: ['Doctor', 'Nurse']
+  },
+  {
+    name: 'users',
+    label: 'User Management',
+    shortLabel: 'Users',
+    icon: mdiAccountGroup,
+    path: '/users',
+    roles: ['Admin', 'Accountant', 'Account Assistant']
+  },
+  {
+    name: 'reports',
+    label: 'Reports',
+    shortLabel: 'Reports',
+    icon: mdiChartLine,
+    path: '/reports',
+    roles: ['Admin', 'Accountant', 'Accounts Clerk', 'Account Assistant']
+  },
+  {
     name: 'settings',
     label: 'Settings',
     shortLabel: 'Settings',
     icon: mdiCog,
-    path: '/settings'
-  })
+    path: '/settings',
+    roles: ['Admin', 'Accountant', 'Accounts Clerk', 'Account Assistant', 'Doctor', 'Nurse', 'Pharmacy', 'Dispensary Assistant', 'Lab Scientist', 'Radiographer', 'Physiotherapist']
+  }
+]
 
-  return baseItems
+// Filter navigation items based on user role
+const filteredNavigationItems = computed(() => {
+  const role = authStore.userRole
+  if (!role) {
+    return []
+  }
+  return allNavigationItems.filter(item => item.roles.includes(role))
 })
 
 const handleLogout = async () => {
