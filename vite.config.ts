@@ -1,10 +1,9 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
-import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  plugins: [vue(), react()],
+  plugins: [vue()],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src')

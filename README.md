@@ -120,11 +120,11 @@ Complete Firestore schema with:
 ## 🔧 Netlify Functions
 
 The system includes serverless functions for:
-- **User Seeding** (`/api/seed-users`) - Auto-creates all 147 users
-- **Patient Registration** (`/api/create-patient`) - Handles patient creation with unique hospital numbers
-- **Billing Processing** (`/api/process-billing`) - Manages invoices and payments
-- **Medical Records** (`/api/add-medical-record`) - Adds vitals, notes, prescriptions, etc.
-- **Inventory Management** (`/api/update-inventory`) - Updates stock levels
+- **User Seeding** (`/.netlify/functions/seed-users`) - Auto-creates all 147 users
+- **Patient Registration** (`/.netlify/functions/create-patient`) - Handles patient creation with unique hospital numbers
+- **Billing Processing** (`/.netlify/functions/process-billing`) - Manages invoices and payments
+- **Medical Records** (`/.netlify/functions/add-medical-record`) - Adds vitals, notes, prescriptions, etc.
+- **Inventory Management** (`/.netlify/functions/update-inventory`) - Updates stock levels
 
 All functions include proper error handling, validation, and notification creation.
 
@@ -146,11 +146,11 @@ Complete Firestore schema with:
 ## 🔧 Netlify Functions
 
 The system includes serverless functions for:
-- **User Seeding** (`/api/seed-users`) - Auto-creates all 147 users
-- **Patient Registration** (`/api/create-patient`) - Handles patient creation with unique hospital numbers
-- **Billing Processing** (`/api/process-billing`) - Manages invoices and payments
-- **Medical Records** (`/api/add-medical-record`) - Adds vitals, notes, prescriptions, etc.
-- **Inventory Management** (`/api/update-inventory`) - Updates stock levels
+- **User Seeding** (`/.netlify/functions/seed-users`) - Auto-creates all 147 users
+- **Patient Registration** (`/.netlify/functions/create-patient`) - Handles patient creation with unique hospital numbers
+- **Billing Processing** (`/.netlify/functions/process-billing`) - Manages invoices and payments
+- **Medical Records** (`/.netlify/functions/add-medical-record`) - Adds vitals, notes, prescriptions, etc.
+- **Inventory Management** (`/.netlify/functions/update-inventory`) - Updates stock levels
 
 All functions include proper error handling, validation, and notification creation.
 
