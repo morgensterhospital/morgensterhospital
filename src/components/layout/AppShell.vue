@@ -148,7 +148,7 @@ const allNavigationItems = [
     name: 'radiology',
     label: 'Radiology',
     shortLabel: 'Rad',
-    icon: mdiRadiobox,
+    icon: mdiRadioboxBlank,
     path: '/radiology',
     roles: ['Doctor', 'Nurse', 'Radiographer']
   },
