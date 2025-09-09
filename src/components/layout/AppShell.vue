@@ -86,7 +86,7 @@ import {
   mdiPill,
   mdiTestTube,
   mdiRadioboxBlank,
-  mdiChairWheel,
+  mdiHeartPulse,
   mdiCog,
   mdiMotherNurse
 } from '@mdi/js'
@@ -156,7 +156,7 @@ const allNavigationItems = [
     name: 'physiotherapy',
     label: 'Physiotherapy',
     shortLabel: 'Physio',
-    icon: mdiChairWheel,
+    icon: mdiHeartPulse,
     path: '/physiotherapy',
     roles: ['Doctor', 'Nurse', 'Physiotherapist']
   },
