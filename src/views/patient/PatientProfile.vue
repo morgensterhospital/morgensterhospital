@@ -170,7 +170,7 @@
         <!-- Nurse's Notes Module -->
         <div v-if="hasPermission('nurses_notes:view')" class="module-card nurses-notes">
           <div class="module-header">
-            <mdi-icon :path="mdiNurse" size="32" />
+            <mdi-icon :path="mdiMotherNurse" size="32" />
             <h3>NURSES NOTES</h3>
           </div>
           <div class="module-actions">
@@ -447,7 +447,7 @@ import {
   mdiAlertCircle,
   mdiCashMultiple,
   mdiDoctor,
-  mdiNurse,
+  mdiMotherNurse,
   mdiHeart,
   mdiPill,
   mdiTestTube,

@@ -93,7 +93,7 @@ import {
   mdiRadiobox,
   mdiPhysicalTherapy,
   mdiCog,
-  mdiNurse
+  mdiMotherNurse
 } from '@mdi/js'
 
 const router = useRouter()

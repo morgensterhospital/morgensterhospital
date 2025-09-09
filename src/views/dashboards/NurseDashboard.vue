@@ -80,7 +80,7 @@
         <div class="welcome-section">
           <div class="welcome-card">
             <div class="client-logo">
-              <mdi-icon :path="mdiNurse" size="64" color="#0066B2" />
+              <mdi-icon :path="mdiMotherNurse" size="64" color="#0066B2" />
             </div>
             <h3>CLIENT NAME AND LOGO</h3>
             <p>WELCOME MESSAGE</p>
@@ -116,7 +116,7 @@ import M3TextField from '@/components/common/M3TextField.vue'
 import {
   mdiAccountPlus,
   mdiMagnify,
-  mdiNurse
+  mdiMotherNurse
 } from '@mdi/js'
 
 const router = useRouter()
