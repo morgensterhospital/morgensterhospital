@@ -8,7 +8,7 @@
           LOGGED IN AS: {{ authStore.user?.displayName || 'USER' }}: ACCOUNT ASSISTANT
         </div>
       </div>
-      
+
       <div class="header-actions">
         <m3-button variant="outlined" @click="navigateTo('/stationery')">
           STATIONERY
@@ -30,7 +30,7 @@
               variant="outlined"
               @input="handleSearch"
             />
-            
+
             <div v-if="searchResults.length > 0" class="search-results">
               <div
                 v-for="patient in searchResults"

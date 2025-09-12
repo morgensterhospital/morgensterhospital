@@ -10,7 +10,7 @@
         </div>
         <h1 class="page-title">PATIENT PROFILE</h1>
       </div>
-      
+
       <div class="header-actions">
         <m3-button variant="outlined" @click="printProfile">
           <mdi-icon :path="mdiPrinter" size="20" />
@@ -43,7 +43,7 @@
           <h2>Patient Demographics</h2>
           <div class="patient-id">{{ patient.hospitalNumber }}</div>
         </div>
-        
+
         <div class="demographics-grid">
           <div class="demo-item">
             <label>Full Name</label>
@@ -112,24 +112,24 @@
             <h3>BILLING AND INVOICES</h3>
           </div>
           <div class="module-actions">
-            <m3-button 
-              variant="filled" 
-              size="small" 
+            <m3-button
+              variant="filled"
+              size="small"
               @click="navigateTo(`/patient/${patient.id}/billing`)"
             >
               VIEW
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('billing:edit')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="navigateTo(`/patient/${patient.id}/billing?mode=edit`)"
             >
               EDIT
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('billing:create')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="navigateTo(`/patient/${patient.id}/billing?mode=new`)"
             >
@@ -148,17 +148,17 @@
             <m3-button variant="filled" size="small" @click="viewDoctorNotes">
               VIEW
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('doctors_notes:edit')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="editDoctorNotes"
             >
               EDIT
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('doctors_notes:create')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="addDoctorNote"
             >
@@ -177,17 +177,17 @@
             <m3-button variant="filled" size="small" @click="viewNurseNotes">
               VIEW
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('nurses_notes:edit')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="editNurseNotes"
             >
               EDIT
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('nurses_notes:create')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="addNurseNote"
             >
@@ -206,9 +206,9 @@
             <m3-button variant="filled" size="small" @click="viewVitals">
               VIEW
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('vitals:create')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="addVitals"
             >
@@ -227,25 +227,25 @@
             <m3-button variant="filled" size="small" @click="viewPrescriptions">
               VIEW
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('prescriptions:edit')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="editPrescriptions"
             >
               EDIT
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('prescriptions:create')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="addPrescription"
             >
               ADD
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('prescriptions:dispense')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="dispenseMedication"
             >
@@ -264,17 +264,17 @@
             <m3-button variant="filled" size="small" @click="viewLabResults">
               VIEW
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('lab_requests:create')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="requestLabTest"
             >
               REQUEST
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('lab_results:create')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="enterLabResults"
             >
@@ -293,17 +293,17 @@
             <m3-button variant="filled" size="small" @click="viewRadiologyResults">
               VIEW
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('radiology_requests:create')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="requestXray"
             >
               REQUEST
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('radiology_results:create')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="enterRadiologyResults"
             >
@@ -322,9 +322,9 @@
             <m3-button variant="filled" size="small" @click="viewOperations">
               VIEW
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('operations:create')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="addOperation"
             >
@@ -343,17 +343,17 @@
             <m3-button variant="filled" size="small" @click="viewRehabNotes">
               VIEW
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('rehabilitation_notes:edit')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="editRehabNotes"
             >
               EDIT
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('rehabilitation_notes:create')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="addRehabNote"
             >
@@ -372,17 +372,17 @@
             <m3-button variant="filled" size="small" @click="viewAdmissionDischarge">
               VIEW
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('admission_discharge:create')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="addAdmissionDischarge"
             >
               ADD
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('admission_discharge:approve')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="approveDischarge"
             >
@@ -401,9 +401,9 @@
             <m3-button variant="filled" size="small" @click="viewConsentForms">
               VIEW
             </m3-button>
-            <m3-button 
+            <m3-button
               v-if="hasPermission('consent_forms:create')"
-              variant="outlined" 
+              variant="outlined"
               size="small"
               @click="addConsentForm"
             >
@@ -415,9 +415,9 @@
 
       <!-- Patient History Button -->
       <div class="patient-history-section">
-        <m3-button 
-          variant="filled" 
-          size="large" 
+        <m3-button
+          variant="filled"
+          size="large"
           :icon="mdiHistory"
           @click="viewPatientHistory"
           class="history-button"
@@ -452,8 +452,8 @@ import {
   mdiPill,
   mdiTestTube,
   mdiRadioboxMarked, // FIX: Replaced mdiRadiobox with mdiRadioboxMarked
-  mdiSurgicalKnife,
-  mdiChairWheel,
+  mdiKnife,
+  mdiWheelchairAccessibility,
   mdiHospitalBuilding,
   mdiFileDocument,
   mdiHistory
@@ -475,7 +475,7 @@ const loadPatient = async () => {
   try {
     loading.value = true
     error.value = ''
-    
+
     const patientData = await patientStore.getPatient(patientId.value)
     patient.value = patientData
   } catch (err) {

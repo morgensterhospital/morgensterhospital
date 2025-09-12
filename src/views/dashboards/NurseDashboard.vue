@@ -1,104 +1,84 @@
 <template>
-  <div class="dashboard">
-    <!-- Page Header -->
-    <div class="dashboard-header">
-      <div class="header-info">
-        <h1 class="page-title">MORGENSTER HOSPITAL MANAGEMENT SYSTEM</h1>
-        <div class="user-info">
-          LOGGED IN AS: {{ authStore.user?.displayName || 'USER' }}: NURSE
-          <span v-if="authStore.userClaims?.wardType"> - {{ authStore.userClaims.wardType.toUpperCase() }} WARD</span>
-        </div>
+  <div class="space-y-6">
+    <!-- Welcome Header -->
+    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-text-light">
+          Nurse's Dashboard
+        </h1>
+        <p class="text-text-muted">
+          Welcome, {{ authStore.user?.displayName || 'Nurse' }}!
+          <span v-if="authStore.userClaims?.wardType" class="font-semibold text-primary">
+            {{ authStore.userClaims.wardType }} Ward
+          </span>
+        </p>
       </div>
-      
-      <div class="header-actions">
-        <m3-button variant="outlined" @click="navigateTo('/stationery')">
-          STATIONERY
-        </m3-button>
+      <div class="flex items-center space-x-4">
+        <div class="p-4 bg-surface-dark rounded-lg text-center">
+          <p class="text-sm text-text-muted">Date</p>
+          <p class="text-lg font-semibold text-text-light">{{ currentDate }}</p>
+        </div>
+        <div class="p-4 bg-surface-dark rounded-lg text-center">
+          <p class="text-sm text-text-muted">Time</p>
+          <p class="text-lg font-semibold text-text-light">{{ currentTime }}</p>
+        </div>
       </div>
     </div>
 
-    <!-- Main Dashboard Content -->
-    <div class="dashboard-content">
-      <!-- Left Section - Navigation & Actions -->
-      <div class="left-section">
-        <div class="main-actions">
-          <m3-button
-            variant="filled"
-            size="large"
-            full-width
-            :icon="mdiAccountPlus"
-            @click="navigateTo('/patient/register')"
-            class="main-action-btn"
-          >
-            NEW PATIENT REGISTRATION
-          </m3-button>
-
-          <!-- Patient Search -->
-          <div class="search-section">
-            <m3-text-field
+    <!-- Quick Actions & Stats -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Actions -->
+      <div class="lg:col-span-1 p-6 bg-surface-dark rounded-lg">
+        <h2 class="text-lg font-semibold mb-4">Common Actions</h2>
+        <div class="space-y-4">
+          <button @click="navigateTo('/patient/register')" class="w-full flex items-center p-4 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
+            <MdiIcon :path="mdiAccountPlus" size="24" class="mr-3 text-primary" />
+            <span class="font-medium">New Patient Registration</span>
+          </button>
+          <div class="relative">
+            <MdiIcon :path="mdiMagnify" size="20" class="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
+            <input
               v-model="searchQuery"
-              placeholder="SEARCH PATIENT NAME AND SURNAME"
-              :icon-leading="mdiMagnify"
-              variant="outlined"
+              type="text"
+              placeholder="Search for a patient..."
+              class="w-full pl-12 pr-4 py-3 bg-background-dark border border-gray-600 rounded-lg focus:ring-primary focus:border-primary"
               @input="handleSearch"
             />
-            
-            <div v-if="searchResults.length > 0" class="search-results">
-              <div
-                v-for="patient in searchResults"
-                :key="patient.id"
-                class="search-result-item"
-                @click="selectPatient(patient)"
-              >
-                <div class="patient-name">
-                  {{ patient.name }} {{ patient.surname }}
-                </div>
-                <div class="patient-details">
-                  {{ patient.hospitalNumber }} • {{ patient.age }} years
-                </div>
-              </div>
+            <div
+              v-if="searchResults.length > 0"
+              class="absolute top-full mt-2 w-full bg-background-dark border border-gray-600 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto"
+            >
+              <ul>
+                <li
+                  v-for="patient in searchResults"
+                  :key="patient.id"
+                  class="px-4 py-3 hover:bg-primary/10 cursor-pointer"
+                  @click="selectPatient(patient)"
+                >
+                  <p class="font-semibold">{{ patient.name }} {{ patient.surname }}</p>
+                  <p class="text-sm text-text-muted">
+                    ID: {{ patient.hospitalNumber }} &bull; Age: {{ patient.age }}
+                  </p>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Right Section - Welcome & DateTime -->
-      <div class="right-section">
-        <!-- Date and Time -->
-        <div class="datetime-section">
-          <div class="datetime-card">
-            <div class="datetime-label">DATE</div>
-            <div class="datetime-value">{{ currentDate }}</div>
-          </div>
-          <div class="datetime-card">
-            <div class="datetime-label">TIME</div>
-            <div class="datetime-value">{{ currentTime }}</div>
-          </div>
+      <!-- Today's Stats -->
+      <div class="lg:col-span-2 p-6 bg-surface-dark rounded-lg grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="flex flex-col items-center justify-center p-6 bg-background-dark rounded-lg">
+          <p class="text-5xl font-bold text-primary">{{ todayStats.vitalsChecked }}</p>
+          <p class="mt-2 text-center text-text-muted">Vitals Checked Today</p>
         </div>
-
-        <!-- Welcome Message -->
-        <div class="welcome-section">
-          <div class="welcome-card">
-            <div class="client-logo">
-              <mdi-icon :path="mdiMotherNurse" size="64" color="#0066B2" />
-            </div>
-            <h3>CLIENT NAME AND LOGO</h3>
-            <p>WELCOME MESSAGE</p>
-            <div class="nurse-stats">
-              <div class="stat-item">
-                <span class="stat-number">{{ todayStats.vitalsChecked }}</span>
-                <span class="stat-label">Vitals Checked Today</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-number">{{ todayStats.notesAdded }}</span>
-                <span class="stat-label">Notes Added</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-number">{{ todayStats.patientsAssigned }}</span>
-                <span class="stat-label">Patients Assigned</span>
-              </div>
-            </div>
-          </div>
+        <div class="flex flex-col items-center justify-center p-6 bg-background-dark rounded-lg">
+          <p class="text-5xl font-bold text-primary">{{ todayStats.notesAdded }}</p>
+          <p class="mt-2 text-center text-text-muted">Notes Added</p>
+        </div>
+        <div class="flex flex-col items-center justify-center p-6 bg-background-dark rounded-lg">
+          <p class="text-5xl font-bold text-primary">{{ todayStats.patientsAssigned }}</p>
+          <p class="mt-2 text-center text-text-muted">Patients Assigned</p>
         </div>
       </div>
     </div>
@@ -106,331 +86,77 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
-import { usePatientStore } from '@/stores/patientStore'
-import MdiIcon from '@/components/common/MdiIcon.vue'
-import M3Button from '@/components/common/M3Button.vue'
-import M3TextField from '@/components/common/M3TextField.vue'
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
+import { usePatientStore } from '@/stores/patientStore';
+import MdiIcon from '@/components/common/MdiIcon.vue';
 import {
   mdiAccountPlus,
   mdiMagnify,
-  mdiMotherNurse
-} from '@mdi/js'
+} from '@mdi/js';
 
-const router = useRouter()
-const authStore = useAuthStore()
-const patientStore = usePatientStore()
+const router = useRouter();
+const authStore = useAuthStore();
+const patientStore = usePatientStore();
 
-const searchQuery = ref('')
-const searchResults = ref([])
-const currentDate = ref('')
-const currentTime = ref('')
+const searchQuery = ref('');
+const searchResults = ref([]);
+const currentDate = ref('');
+const currentTime = ref('');
 const todayStats = ref({
   vitalsChecked: 15,
   notesAdded: 8,
-  patientsAssigned: 12
-})
+  patientsAssigned: 12,
+});
 
-let timeInterval = null
+let timeInterval = null;
 
-// Initialize datetime display
 const updateDateTime = () => {
-  const now = new Date()
-  currentDate.value = now.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  })
-  currentTime.value = now.toLocaleTimeString('en-GB', {
+  const now = new Date();
+  currentDate.value = now.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  currentTime.value = now.toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit'
-  })
-}
+    hour12: true,
+  });
+};
 
-// Handle patient search
 const handleSearch = async () => {
   if (searchQuery.value.length < 2) {
-    searchResults.value = []
-    return
+    searchResults.value = [];
+    return;
   }
-
   try {
-    const results = await patientStore.searchPatients(searchQuery.value)
-    searchResults.value = results
+    searchResults.value = await patientStore.searchPatients(searchQuery.value);
   } catch (error) {
-    console.error('Search error:', error)
+    console.error('Search error:', error);
+    searchResults.value = [];
   }
-}
+};
 
-// Navigate to patient profile
 const selectPatient = (patient) => {
-  router.push(`/patient/${patient.id}`)
-  searchQuery.value = ''
-  searchResults.value = []
-}
+  router.push(`/patient/${patient.id}`);
+  searchQuery.value = '';
+  searchResults.value = [];
+};
 
-// Navigation helper
 const navigateTo = (path) => {
-  router.push(path)
-}
+  router.push(path);
+};
 
 onMounted(() => {
-  updateDateTime()
-  timeInterval = setInterval(updateDateTime, 1000)
-})
+  updateDateTime();
+  timeInterval = setInterval(updateDateTime, 1000);
+});
 
 onUnmounted(() => {
   if (timeInterval) {
-    clearInterval(timeInterval)
+    clearInterval(timeInterval);
   }
-})
+});
 </script>
-
-<style scoped>
-.dashboard {
-  min-height: 100vh;
-  background: #F7F9FC;
-  font-family: 'Roboto', sans-serif;
-}
-
-.dashboard-header {
-  background: white;
-  padding: 24px 32px;
-  border-bottom: 1px solid #E5E7EB;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.header-info {
-  flex: 1;
-}
-
-.page-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #0066B2;
-  margin: 0 0 8px 0;
-}
-
-.user-info {
-  font-size: 14px;
-  color: #6B7280;
-  font-weight: 500;
-}
-
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.dashboard-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  padding: 32px;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.left-section,
-.right-section {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-/* Main Actions */
-.main-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.main-action-btn {
-  height: 64px;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-/* Search Section */
-.search-section {
-  position: relative;
-}
-
-.search-results {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #E5E7EB;
-  border-radius: 8px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  max-height: 300px;
-  overflow-y: auto;
-  z-index: 10;
-}
-
-.search-result-item {
-  padding: 16px;
-  border-bottom: 1px solid #F3F4F6;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.search-result-item:hover {
-  background: #F9FAFB;
-}
-
-.search-result-item:last-child {
-  border-bottom: none;
-}
-
-.patient-name {
-  font-weight: 600;
-  color: #1F2937;
-  margin-bottom: 4px;
-}
-
-.patient-details {
-  font-size: 14px;
-  color: #6B7280;
-}
-
-/* DateTime Section */
-.datetime-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.datetime-card {
-  background: white;
-  padding: 24px;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.datetime-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6B7280;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 8px;
-}
-
-.datetime-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: #0066B2;
-}
-
-/* Welcome Section */
-.welcome-section {
-  flex: 1;
-}
-
-.welcome-card {
-  background: white;
-  padding: 32px;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.client-logo {
-  margin-bottom: 24px;
-}
-
-.welcome-card h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #0066B2;
-  margin: 0 0 12px 0;
-}
-
-.welcome-card p {
-  font-size: 14px;
-  color: #6B7280;
-  margin: 0 0 32px 0;
-}
-
-.nurse-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 24px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.stat-number {
-  font-size: 24px;
-  font-weight: 800;
-  color: #0066B2;
-}
-
-.stat-label {
-  font-size: 10px;
-  font-weight: 500;
-  color: #6B7280;
-  text-align: center;
-  line-height: 1.2;
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .dashboard-content {
-    grid-template-columns: 1fr;
-    gap: 24px;
-    padding: 24px 16px;
-  }
-
-  .dashboard-header {
-    padding: 16px 20px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .header-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  .page-title {
-    font-size: 20px;
-  }
-
-  .datetime-section {
-    grid-template-columns: 1fr;
-  }
-
-  .main-action-btn {
-    height: 56px;
-    font-size: 14px;
-  }
-
-  .nurse-stats {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-}
-</style>

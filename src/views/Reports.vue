@@ -21,22 +21,22 @@
           <div class="date-inputs">
             <div class="date-group">
               <label>FROM</label>
-              <input 
-                v-model="dateFrom" 
-                type="date" 
+              <input
+                v-model="dateFrom"
+                type="date"
                 class="date-input"
               />
             </div>
             <div class="date-group">
               <label>TO</label>
-              <input 
-                v-model="dateTo" 
-                type="date" 
+              <input
+                v-model="dateTo"
+                type="date"
                 class="date-input"
               />
             </div>
-            <m3-button 
-              variant="filled" 
+            <m3-button
+              variant="filled"
               @click="generateReports"
               :disabled="loading"
             >
@@ -134,14 +134,14 @@
             <h3>LIST OF UNPAID PATIENTS</h3>
             <div class="list-count">{{ unpaidPatients.length }} patients</div>
           </div>
-          
+
           <div class="list-content">
             <div v-if="unpaidPatients.length === 0" class="empty-state">
               No unpaid patients found for the selected period
             </div>
             <div v-else class="patient-list">
-              <div 
-                v-for="patient in unpaidPatients" 
+              <div
+                v-for="patient in unpaidPatients"
                 :key="patient.id"
                 class="patient-item"
                 @click="viewPatientBilling(patient.id)"
@@ -157,7 +157,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="list-actions">
             <m3-button variant="outlined" @click="downloadUnpaidPatientsPDF">
               Download PDF
@@ -174,14 +174,14 @@
             <h3>TOP 20 SELLING ITEMS</h3>
             <div class="list-count">{{ topSellingItems.length }} items</div>
           </div>
-          
+
           <div class="list-content">
             <div v-if="topSellingItems.length === 0" class="empty-state">
               No sales data found for the selected period
             </div>
             <div v-else class="items-list">
-              <div 
-                v-for="(item, index) in topSellingItems" 
+              <div
+                v-for="(item, index) in topSellingItems"
                 :key="item.id"
                 class="item-row"
               >
@@ -197,7 +197,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="list-actions">
             <m3-button variant="outlined" @click="downloadTopItemsPDF">
               Download PDF
@@ -206,8 +206,8 @@
               Export CSV
             </m3-button>
           </div>
-          <m3-button 
-            variant="outlined" 
+          <m3-button
+            variant="outlined"
             @click="downloadFinancialPDF"
             :disabled="loading"
           >
@@ -259,7 +259,7 @@ const topSellingItems = ref([])
 const initializeDateRange = () => {
   const today = new Date()
   const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
-  
+
   dateTo.value = today.toISOString().split('T')[0]
   dateFrom.value = thirtyDaysAgo.toISOString().split('T')[0]
 }
@@ -268,29 +268,29 @@ const initializeDateRange = () => {
 const generateReports = async () => {
   try {
     loading.value = true
-    
+
     const fromDate = new Date(dateFrom.value)
     const toDate = new Date(dateTo.value)
     toDate.setHours(23, 59, 59, 999) // End of day
-    
+
     // Query all invoices in date range
     const invoicesQuery = collectionGroup(db, 'invoices')
     const invoicesSnapshot = await getDocs(invoicesQuery)
-    
+
     let totalSales = 0
     let cashSales = 0
     let eftSales = 0
     let unpaidSales = 0
     const unpaidList = []
     const itemsSold = {}
-    
+
     for (const doc of invoicesSnapshot.docs) {
       const invoice = doc.data()
       const invoiceDate = invoice.creationDate?.toDate()
-      
+
       if (invoiceDate && invoiceDate >= fromDate && invoiceDate <= toDate) {
         totalSales += invoice.totalAmount || 0
-        
+
         if (invoice.status === 'paid') {
           if (invoice.paymentMethod === 'cash') {
             cashSales += invoice.amountPaid || 0
@@ -299,7 +299,7 @@ const generateReports = async () => {
           }
         } else {
           unpaidSales += invoice.balance || 0
-          
+
           // Get patient info for unpaid list
           const patientId = doc.ref.parent.parent.id
           try {
@@ -320,16 +320,16 @@ const generateReports = async () => {
             console.error('Error fetching patient:', error)
           }
         }
-        
+
         // Get invoice items for top selling items
         try {
           const itemsQuery = collection(db, doc.ref.path + '/items')
           const itemsSnapshot = await getDocs(itemsQuery)
-          
+
           itemsSnapshot.forEach(itemDoc => {
             const item = itemDoc.data()
             const itemId = item.id || item.description
-            
+
             if (!itemsSold[itemId]) {
               itemsSold[itemId] = {
                 id: itemId,
@@ -339,7 +339,7 @@ const generateReports = async () => {
                 unitPrice: item.unitPrice || 0
               }
             }
-            
+
             itemsSold[itemId].quantitySold += item.quantity || 0
             itemsSold[itemId].totalRevenue += item.totalPrice || 0
           })
@@ -348,7 +348,7 @@ const generateReports = async () => {
         }
       }
     }
-    
+
     // Update report data
     reportData.value = {
       totalSales,
@@ -356,17 +356,17 @@ const generateReports = async () => {
       eftSales,
       unpaidSales
     }
-    
+
     // Sort and limit unpaid patients
     unpaidPatients.value = unpaidList
       .sort((a, b) => b.balance - a.balance)
       .slice(0, 50) // Limit to top 50
-    
+
     // Sort and limit top selling items
     topSellingItems.value = Object.values(itemsSold)
       .sort((a, b) => b.totalRevenue - a.totalRevenue)
       .slice(0, 20)
-    
+
   } catch (error) {
     console.error('Error generating reports:', error)
     alert('Error generating reports. Please try again.')

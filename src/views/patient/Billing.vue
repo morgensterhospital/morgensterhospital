@@ -29,7 +29,7 @@
             <h2>Patient Information</h2>
             <div class="hospital-number">{{ patient?.hospitalNumber }}</div>
           </div>
-          
+
           <div class="patient-details">
             <div class="detail-item">
               <label>Name</label>
@@ -60,59 +60,59 @@
         <!-- Add Item Section -->
         <div class="add-item-section">
           <h2>Add Items to Bill</h2>
-          
+
           <div class="item-form">
             <div class="form-row">
               <div class="form-group">
                 <label>Item</label>
                 <select v-model="newItem.id" @change="updateItemPrice" class="form-select">
                   <option value="">Select Item</option>
-                  <option 
-                    v-for="item in priceList" 
-                    :key="item.id" 
+                  <option
+                    v-for="item in priceList"
+                    :key="item.id"
                     :value="item.id"
                   >
                     {{ item.name }}
                   </option>
                 </select>
               </div>
-              
+
               <div class="form-group">
                 <label>Quantity</label>
-                <input 
-                  v-model.number="newItem.quantity" 
-                  type="number" 
-                  min="1" 
+                <input
+                  v-model.number="newItem.quantity"
+                  type="number"
+                  min="1"
                   class="form-input"
                   @input="calculateItemTotal"
                 />
               </div>
-              
+
               <div class="form-group">
                 <label>Unit Price (M)</label>
-                <input 
-                  v-model.number="newItem.unitPrice" 
-                  type="number" 
-                  step="0.01" 
+                <input
+                  v-model.number="newItem.unitPrice"
+                  type="number"
+                  step="0.01"
                   class="form-input"
                   @input="calculateItemTotal"
                 />
               </div>
-              
+
               <div class="form-group">
                 <label>Total Price (M)</label>
-                <input 
-                  v-model.number="newItem.totalPrice" 
-                  type="number" 
-                  step="0.01" 
+                <input
+                  v-model.number="newItem.totalPrice"
+                  type="number"
+                  step="0.01"
                   class="form-input"
                   readonly
                 />
               </div>
-              
+
               <div class="form-group">
-                <m3-button 
-                  variant="filled" 
+                <m3-button
+                  variant="filled"
                   @click="addItemToBill"
                   :disabled="!canAddItem"
                 >
@@ -126,7 +126,7 @@
         <!-- Bill Items Table -->
         <div class="bill-items-section">
           <h2>Current Bill Items</h2>
-          
+
           <div class="bill-table-container">
             <table class="bill-table">
               <thead>
@@ -147,9 +147,9 @@
                   <td>M{{ formatCurrency(item.unitPrice) }}</td>
                   <td>M{{ formatCurrency(item.totalPrice) }}</td>
                   <td>
-                    <m3-button 
-                      variant="outlined" 
-                      size="small" 
+                    <m3-button
+                      variant="outlined"
+                      size="small"
                       color="error"
                       @click="removeItem(index)"
                     >
@@ -170,47 +170,47 @@
         <!-- Payment Section -->
         <div class="payment-section">
           <h2>Payment Processing</h2>
-          
+
           <div class="payment-methods">
             <div class="payment-method">
-              <m3-button 
-                variant="filled" 
+              <m3-button
+                variant="filled"
                 :class="{ active: paymentMethod === 'cash' }"
                 @click="setPaymentMethod('cash')"
               >
                 CASH
               </m3-button>
-              <input 
+              <input
                 v-if="paymentMethod === 'cash'"
-                v-model.number="cashAmount" 
-                type="number" 
-                step="0.01" 
+                v-model.number="cashAmount"
+                type="number"
+                step="0.01"
                 placeholder="Cash Amount"
                 class="payment-input"
               />
             </div>
-            
+
             <div class="payment-method">
-              <m3-button 
-                variant="filled" 
+              <m3-button
+                variant="filled"
                 :class="{ active: paymentMethod === 'eft' }"
                 @click="setPaymentMethod('eft')"
               >
                 EFT
               </m3-button>
-              <input 
+              <input
                 v-if="paymentMethod === 'eft'"
-                v-model.number="eftAmount" 
-                type="number" 
-                step="0.01" 
+                v-model.number="eftAmount"
+                type="number"
+                step="0.01"
                 placeholder="EFT Amount"
                 class="payment-input"
               />
             </div>
-            
+
             <div class="payment-method">
-              <m3-button 
-                variant="outlined" 
+              <m3-button
+                variant="outlined"
                 :class="{ active: paymentMethod === 'invoice' }"
                 @click="setPaymentMethod('invoice')"
               >
@@ -244,8 +244,8 @@
           <m3-button variant="outlined" @click="viewPatientHistory">
             PATIENT HISTORY
           </m3-button>
-          <m3-button 
-            variant="filled" 
+          <m3-button
+            variant="filled"
             @click="processBillAndPrint"
             :disabled="billItems.length === 0"
           >
@@ -254,9 +254,9 @@
           <m3-button variant="outlined" @click="viewProfile">
             VIEW PROFILE
           </m3-button>
-          <m3-button 
+          <m3-button
             v-if="hasPermission('admission_discharge:approve')"
-            variant="outlined" 
+            variant="outlined"
             color="success"
             @click="dischargePatient"
           >
@@ -318,8 +318,8 @@ const balance = computed(() => {
 })
 
 const canAddItem = computed(() => {
-  return newItem.value.id && 
-         newItem.value.quantity > 0 && 
+  return newItem.value.id &&
+         newItem.value.quantity > 0 &&
          newItem.value.unitPrice > 0
 })
 
@@ -327,14 +327,14 @@ const canAddItem = computed(() => {
 const loadData = async () => {
   try {
     loading.value = true
-    
+
     // Load patient data
     const patientData = await patientStore.getPatient(patientId.value)
     patient.value = patientData
-    
+
     // Load price list
     await configStore.loadPriceList()
-    
+
   } catch (error) {
     console.error('Error loading data:', error)
   } finally {
@@ -360,7 +360,7 @@ const calculateItemTotal = () => {
 // Add item to bill
 const addItemToBill = () => {
   if (!canAddItem.value) return
-  
+
   billItems.value.push({
     id: newItem.value.id,
     description: newItem.value.description,
@@ -368,7 +368,7 @@ const addItemToBill = () => {
     unitPrice: newItem.value.unitPrice,
     totalPrice: newItem.value.totalPrice
   })
-  
+
   // Reset form
   newItem.value = {
     id: '',
@@ -401,18 +401,18 @@ const processBillAndPrint = async () => {
       paymentMethod.value,
       amountPaid.value
     )
-    
+
     // Print receipt (implement print functionality)
     window.print()
-    
+
     // Reset form
     billItems.value = []
     paymentMethod.value = ''
     cashAmount.value = 0
     eftAmount.value = 0
-    
+
     alert(`Bill processed successfully! Invoice ID: ${result.invoiceId}`)
-    
+
   } catch (error) {
     console.error('Error processing bill:', error)
     alert('Error processing bill. Please try again.')

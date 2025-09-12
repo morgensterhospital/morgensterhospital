@@ -10,7 +10,7 @@
         </div>
         <h1 class="page-title">INVENTORY MANAGEMENT</h1>
       </div>
-      
+
       <div class="header-actions">
         <m3-button variant="outlined" @click="exportInventory">
           <mdi-icon :path="mdiDownload" size="20" />
@@ -38,7 +38,7 @@
           <div class="stat-value">{{ inventory.length }}</div>
         </div>
       </div>
-      
+
       <div class="stat-card low-stock">
         <div class="stat-icon">
           <mdi-icon :path="mdiAlertCircle" size="32" />
@@ -48,7 +48,7 @@
           <div class="stat-value">{{ lowStockItems.length }}</div>
         </div>
       </div>
-      
+
       <div class="stat-card out-of-stock">
         <div class="stat-icon">
           <mdi-icon :path="mdiCloseCircle" size="32" />
@@ -70,7 +70,7 @@
           variant="outlined"
         />
       </div>
-      
+
       <div class="filter-section">
         <select v-model="stockFilter" class="filter-select">
           <option value="">All Items</option>
@@ -78,7 +78,7 @@
           <option value="low-stock">Low Stock</option>
           <option value="out-of-stock">Out of Stock</option>
         </select>
-        
+
         <select v-model="categoryFilter" class="filter-select">
           <option value="">All Categories</option>
           <option value="medication">Medications</option>
@@ -99,7 +99,7 @@
           </m3-button>
         </div>
       </div>
-      
+
       <div class="table-wrapper">
         <table class="inventory-table">
           <thead>
@@ -161,7 +161,7 @@
             <mdi-icon :path="mdiClose" size="20" />
           </button>
         </div>
-        
+
         <form @submit.prevent="saveItem" class="item-form">
           <div class="form-grid">
             <m3-text-field
@@ -171,14 +171,14 @@
               required
               :readonly="editingItem"
             />
-            
+
             <m3-text-field
               v-model="itemForm.name"
               label="Item Name"
               variant="outlined"
               required
             />
-            
+
             <div class="form-group">
               <label>Category</label>
               <select v-model="itemForm.category" class="form-select" required>
@@ -188,7 +188,7 @@
                 <option value="equipment">Equipment</option>
               </select>
             </div>
-            
+
             <m3-text-field
               v-model.number="itemForm.stockLevel"
               label="Current Stock"
@@ -197,7 +197,7 @@
               min="0"
               required
             />
-            
+
             <m3-text-field
               v-model="itemForm.unit"
               label="Unit"
@@ -205,7 +205,7 @@
               placeholder="e.g., tablets, boxes, pieces"
               required
             />
-            
+
             <m3-text-field
               v-model.number="itemForm.minimumLevel"
               label="Minimum Level"
@@ -215,7 +215,7 @@
               required
             />
           </div>
-          
+
           <div class="modal-actions">
             <m3-button variant="outlined" @click="closeItemModal">
               Cancel
@@ -238,13 +238,13 @@
             <mdi-icon :path="mdiClose" size="20" />
           </button>
         </div>
-        
+
         <form @submit.prevent="saveStockAdjustment" class="adjust-form">
           <div class="current-stock">
             <label>Current Stock Level</label>
             <span class="stock-value">{{ adjustingItem?.stockLevel }} {{ adjustingItem?.unit }}</span>
           </div>
-          
+
           <div class="adjustment-section">
             <div class="adjustment-type">
               <label>Adjustment Type</label>
@@ -263,7 +263,7 @@
                 </label>
               </div>
             </div>
-            
+
             <m3-text-field
               v-model.number="adjustmentAmount"
               :label="adjustmentType === 'set' ? 'New Stock Level' : 'Adjustment Amount'"
@@ -272,7 +272,7 @@
               min="0"
               required
             />
-            
+
             <m3-text-field
               v-model="adjustmentReason"
               label="Reason for Adjustment"
@@ -283,12 +283,12 @@
               required
             />
           </div>
-          
+
           <div class="new-stock-preview">
             <label>New Stock Level</label>
             <span class="preview-value">{{ calculateNewStock() }} {{ adjustingItem?.unit }}</span>
           </div>
-          
+
           <div class="modal-actions">
             <m3-button variant="outlined" @click="closeAdjustModal">
               Cancel
@@ -480,10 +480,10 @@ const closeAdjustModal = () => {
 // Calculate new stock level
 const calculateNewStock = () => {
   if (!adjustingItem.value || !adjustmentAmount.value) return adjustingItem.value?.stockLevel || 0
-  
+
   const current = adjustingItem.value.stockLevel
   const amount = adjustmentAmount.value
-  
+
   switch (adjustmentType.value) {
     case 'add':
       return current + amount
@@ -500,9 +500,9 @@ const calculateNewStock = () => {
 const saveItem = async () => {
   try {
     saving.value = true
-    
+
     const updatedInventory = [...inventory.value]
-    
+
     if (editingItem.value) {
       // Update existing item
       const index = updatedInventory.findIndex(item => item.id === editingItem.value.id)
@@ -519,10 +519,10 @@ const saveItem = async () => {
         lastUpdated: new Date()
       })
     }
-    
+
     await configStore.updateInventory(updatedInventory)
     closeItemModal()
-    
+
   } catch (error) {
     console.error('Error saving item:', error)
     alert('Error saving item. Please try again.')
@@ -535,20 +535,20 @@ const saveItem = async () => {
 const saveStockAdjustment = async () => {
   try {
     saving.value = true
-    
+
     const updatedInventory = [...inventory.value]
     const index = updatedInventory.findIndex(item => item.id === adjustingItem.value.id)
-    
+
     if (index !== -1) {
       updatedInventory[index] = {
         ...updatedInventory[index],
         stockLevel: calculateNewStock(),
         lastUpdated: new Date()
       }
-      
+
       await configStore.updateInventory(updatedInventory)
       closeAdjustModal()
-      
+
       // Log the adjustment (could be stored in a separate collection)
       console.log('Stock adjustment:', {
         itemId: adjustingItem.value.id,
@@ -558,7 +558,7 @@ const saveStockAdjustment = async () => {
         timestamp: new Date()
       })
     }
-    
+
   } catch (error) {
     console.error('Error adjusting stock:', error)
     alert('Error adjusting stock. Please try again.')

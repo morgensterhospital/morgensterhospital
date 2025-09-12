@@ -31,12 +31,12 @@
         @blur="handleBlur"
         v-bind="$attrs"
       />
-      
+
       <label v-if="label" :for="fieldId" class="m3-text-field__label">
         {{ label }}
         <span v-if="required" class="m3-text-field__required">*</span>
       </label>
-      
+
       <div class="m3-text-field__outline">
         <div class="m3-text-field__leading"></div>
         <div class="m3-text-field__notch">
@@ -47,7 +47,7 @@
         <div class="m3-text-field__trailing"></div>
       </div>
     </div>
-    
+
     <div v-if="helperText || error" class="m3-text-field__supporting-text">
       <span v-if="error" class="m3-text-field__error">{{ error }}</span>
       <span v-else-if="helperText" class="m3-text-field__helper">{{ helperText }}</span>

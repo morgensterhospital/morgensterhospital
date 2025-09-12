@@ -40,7 +40,7 @@
               required
               :error="errors.idNumber"
             />
-            
+
             <m3-text-field
               v-model="form.name"
               label="Name"
@@ -48,7 +48,7 @@
               required
               :error="errors.name"
             />
-            
+
             <m3-text-field
               v-model="form.surname"
               label="Surname"
@@ -56,7 +56,7 @@
               required
               :error="errors.surname"
             />
-            
+
             <m3-text-field
               v-model="form.phone"
               label="Phone Number"
@@ -83,7 +83,7 @@
                 :error="errors.address"
               />
             </div>
-            
+
             <m3-text-field
               v-model="form.dob"
               label="Date of Birth"
@@ -93,7 +93,7 @@
               :error="errors.dob"
               @input="calculateAge"
             />
-            
+
             <m3-text-field
               v-model="form.age"
               label="Age"
@@ -101,7 +101,7 @@
               readonly
               helper-text="Calculated from date of birth"
             />
-            
+
             <div class="form-group">
               <label class="form-label">Gender *</label>
               <select
@@ -116,7 +116,7 @@
               </select>
               <span v-if="errors.gender" class="error-text">{{ errors.gender }}</span>
             </div>
-            
+
             <m3-text-field
               v-model="form.countryOfBirth"
               label="Country of Birth"
@@ -124,7 +124,7 @@
               required
               :error="errors.countryOfBirth"
             />
-            
+
             <div class="form-group">
               <label class="form-label">Marital Status</label>
               <select
@@ -152,7 +152,7 @@
               required
               :error="errors.nokName"
             />
-            
+
             <m3-text-field
               v-model="form.nokSurname"
               label="N.O.K Surname"
@@ -160,7 +160,7 @@
               required
               :error="errors.nokSurname"
             />
-            
+
             <m3-text-field
               v-model="form.nokPhone"
               label="N.O.K Phone Number"
@@ -169,7 +169,7 @@
               required
               :error="errors.nokPhone"
             />
-            
+
             <div class="form-group full-width">
               <m3-text-field
                 v-model="form.nokAddress"
@@ -193,7 +193,7 @@
           >
             Reset Form
           </m3-button>
-          
+
           <m3-button
             type="submit"
             variant="filled"
@@ -282,11 +282,11 @@ const calculateAge = () => {
     const birthDate = new Date(form.dob)
     let age = today.getFullYear() - birthDate.getFullYear()
     const monthDiff = today.getMonth() - birthDate.getMonth()
-    
+
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--
     }
-    
+
     form.age = age.toString()
   }
 }
@@ -294,41 +294,41 @@ const calculateAge = () => {
 // Validate form
 const validateForm = () => {
   Object.keys(errors).forEach(key => delete errors[key])
-  
+
   let isValid = true
-  
+
   // Required field validation
   const requiredFields = [
-    'idNumber', 'name', 'surname', 'phone', 'address', 
-    'dob', 'gender', 'countryOfBirth', 'nokName', 
+    'idNumber', 'name', 'surname', 'phone', 'address',
+    'dob', 'gender', 'countryOfBirth', 'nokName',
     'nokSurname', 'nokPhone', 'nokAddress'
   ]
-  
+
   requiredFields.forEach(field => {
     if (!form[field] || form[field].trim() === '') {
       errors[field] = 'This field is required'
       isValid = false
     }
   })
-  
+
   // Phone validation
   if (form.phone && !/^\+?[\d\s\-\(\)]{10,}$/.test(form.phone)) {
     errors.phone = 'Please enter a valid phone number'
     isValid = false
   }
-  
+
   if (form.nokPhone && !/^\+?[\d\s\-\(\)]{10,}$/.test(form.nokPhone)) {
     errors.nokPhone = 'Please enter a valid phone number'
     isValid = false
   }
-  
+
   // Age validation
   const age = parseInt(form.age)
   if (age < 0 || age > 150) {
     errors.dob = 'Please enter a valid date of birth'
     isValid = false
   }
-  
+
   return isValid
 }
 
@@ -337,7 +337,7 @@ const handleSubmit = async () => {
   if (!validateForm()) {
     return
   }
-  
+
   try {
     loading.value = true
     
@@ -357,10 +357,10 @@ const handleSubmit = async () => {
       nokPhone: form.nokPhone.trim(),
       nokAddress: form.nokAddress.trim()
     }
-    
+
     // Register patient
     const patientId = await patientStore.registerPatient(patientData)
-    
+
     // Store registered patient info
     registeredPatient.value = {
       id: patientId,
@@ -368,9 +368,9 @@ const handleSubmit = async () => {
       surname: form.surname,
       hospitalNumber: 'MHS' + new Date().getFullYear().toString().slice(-2) + Math.floor(Math.random() * 10000).toString().padStart(4, '0')
     }
-    
+
     showSuccessModal.value = true
-    
+
   } catch (error) {
     console.error('Registration error:', error)
     alert('Failed to register patient. Please try again.')

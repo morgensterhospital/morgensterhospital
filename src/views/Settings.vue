@@ -20,7 +20,7 @@
           <mdi-icon :path="mdiAccount" size="24" />
           <h2>User Profile</h2>
         </div>
-        
+
         <div class="section-content">
           <div class="profile-info">
             <div class="profile-avatar">
@@ -54,19 +54,19 @@
           <mdi-icon :path="mdiSecurity" size="24" />
           <h2>Security</h2>
         </div>
-        
+
         <div class="section-content">
           <div class="security-actions">
-            <m3-button 
-              variant="outlined" 
+            <m3-button
+              variant="outlined"
               @click="changePassword"
               :icon="mdiLock"
             >
               Change Password
             </m3-button>
-            
-            <m3-button 
-              variant="outlined" 
+
+            <m3-button
+              variant="outlined"
               @click="viewLoginHistory"
               :icon="mdiHistory"
             >
@@ -82,7 +82,7 @@
           <mdi-icon :path="mdiInformation" size="24" />
           <h2>System Information</h2>
         </div>
-        
+
         <div class="section-content">
           <div class="system-info">
             <div class="info-item">
@@ -113,27 +113,27 @@
             <mdi-icon :path="mdiAccountGroup" size="24" />
             <h2>User Management</h2>
           </div>
-          
+
           <div class="section-content">
             <div class="admin-actions">
-              <m3-button 
-                variant="filled" 
+              <m3-button
+                variant="filled"
                 @click="navigateTo('/users')"
                 :icon="mdiAccountPlus"
               >
                 Manage Users
               </m3-button>
-              
-              <m3-button 
-                variant="outlined" 
+
+              <m3-button
+                variant="outlined"
                 @click="viewSystemLogs"
                 :icon="mdiFileDocument"
               >
                 System Logs
               </m3-button>
-              
-              <m3-button 
-                variant="outlined" 
+
+              <m3-button
+                variant="outlined"
                 @click="backupSystem"
                 :icon="mdiBackupRestore"
               >
@@ -149,7 +149,7 @@
             <mdi-icon :path="mdiCog" size="24" />
             <h2>System Configuration</h2>
           </div>
-          
+
           <div class="section-content">
             <div class="config-options">
               <div class="config-item">
@@ -161,7 +161,7 @@
                   Edit
                 </m3-button>
               </div>
-              
+
               <div class="config-item">
                 <div class="config-info">
                   <label>System Timezone</label>
@@ -171,7 +171,7 @@
                   Edit
                 </m3-button>
               </div>
-              
+
               <div class="config-item">
                 <div class="config-info">
                   <label>Auto Backup</label>
@@ -192,7 +192,7 @@
           <mdi-icon :path="mdiBell" size="24" />
           <h2>Notifications</h2>
         </div>
-        
+
         <div class="section-content">
           <div class="notification-settings">
             <div class="notification-item">
@@ -205,7 +205,7 @@
                 <span class="toggle-slider"></span>
               </label>
             </div>
-            
+
             <div class="notification-item">
               <div class="notification-info">
                 <label>System Alerts</label>
@@ -216,7 +216,7 @@
                 <span class="toggle-slider"></span>
               </label>
             </div>
-            
+
             <div class="notification-item">
               <div class="notification-info">
                 <label>Patient Updates</label>
@@ -237,7 +237,7 @@
           <mdi-icon :path="mdiHelpCircle" size="24" />
           <h2>About</h2>
         </div>
-        
+
         <div class="section-content">
           <div class="about-info">
             <div class="about-logo">
@@ -251,7 +251,7 @@
               <p><strong>Copyright:</strong> © 2025 All rights reserved</p>
             </div>
           </div>
-          
+
           <div class="about-actions">
             <m3-button variant="outlined" @click="viewDocumentation">
               Documentation
