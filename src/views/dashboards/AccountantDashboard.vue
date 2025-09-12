@@ -7,7 +7,7 @@
       @approve="approveDischarge"
       @deny="denyDischarge"
     />
-    <BigProfileModal
+    <AccountantProfileModal
       v-if="isPatientProfileModalOpen"
       :patientId="selectedPatientId"
       @close="closePatientProfileModal"
@@ -99,7 +99,7 @@
     </div>
 
     <!-- Patient Search -->
-    <div class="p-6 bg-surface-dark rounded-lg">
+    <div class="p-6 bg-surface-dark rounded-lg mt-6">
         <h2 class="text-lg font-semibold mb-4">Find a Patient's Financial Record</h2>
         <div class="relative">
           <MdiIcon :path="mdiMagnify" size="20" class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
@@ -140,7 +140,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { usePatientStore } from '@/stores/patientStore';
 import MdiIcon from '@/components/common/MdiIcon.vue';
 import DischargeNotificationModal from '@/components/common/DischargeNotificationModal.vue';
-import BigProfileModal from '@/components/common/BigProfileModal.vue';
+import AccountantProfileModal from '@/components/common/AccountantProfileModal.vue';
 import {
   mdiAccountGroup,
   mdiChartLine,
