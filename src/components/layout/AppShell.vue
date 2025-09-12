@@ -1,80 +1,77 @@
 <template>
-  <div class="app-shell">
-    <nav v-if="!isMobile" class="nav-rail">
-      <div class="nav-header">
-        <div class="logo">
-          <mdi-icon :path="mdiHospital" size="32" color="#0066B2" />
-        </div>
-        <h1 class="system-title">MHMS</h1>
+  <div class="flex h-screen bg-background-dark text-text-light">
+    <!-- Sidebar -->
+    <aside class="w-64 flex-shrink-0 bg-surface-dark p-4 flex flex-col">
+      <!-- Logo and App Name -->
+      <div class="flex items-center mb-8">
+        <MdiIcon :path="mdiHospital" size="32" class="text-primary" />
+        <span class="ml-2 text-xl font-bold">Morgenster HMS</span>
       </div>
 
-      <div class="nav-items">
-        <router-link
-          v-for="item in filteredNavigationItems"
-          :key="item.name"
-          :to="item.path"
-          class="nav-item"
-          :class="{ active: $route.path === item.path }"
+      <!-- Navigation -->
+      <nav class="flex-grow">
+        <ul>
+          <li v-for="item in filteredNavigationItems" :key="item.name" class="mb-2">
+            <router-link
+              :to="item.path"
+              class="flex items-center p-2 rounded-lg transition-colors"
+              :class="{
+                'bg-primary text-background-dark font-semibold': $route.path === item.path,
+                'hover:bg-primary/20': $route.path !== item.path,
+              }"
+            >
+              <MdiIcon :path="item.icon" size="20" class="mr-3" />
+              <span>{{ item.label }}</span>
+            </router-link>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- User Info and Logout -->
+      <div class="mt-auto">
+        <div class="p-2 rounded-lg hover:bg-primary/20">
+          <div class="flex items-center">
+            <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-bold text-background-dark">
+              {{ authStore.user?.displayName?.charAt(0) || 'U' }}
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-semibold">{{ authStore.user?.displayName || 'User' }}</p>
+              <p class="text-xs text-text-muted">{{ authStore.userRole }}</p>
+            </div>
+          </div>
+        </div>
+        <button
+          @click="handleLogout"
+          class="w-full flex items-center p-2 mt-2 rounded-lg transition-colors hover:bg-red-500/20 text-text-muted hover:text-red-400"
         >
-          <mdi-icon :path="item.icon" size="24" />
-          <span class="nav-label">{{ item.label }}</span>
-        </router-link>
-      </div>
-
-      <div class="nav-footer">
-        <div class="user-info">
-          <div class="user-avatar">
-            <mdi-icon :path="mdiAccount" size="24" />
-          </div>
-          <div class="user-details">
-            <div class="user-name">{{ authStore.user?.displayName || 'User' }}</div>
-            <div class="user-role">{{ authStore.userRole }}</div>
-          </div>
-        </div>
-        
-        <button @click="handleLogout" class="logout-btn">
-          <mdi-icon :path="mdiLogout" size="20" />
+          <MdiIcon :path="mdiLogout" size="20" class="mr-3" />
           <span>Logout</span>
         </button>
       </div>
-    </nav>
+    </aside>
 
-    <main class="main-content" :class="{ 'mobile': isMobile }">
-      <header v-if="isMobile" class="mobile-header">
-        <div class="mobile-title">
-          <mdi-icon :path="mdiHospital" size="24" color="#0066B2" />
-          <span>MHMS</span>
-        </div>
-        <button @click="handleLogout" class="mobile-logout">
-          <mdi-icon :path="mdiLogout" size="20" />
-        </button>
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+      <!-- Header -->
+      <header class="bg-surface-dark p-4 border-b border-gray-700">
+        <h1 class="text-xl font-bold">
+          {{ $route.name }}
+        </h1>
       </header>
 
-      <div class="page-content">
+      <!-- Page Content -->
+      <div class="flex-1 p-6 overflow-y-auto">
         <router-view />
       </div>
     </main>
-
-    <nav v-if="isMobile" class="bottom-nav">
-      <router-link
-        v-for="item in filteredNavigationItems.slice(0, 5)"
-        :key="item.name"
-        :to="item.path"
-        class="bottom-nav-item"
-        :class="{ active: $route.path === item.path }"
-      >
-        <mdi-icon :path="item.icon" size="20" />
-        <span class="bottom-nav-label">{{ item.shortLabel || item.label }}</span>
-      </router-link>
-    </nav>
   </div>
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
-import MdiIcon from '@/components/common/MdiIcon.vue'
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
+import MdiIcon from '@/components/common/MdiIcon.vue';
 import {
   mdiHospital,
   mdiAccount,
@@ -88,349 +85,105 @@ import {
   mdiRadioboxBlank,
   mdiHeartPulse,
   mdiCog,
-  mdiMotherNurse
-} from '@mdi/js'
+  mdiMotherNurse,
+} from '@mdi/js';
 
-const router = useRouter()
-const authStore = useAuthStore()
-
-const isMobile = ref(false)
-
-// Check screen size
-const checkScreenSize = () => {
-  isMobile.value = window.innerWidth <= 1024
-}
-
-onMounted(() => {
-  checkScreenSize()
-  window.addEventListener('resize', checkScreenSize)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', checkScreenSize)
-})
+const router = useRouter();
+const authStore = useAuthStore();
 
 // Full list of all possible navigation items
 const allNavigationItems = [
   {
     name: 'dashboard',
     label: 'Dashboard',
-    shortLabel: 'Home',
     icon: mdiViewDashboard,
     path: '/',
-    roles: ['Admin', 'Accountant', 'Account Assistant', 'Doctor', 'Nurse', 'Pharmacy', 'Dispensary Assistant']
+    roles: ['Admin', 'Accountant', 'Account Assistant', 'Doctor', 'Nurse', 'Pharmacy', 'Dispensary Assistant'],
   },
   {
     name: 'register',
     label: 'New Patient',
-    shortLabel: 'Register',
     icon: mdiAccountPlus,
     path: '/patient/register',
-    roles: ['Accounts Clerk', 'Doctor', 'Nurse']
+    roles: ['Accounts Clerk', 'Doctor', 'Nurse'],
   },
   {
     name: 'prescriptions',
     label: 'Prescriptions',
-    shortLabel: 'Rx',
     icon: mdiPill,
     path: '/prescriptions',
-    roles: ['Doctor', 'Nurse', 'Dispensary Assistant']
+    roles: ['Doctor', 'Nurse', 'Dispensary Assistant'],
   },
   {
     name: 'lab',
     label: 'Lab Requests',
-    shortLabel: 'Lab',
     icon: mdiTestTube,
     path: '/lab-requests',
-    roles: ['Doctor', 'Nurse', 'Lab Scientist']
+    roles: ['Doctor', 'Nurse', 'Lab Scientist'],
   },
   {
     name: 'radiology',
     label: 'Radiology',
-    shortLabel: 'Rad',
     icon: mdiRadioboxBlank,
     path: '/radiology',
-    roles: ['Doctor', 'Nurse', 'Radiographer']
+    roles: ['Doctor', 'Nurse', 'Radiographer'],
   },
   {
     name: 'physiotherapy',
     label: 'Physiotherapy',
-    shortLabel: 'Physio',
     icon: mdiHeartPulse,
     path: '/physiotherapy',
-    roles: ['Doctor', 'Nurse', 'Physiotherapist']
+    roles: ['Doctor', 'Nurse', 'Physiotherapist'],
   },
   {
     name: 'maternity',
     label: 'Maternity',
-    shortLabel: 'Maternity',
     icon: mdiMotherNurse,
     path: '/maternity',
-    roles: ['Doctor', 'Nurse']
+    roles: ['Doctor', 'Nurse'],
   },
   {
     name: 'users',
     label: 'User Management',
-    shortLabel: 'Users',
     icon: mdiAccountGroup,
     path: '/users',
-    roles: ['Admin', 'Accountant', 'Account Assistant']
+    roles: ['Admin', 'Accountant', 'Account Assistant'],
   },
   {
     name: 'reports',
     label: 'Reports',
-    shortLabel: 'Reports',
     icon: mdiChartLine,
     path: '/reports',
-    roles: ['Admin', 'Accountant', 'Accounts Clerk', 'Account Assistant']
+    roles: ['Admin', 'Accountant', 'Accounts Clerk', 'Account Assistant'],
   },
   {
     name: 'settings',
     label: 'Settings',
-    shortLabel: 'Settings',
     icon: mdiCog,
     path: '/settings',
-    roles: ['Admin', 'Accountant', 'Accounts Clerk', 'Account Assistant', 'Doctor', 'Nurse', 'Pharmacy', 'Dispensary Assistant', 'Lab Scientist', 'Radiographer', 'Physiotherapist']
-  }
-]
+    roles: ['Admin', 'Accountant', 'Accounts Clerk', 'Account Assistant', 'Doctor', 'Nurse', 'Pharmacy', 'Dispensary Assistant', 'Lab Scientist', 'Radiographer', 'Physiotherapist'],
+  },
+];
 
 // Filter navigation items based on user role
 const filteredNavigationItems = computed(() => {
-  const role = authStore.userRole
+  const role = authStore.userRole;
   if (!role) {
-    return []
+    return [];
   }
-  return allNavigationItems.filter(item => item.roles.includes(role))
-})
+  return allNavigationItems.filter(item => item.roles.includes(role));
+});
 
 const handleLogout = async () => {
   try {
-    await authStore.logout()
-    router.push('/login')
+    await authStore.logout();
+    router.push('/auth/login');
   } catch (error) {
-    console.error('Logout error:', error)
+    console.error('Logout error:', error);
   }
-}
+};
 </script>
 
 <style scoped>
-.app-shell {
-  display: flex;
-  height: 100vh;
-  background-color: #F7F9FC;
-}
-
-/* Desktop Navigation Rail */
-.nav-rail {
-  width: 280px;
-  background: white;
-  border-right: 1px solid #E5E7EB;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-}
-
-.nav-header {
-  padding: 24px 20px;
-  border-bottom: 1px solid #E5E7EB;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.system-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #0066B2;
-  margin: 0;
-}
-
-.nav-items {
-  flex: 1;
-  padding: 20px 0;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 20px;
-  color: #6B7280;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  border-left: 4px solid transparent;
-}
-
-.nav-item:hover {
-  background-color: #F3F4F6;
-  color: #0066B2;
-}
-
-.nav-item.active {
-  background-color: #EBF8FF;
-  color: #0066B2;
-  border-left-color: #0066B2;
-}
-
-.nav-label {
-  font-weight: 500;
-}
-
-.nav-footer {
-  padding: 20px;
-  border-top: 1px solid #E5E7EB;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  background: #E5E7EB;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.user-details {
-  flex: 1;
-}
-
-.user-name {
-  font-weight: 500;
-  font-size: 14px;
-  color: #1F2937;
-}
-
-.user-role {
-  font-size: 12px;
-  color: #6B7280;
-}
-
-.logout-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: none;
-  border: 1px solid #E5E7EB;
-  border-radius: 8px;
-  color: #6B7280;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.logout-btn:hover {
-  background: #F3F4F6;
-  color: #DC2626;
-  border-color: #FCA5A5;
-}
-
-/* Main Content */
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.main-content.mobile {
-  padding-bottom: 80px;
-}
-
-/* Mobile Header */
-.mobile-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background: white;
-  border-bottom: 1px solid #E5E7EB;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.mobile-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 18px;
-  font-weight: 700;
-  color: #0066B2;
-}
-
-.mobile-logout {
-  padding: 8px;
-  background: none;
-  border: none;
-  color: #6B7280;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.mobile-logout:hover {
-  background: #F3F4F6;
-  color: #DC2626;
-}
-
-/* Page Content */
-.page-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-}
-
-/* Mobile Bottom Navigation */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 80px;
-  background: white;
-  border-top: 1px solid #E5E7EB;
-  display: flex;
-  padding: 8px 4px;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 100;
-}
-
-.bottom-nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 8px;
-  color: #6B7280;
-  text-decoration: none;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-}
-
-.bottom-nav-item.active {
-  color: #0066B2;
-  background-color: #EBF8FF;
-}
-
-.bottom-nav-label {
-  font-size: 11px;
-  font-weight: 500;
-  text-align: center;
-  line-height: 1.2;
-}
-
-@media (max-width: 1024px) {
-  .nav-rail {
-    display: none;
-  }
-}
+/* No additional styles needed as we are using Tailwind CSS utility classes */
 </style>

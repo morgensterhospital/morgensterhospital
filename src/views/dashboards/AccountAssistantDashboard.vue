@@ -1,173 +1,101 @@
 <template>
-  <div class="dashboard">
-    <!-- Page Header -->
-    <div class="dashboard-header">
-      <div class="header-info">
-        <h1 class="page-title">MORGENSTER HOSPITAL MANAGEMENT SYSTEM</h1>
-        <div class="user-info">
-          LOGGED IN AS: {{ authStore.user?.displayName || 'USER' }}: ACCOUNT ASSISTANT
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Left Column -->
+    <div class="space-y-6">
+      <div class="bg-surface-dark p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-bold mb-4">Core Actions</h2>
+        <div class="space-y-4">
+          <div class="relative">
+            <input
+              type="text"
+              v-model="searchQuery"
+              placeholder="Search for a patient..."
+              @input="handleSearch"
+              class="w-full bg-background-dark border border-gray-600 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <MdiIcon :path="mdiMagnify" size="20" class="absolute right-3 top-2.5 text-text-muted" />
+          </div>
+          <div v-if="searchResults.length > 0" class="space-y-2">
+            <div
+              v-for="patient in searchResults"
+              :key="patient.id"
+              class="p-3 bg-background-dark rounded-md cursor-pointer hover:bg-primary/20"
+              @click="selectPatient(patient)"
+            >
+              <p class="font-semibold">{{ patient.name }} {{ patient.surname }}</p>
+              <p class="text-sm text-text-muted">{{ patient.hospitalNumber }} • {{ patient.age }} years</p>
+            </div>
+          </div>
+          <button @click="navigateTo('/reports')" class="w-full p-4 bg-primary text-background-dark font-bold rounded-lg flex items-center justify-center space-x-2 hover:bg-primary-hover">
+            <MdiIcon :path="mdiChartLine" size="24" />
+            <span>Reports & Analytics</span>
+          </button>
+          <button @click="printCashSales" class="w-full p-4 bg-primary text-background-dark font-bold rounded-lg flex items-center justify-center space-x-2 hover:bg-primary-hover">
+            <MdiIcon :path="mdiPrinter" size="24" />
+            <span>Print Cash Sales</span>
+          </button>
+          <button @click="navigateTo('/approvals')" class="w-full p-4 bg-primary text-background-dark font-bold rounded-lg flex items-center justify-center space-x-2 hover:bg-primary-hover">
+            <MdiIcon :path="mdiCheckDecagram" size="24" />
+            <span>Approve Balances</span>
+          </button>
         </div>
-      </div>
-      
-      <div class="header-actions">
-        <m3-button variant="outlined" @click="navigateTo('/stationery')">
-          STATIONERY
-        </m3-button>
       </div>
     </div>
 
-    <!-- Main Dashboard Content -->
-    <div class="dashboard-content">
-      <!-- Left Section - Navigation & Actions -->
-      <div class="left-section">
-        <div class="main-actions">
-          <!-- Patient Search -->
-          <div class="search-section">
-            <m3-text-field
-              v-model="searchQuery"
-              placeholder="SEARCH PATIENT NAME AND SURNAME"
-              :icon-leading="mdiMagnify"
-              variant="outlined"
-              @input="handleSearch"
-            />
-            
-            <div v-if="searchResults.length > 0" class="search-results">
-              <div
-                v-for="patient in searchResults"
-                :key="patient.id"
-                class="search-result-item"
-                @click="selectPatient(patient)"
-              >
-                <div class="patient-name">
-                  {{ patient.name }} {{ patient.surname }}
-                </div>
-                <div class="patient-details">
-                  {{ patient.hospitalNumber }} • {{ patient.age }} years
-                </div>
-              </div>
-            </div>
+    <!-- Right Column -->
+    <div class="space-y-6">
+      <div class="bg-surface-dark p-6 rounded-lg shadow-lg">
+        <div class="grid grid-cols-2 gap-4 text-center">
+          <div>
+            <p class="text-sm text-text-muted">Date</p>
+            <p class="text-lg font-bold">{{ currentDate }}</p>
           </div>
-
-          <m3-button
-            variant="filled"
-            size="large"
-            full-width
-            :icon="mdiChartLine"
-            @click="navigateTo('/reports')"
-            class="main-action-btn"
-          >
-            REPORTS & ANALYTICS
-          </m3-button>
-
-          <m3-button
-            variant="filled"
-            size="large"
-            full-width
-            :icon="mdiPrinter"
-            @click="printCashSales"
-            class="main-action-btn"
-          >
-            PRINT CASH SALES
-          </m3-button>
-
-          <m3-button
-            variant="filled"
-            size="large"
-            full-width
-            :icon="mdiCheckDecagram"
-            @click="navigateTo('/approvals')"
-            class="main-action-btn"
-          >
-            APPROVE BALANCES
-          </m3-button>
+          <div>
+            <p class="text-sm text-text-muted">Time</p>
+            <p class="text-lg font-bold">{{ currentTime }}</p>
+          </div>
         </div>
       </div>
-
-      <!-- Right Section - Stats & DateTime -->
-      <div class="right-section">
-        <!-- Date and Time -->
-        <div class="datetime-section">
-          <div class="datetime-card">
-            <div class="datetime-label">DATE</div>
-            <div class="datetime-value">{{ currentDate }}</div>
+      <div class="bg-surface-dark p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-bold mb-4">Supervisory Stats</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="p-4 bg-background-dark rounded-lg text-center">
+            <MdiIcon :path="mdiAccountSupervisor" size="32" class="mx-auto text-primary" />
+            <p class="mt-2 text-2xl font-bold">{{ supervisoryStats.clerksSupervised }}</p>
+            <p class="text-sm text-text-muted">Clerks Supervised</p>
           </div>
-          <div class="datetime-card">
-            <div class="datetime-label">TIME</div>
-            <div class="datetime-value">{{ currentTime }}</div>
+          <div class="p-4 bg-background-dark rounded-lg text-center">
+            <MdiIcon :path="mdiClockAlert" size="32" class="mx-auto text-yellow-500" />
+            <p class="mt-2 text-2xl font-bold">{{ supervisoryStats.pendingApprovals }}</p>
+            <p class="text-sm text-text-muted">Pending Approvals</p>
           </div>
-        </div>
-
-        <!-- Supervisory Stats -->
-        <div class="stats-section">
-          <div class="stats-grid">
-            <div class="stat-card primary">
-              <div class="stat-icon">
-                <mdi-icon :path="mdiAccountSupervisor" size="32" />
-              </div>
-              <div class="stat-content">
-                <div class="stat-label">CLERKS SUPERVISED</div>
-                <div class="stat-value">{{ supervisoryStats.clerksSupervised }}</div>
-              </div>
-            </div>
-
-            <div class="stat-card warning">
-              <div class="stat-icon">
-                <mdi-icon :path="mdiClockAlert" size="32" />
-              </div>
-              <div class="stat-content">
-                <div class="stat-label">PENDING APPROVALS</div>
-                <div class="stat-value">{{ supervisoryStats.pendingApprovals }}</div>
-              </div>
-            </div>
-
-            <div class="stat-card success">
-              <div class="stat-icon">
-                <mdi-icon :path="mdiCashMultiple" size="32" />
-              </div>
-              <div class="stat-content">
-                <div class="stat-label">TODAY'S CASH SALES</div>
-                <div class="stat-value">M{{ formatCurrency(supervisoryStats.todayCashSales) }}</div>
-              </div>
-            </div>
-
-            <div class="stat-card info">
-              <div class="stat-icon">
-                <mdi-icon :path="mdiFileDocument" size="32" />
-              </div>
-              <div class="stat-content">
-                <div class="stat-label">REPORTS GENERATED</div>
-                <div class="stat-value">{{ supervisoryStats.reportsGenerated }}</div>
-              </div>
-            </div>
+          <div class="p-4 bg-background-dark rounded-lg text-center">
+            <MdiIcon :path="mdiCashMultiple" size="32" class="mx-auto text-green-500" />
+            <p class="mt-2 text-2xl font-bold">M{{ formatCurrency(supervisoryStats.todayCashSales) }}</p>
+            <p class="text-sm text-text-muted">Today's Cash Sales</p>
+          </div>
+          <div class="p-4 bg-background-dark rounded-lg text-center">
+            <MdiIcon :path="mdiFileDocument" size="32" class="mx-auto text-blue-500" />
+            <p class="mt-2 text-2xl font-bold">{{ supervisoryStats.reportsGenerated }}</p>
+            <p class="text-sm text-text-muted">Reports Generated</p>
           </div>
         </div>
-
-        <!-- Welcome Message -->
-        <div class="welcome-section">
-          <div class="welcome-card">
-            <div class="client-logo">
-              <mdi-icon :path="mdiAccountTie" size="64" color="#0066B2" />
-            </div>
-            <h3>CLIENT NAME AND LOGO</h3>
-            <p>WELCOME MESSAGE</p>
-            <div class="supervisor-note">
-              <p><strong>Supervisory Role:</strong> Monitor accounts clerk activities, approve transactions, and generate supervisory reports.</p>
-            </div>
-          </div>
-        </div>
+      </div>
+      <div class="bg-surface-dark p-6 rounded-lg shadow-lg text-center">
+        <MdiIcon :path="mdiAccountTie" size="48" class="mx-auto text-primary" />
+        <h3 class="text-xl font-bold mt-4">Account Assistant</h3>
+        <p class="text-text-muted mt-2">Monitor, approve, and report on financial activities.</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
-import { usePatientStore } from '@/stores/patientStore'
-import MdiIcon from '@/components/common/MdiIcon.vue'
-import M3Button from '@/components/common/M3Button.vue'
-import M3TextField from '@/components/common/M3TextField.vue'
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
+import { usePatientStore } from '@/stores/patientStore';
+import MdiIcon from '@/components/common/MdiIcon.vue';
 import {
   mdiChartLine,
   mdiMagnify,
@@ -177,396 +105,79 @@ import {
   mdiClockAlert,
   mdiCashMultiple,
   mdiFileDocument,
-  mdiAccountTie
-} from '@mdi/js'
+  mdiAccountTie,
+} from '@mdi/js';
 
-const router = useRouter()
-const authStore = useAuthStore()
-const patientStore = usePatientStore()
+const router = useRouter();
+const authStore = useAuthStore();
+const patientStore = usePatientStore();
 
-const searchQuery = ref('')
-const searchResults = ref([])
-const currentDate = ref('')
-const currentTime = ref('')
+const searchQuery = ref('');
+const searchResults = ref([]);
+const currentDate = ref('');
+const currentTime = ref('');
 const supervisoryStats = ref({
   clerksSupervised: 5,
   pendingApprovals: 12,
   todayCashSales: 8500.00,
-  reportsGenerated: 24
-})
+  reportsGenerated: 24,
+});
 
-let timeInterval = null
+let timeInterval = null;
 
-// Initialize datetime display
 const updateDateTime = () => {
-  const now = new Date()
-  currentDate.value = now.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  })
-  currentTime.value = now.toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  })
-}
+  const now = new Date();
+  currentDate.value = now.toLocaleDateString('en-US', { dateStyle: 'long' });
+  currentTime.value = now.toLocaleTimeString('en-US', { timeStyle: 'short' });
+};
 
-// Handle patient search
 const handleSearch = async () => {
   if (searchQuery.value.length < 2) {
-    searchResults.value = []
-    return
+    searchResults.value = [];
+    return;
   }
-
   try {
-    const results = await patientStore.searchPatients(searchQuery.value)
-    searchResults.value = results
+    const results = await patientStore.searchPatients(searchQuery.value);
+    searchResults.value = results;
   } catch (error) {
-    console.error('Search error:', error)
+    console.error('Search error:', error);
   }
-}
+};
 
-// Navigate to patient profile
 const selectPatient = (patient) => {
-  router.push(`/patient/${patient.id}`)
-  searchQuery.value = ''
-  searchResults.value = []
-}
+  router.push(`/patient/${patient.id}`);
+  searchQuery.value = '';
+  searchResults.value = [];
+};
 
-// Navigation helper
 const navigateTo = (path) => {
-  router.push(path)
-}
+  router.push(path);
+};
 
-// Print cash sales report
 const printCashSales = () => {
-  // Generate and print cash sales report
-  console.log('Printing cash sales report...')
-  // Implement print functionality
-}
+  console.log('Printing cash sales report...');
+  // Implement print functionality here
+};
 
-// Format currency
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(amount)
-}
+    maximumFractionDigits: 2,
+  }).format(amount);
+};
 
 onMounted(() => {
-  updateDateTime()
-  timeInterval = setInterval(updateDateTime, 1000)
-})
+  updateDateTime();
+  timeInterval = setInterval(updateDateTime, 1000);
+});
 
 onUnmounted(() => {
   if (timeInterval) {
-    clearInterval(timeInterval)
+    clearInterval(timeInterval);
   }
-})
+});
 </script>
 
 <style scoped>
-.dashboard {
-  min-height: 100vh;
-  background: #F7F9FC;
-  font-family: 'Roboto', sans-serif;
-}
-
-.dashboard-header {
-  background: white;
-  padding: 24px 32px;
-  border-bottom: 1px solid #E5E7EB;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.header-info {
-  flex: 1;
-}
-
-.page-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #0066B2;
-  margin: 0 0 8px 0;
-}
-
-.user-info {
-  font-size: 14px;
-  color: #6B7280;
-  font-weight: 500;
-}
-
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.dashboard-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  padding: 32px;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.left-section,
-.right-section {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-/* Main Actions */
-.main-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.main-action-btn {
-  height: 64px;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-/* Search Section */
-.search-section {
-  position: relative;
-}
-
-.search-results {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #E5E7EB;
-  border-radius: 8px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  max-height: 300px;
-  overflow-y: auto;
-  z-index: 10;
-}
-
-.search-result-item {
-  padding: 16px;
-  border-bottom: 1px solid #F3F4F6;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.search-result-item:hover {
-  background: #F9FAFB;
-}
-
-.search-result-item:last-child {
-  border-bottom: none;
-}
-
-.patient-name {
-  font-weight: 600;
-  color: #1F2937;
-  margin-bottom: 4px;
-}
-
-.patient-details {
-  font-size: 14px;
-  color: #6B7280;
-}
-
-/* DateTime Section */
-.datetime-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.datetime-card {
-  background: white;
-  padding: 24px;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.datetime-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6B7280;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 8px;
-}
-
-.datetime-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: #0066B2;
-}
-
-/* Stats Section */
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.stat-card {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.stat-card.primary .stat-icon {
-  background: linear-gradient(135deg, #0066B2 0%, #0052A3 100%);
-  color: white;
-}
-
-.stat-card.success .stat-icon {
-  background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
-  color: white;
-}
-
-.stat-card.warning .stat-icon {
-  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-  color: white;
-}
-
-.stat-card.info .stat-icon {
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-  color: white;
-}
-
-.stat-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.stat-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: #6B7280;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
-.stat-value {
-  font-size: 20px;
-  font-weight: 800;
-  color: #1F2937;
-  line-height: 1;
-}
-
-/* Welcome Section */
-.welcome-section {
-  flex: 1;
-}
-
-.welcome-card {
-  background: white;
-  padding: 32px;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.client-logo {
-  margin-bottom: 24px;
-}
-
-.welcome-card h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #0066B2;
-  margin: 0 0 12px 0;
-}
-
-.welcome-card p {
-  font-size: 14px;
-  color: #6B7280;
-  margin: 0 0 24px 0;
-}
-
-.supervisor-note {
-  background: #F0F9FF;
-  padding: 16px;
-  border-radius: 8px;
-  border-left: 4px solid #0066B2;
-}
-
-.supervisor-note p {
-  font-size: 12px;
-  color: #1F2937;
-  margin: 0;
-  text-align: left;
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .dashboard-content {
-    grid-template-columns: 1fr;
-    gap: 24px;
-    padding: 24px 16px;
-  }
-
-  .dashboard-header {
-    padding: 16px 20px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .header-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  .page-title {
-    font-size: 20px;
-  }
-
-  .datetime-section {
-    grid-template-columns: 1fr;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .main-action-btn {
-    height: 56px;
-    font-size: 14px;
-  }
-}
+/* All styles are handled by Tailwind CSS utility classes */
 </style>

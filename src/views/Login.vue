@@ -1,288 +1,115 @@
 <template>
-  <div class="login-page">
-    <div class="login-container">
-      <!-- System Header -->
-      <div class="system-header">
-        <div class="logo">
-          <mdi-icon :path="mdiHospital" size="48" color="#0066B2" />
-        </div>
-        <h1 class="system-title">MORGENSTER HOSPITAL MANAGEMENT SYSTEM</h1>
+  <div class="flex items-center justify-center min-h-screen bg-background-dark">
+    <div class="w-full max-w-md p-8 space-y-8 bg-surface-dark rounded-2xl shadow-lg">
+      <div class="text-center">
+        <MdiIcon :path="mdiHospital" size="48" class="mx-auto text-primary" />
+        <h1 class="mt-4 text-2xl font-bold text-text-light">Morgenster HMS</h1>
+        <p class="mt-2 text-sm text-text-muted">Welcome back! Please log in to your account.</p>
       </div>
-
-      <!-- Login Form -->
-      <div class="login-form-container">
-        <form @submit.prevent="handleLogin" class="login-form">
-          <div class="form-group">
-            <label for="role" class="form-label">LOG IN AS:</label>
-            <select
-              id="role"
-              v-model="selectedRole"
-              class="form-select"
-              required
-            >
-              <option value="">Select Role</option>
-              <option value="Admin">ADMIN</option>
-              <option value="Accounts Clerk">ACCOUNTS CLERK</option>
-              <option value="Account Assistant">ACCOUNTS ASSISTANT</option>
-              <option value="Accountant">ACCOUNTANT</option>
-              <option value="Nurse">NURSE</option>
-              <option value="Doctor">DOCTOR</option>
-              <option value="Pharmacy Technician">PHARMACIST</option>
-              <option value="Pharmacy Technician">PHARMACY TECHNICIAN</option>
-              <option value="Dispensary Assistant">DISPENSARY ASSISTANT</option>
-              <option value="Laboratory Technician">LAB SCIENTIST</option>
-              <option value="Laboratory Technician">LAB TECH</option>
-              <option value="Radiologist">XRAY OPERATOR</option>
-              <option value="Rehabilitation Technician">REHABILITATION TECHNICIAN</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="username" class="form-label">USERNAME:</label>
-            <input
-              id="username"
-              v-model="email"
-              type="email"
-              class="form-input"
-              placeholder="Enter your email"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="password" class="form-label">PASSWORD:</label>
-            <input
-              id="password"
-              v-model="password"
-              type="password"
-              class="form-input"
-              placeholder="Enter your password"
-              required
-            />
-          </div>
-
-          <div v-if="error" class="error-message">
-            {{ error }}
-          </div>
-
-          <m3-button
-            type="submit"
-            variant="filled"
-            size="large"
-            :disabled="loading || !selectedRole || !email || !password"
-            full-width
-            class="login-button"
+      <form @submit.prevent="handleLogin" class="space-y-6">
+        <div>
+          <label for="role" class="block text-sm font-medium text-text-muted">Role</label>
+          <select
+            id="role"
+            v-model="selectedRole"
+            required
+            class="mt-1 block w-full px-3 py-2 bg-background-dark border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
           >
-            <span v-if="loading">LOGGING IN...</span>
-            <span v-else>LOG IN</span>
-          </m3-button>
-
-          <a href="#" class="forgot-password">FORGOT PASSWORD</a>
-        </form>
-      </div>
-
-      <!-- Footer -->
-      <div class="hidden sm:flex items-center justify-center p-6 bg-gray-50 text-xs text-gray-500 font-medium tracking-wider">
-        &copy; 2025 Alfa Systems. All Rights Reserved.
-      </div>
+            <option value="">Select Role</option>
+            <option value="Admin">Admin</option>
+            <option value="Accounts Clerk">Accounts Clerk</option>
+            <option value="Account Assistant">Account Assistant</option>
+            <option value="Accountant">Accountant</option>
+            <option value="Nurse">Nurse</option>
+            <option value="Doctor">Doctor</option>
+            <option value="Pharmacy Technician">Pharmacist</option>
+            <option value="Dispensary Assistant">Dispensary Assistant</option>
+            <option value="Laboratory Technician">Lab Scientist</option>
+            <option value="Radiologist">X-Ray Operator</option>
+            <option value="Rehabilitation Technician">Rehabilitation Technician</option>
+          </select>
+        </div>
+        <div>
+          <label for="email" class="block text-sm font-medium text-text-muted">Email Address</label>
+          <input
+            id="email"
+            v-model="email"
+            type="email"
+            autocomplete="email"
+            required
+            class="mt-1 block w-full px-3 py-2 bg-background-dark border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+          />
+        </div>
+        <div>
+          <label for="password" class="block text-sm font-medium text-text-muted">Password</label>
+          <input
+            id="password"
+            v-model="password"
+            type="password"
+            autocomplete="current-password"
+            required
+            class="mt-1 block w-full px-3 py-2 bg-background-dark border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+          />
+        </div>
+        <div v-if="error" class="text-sm text-red-400 bg-red-900/50 p-3 rounded-md">
+          {{ error }}
+        </div>
+        <div>
+          <button
+            type="submit"
+            :disabled="loading"
+            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-background-dark bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+          >
+            {{ loading ? 'Logging in...' : 'Log In' }}
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
-import MdiIcon from '@/components/common/MdiIcon.vue'
-import M3Button from '@/components/common/M3Button.vue'
-import { mdiHospital } from '@mdi/js'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
+import MdiIcon from '@/components/common/MdiIcon.vue';
+import { mdiHospital } from '@mdi/js';
 
-const router = useRouter()
-const authStore = useAuthStore()
+const router = useRouter();
+const authStore = useAuthStore();
 
-const selectedRole = ref('')
-const email = ref('')
-const password = ref('')
-const loading = ref(false)
-const error = ref('')
+const selectedRole = ref('');
+const email = ref('');
+const password = ref('');
+const loading = ref(false);
+const error = ref('');
 
 const handleLogin = async () => {
+  if (!selectedRole.value || !email.value || !password.value) {
+    error.value = 'All fields are required.';
+    return;
+  }
+
+  loading.value = true;
+  error.value = '';
+
   try {
-    loading.value = true
-    error.value = ''
+    const { claims } = await authStore.login(email.value, password.value);
 
-    const { claims } = await authStore.login(email.value, password.value)
-    
-    // Verify the user has the selected role
     if (claims.role !== selectedRole.value) {
-      error.value = 'You do not have permission to access this role.'
-      await authStore.logout()
-      return
+      error.value = 'You do not have permission to access this role.';
+      await authStore.logout(); // Log out the user if the role doesn't match
+    } else {
+      router.push('/');
     }
-
-    // Redirect to appropriate dashboard
-    router.push('/')
   } catch (err) {
-    error.value = err.message || 'Login failed. Please check your credentials.'
+    error.value = err.message || 'Login failed. Please check your credentials.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
-
-// Auto-fill email based on role selection
-const handleRoleChange = () => {
-  if (selectedRole.value === 'Admin') {
-    email.value = 'admin@mhs.com'
-  } else if (selectedRole.value === 'Doctor') {
-    email.value = 'doctor1@mhs.com'
-  } else if (selectedRole.value === 'Accounts Clerk') {
-    email.value = 'accountsclerk1@mhs.com'
-  } else if (selectedRole.value === 'Nurse') {
-    email.value = 'nurse1@mhs.com'
-  }
-  // Add more auto-fill logic as needed
-}
+};
 </script>
 
 <style scoped>
-.login-page {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #EBF8FF 0%, #F7F9FC 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  font-family: 'Roboto', sans-serif;
-}
-
-.login-container {
-  max-width: 500px;
-  width: 100%;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
-}
-
-.system-header {
-  padding: 40px 32px;
-  text-align: center;
-  background: linear-gradient(135deg, #0066B2 0%, #0052A3 100%);
-  color: white;
-}
-
-.logo {
-  margin-bottom: 16px;
-}
-
-.system-title {
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0 0 24px 0;
-  line-height: 1.2;
-}
-
-.login-form-container {
-  padding: 40px 32px;
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form-label {
-  font-weight: 600;
-  font-size: 14px;
-  color: #374151;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.form-select,
-.form-input {
-  padding: 16px;
-  border: 2px solid #E5E7EB;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: all 0.2s ease;
-  background: white;
-}
-
-.form-select:focus,
-.form-input:focus {
-  outline: none;
-  border-color: #0066B2;
-  box-shadow: 0 0 0 3px rgba(0, 102, 178, 0.1);
-}
-
-.form-select {
-  cursor: pointer;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-  background-position: right 12px center;
-  background-repeat: no-repeat;
-  background-size: 16px;
-  padding-right: 40px;
-}
-
-.error-message {
-  padding: 12px 16px;
-  background: #FEF2F2;
-  border: 1px solid #FCA5A5;
-  border-radius: 8px;
-  color: #DC2626;
-  font-size: 14px;
-  text-align: center;
-}
-
-.login-button {
-  margin-top: 8px;
-  height: 48px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-.forgot-password {
-  text-align: center;
-  color: #0066B2;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  transition: color 0.2s ease;
-}
-
-.forgot-password:hover {
-  color: #0052A3;
-  text-decoration: underline;
-}
-
-@media (max-width: 640px) {
-  .login-container {
-    margin: 0;
-    border-radius: 0;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .system-header {
-    padding: 32px 24px;
-  }
-
-  .system-title {
-    font-size: 18px;
-  }
-
-  .login-form-container {
-    padding: 32px 24px;
-    flex: 1;
-  }
-}
+/* Using Tailwind CSS utility classes, so no additional styles are needed here. */
 </style>

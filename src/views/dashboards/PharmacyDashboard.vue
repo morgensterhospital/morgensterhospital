@@ -1,110 +1,69 @@
 <template>
-  <div class="dashboard">
-    <!-- Page Header -->
-    <div class="dashboard-header">
-      <div class="header-info">
-        <h1 class="page-title">MORGENSTER HOSPITAL MANAGEMENT SYSTEM</h1>
-        <div class="user-info">
-          LOGGED IN AS: {{ authStore.user?.displayName || 'USER' }}: PHARMACIST
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Left Column -->
+    <div class="space-y-6">
+      <div class="bg-surface-dark p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-bold mb-4">Pharmacy Actions</h2>
+        <div class="space-y-4">
+          <button @click="navigateTo('/stock-management')" class="w-full p-4 bg-primary text-background-dark font-bold rounded-lg flex items-center justify-center space-x-2 hover:bg-primary-hover">
+            <MdiIcon :path="mdiPackageVariant" size="24" />
+            <span>Stock Management</span>
+          </button>
+          <div class="relative">
+            <input
+              type="text"
+              v-model="searchQuery"
+              placeholder="Search for a patient..."
+              @input="handleSearch"
+              class="w-full bg-background-dark border border-gray-600 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <MdiIcon :path="mdiMagnify" size="20" class="absolute right-3 top-2.5 text-text-muted" />
+          </div>
+          <div v-if="searchResults.length > 0" class="space-y-2">
+            <div
+              v-for="patient in searchResults"
+              :key="patient.id"
+              class="p-3 bg-background-dark rounded-md cursor-pointer hover:bg-primary/20"
+              @click="selectPatient(patient)"
+            >
+              <p class="font-semibold">{{ patient.name }} {{ patient.surname }}</p>
+              <p class="text-sm text-text-muted">{{ patient.hospitalNumber }} • {{ patient.age }} years</p>
+            </div>
+          </div>
+          <button @click="navigateTo('/dispensary')" class="w-full p-4 bg-primary text-background-dark font-bold rounded-lg flex items-center justify-center space-x-2 hover:bg-primary-hover">
+            <MdiIcon :path="mdiPill" size="24" />
+            <span>Dispense Medication</span>
+          </button>
         </div>
-      </div>
-      
-      <div class="header-actions">
-        <m3-button variant="outlined" @click="navigateTo('/stationery')">
-          STATIONERY
-        </m3-button>
       </div>
     </div>
 
-    <!-- Main Dashboard Content -->
-    <div class="dashboard-content">
-      <!-- Left Section - Navigation & Actions -->
-      <div class="left-section">
-        <div class="main-actions">
-          <m3-button
-            variant="filled"
-            size="large"
-            full-width
-            :icon="mdiPackageVariant"
-            @click="navigateTo('/stock-management')"
-            class="main-action-btn"
-          >
-            STOCK MANAGEMENT
-          </m3-button>
-
-          <!-- Patient Search -->
-          <div class="search-section">
-            <m3-text-field
-              v-model="searchQuery"
-              placeholder="SEARCH PATIENT NAME AND SURNAME"
-              :icon-leading="mdiMagnify"
-              variant="outlined"
-              @input="handleSearch"
-            />
-            
-            <div v-if="searchResults.length > 0" class="search-results">
-              <div
-                v-for="patient in searchResults"
-                :key="patient.id"
-                class="search-result-item"
-                @click="selectPatient(patient)"
-              >
-                <div class="patient-name">
-                  {{ patient.name }} {{ patient.surname }}
-                </div>
-                <div class="patient-details">
-                  {{ patient.hospitalNumber }} • {{ patient.age }} years
-                </div>
-              </div>
-            </div>
+    <!-- Right Column -->
+    <div class="space-y-6">
+      <div class="bg-surface-dark p-6 rounded-lg shadow-lg">
+        <div class="grid grid-cols-2 gap-4 text-center">
+          <div>
+            <p class="text-sm text-text-muted">Date</p>
+            <p class="text-lg font-bold">{{ currentDate }}</p>
           </div>
-
-          <m3-button
-            variant="filled"
-            size="large"
-            full-width
-            :icon="mdiPill"
-            @click="navigateTo('/dispensary')"
-            class="main-action-btn"
-          >
-            DISPENSARY
-          </m3-button>
+          <div>
+            <p class="text-sm text-text-muted">Time</p>
+            <p class="text-lg font-bold">{{ currentTime }}</p>
+          </div>
         </div>
       </div>
-
-      <!-- Right Section - Welcome & DateTime -->
-      <div class="right-section">
-        <!-- Date and Time -->
-        <div class="datetime-section">
-          <div class="datetime-card">
-            <div class="datetime-label">DATE</div>
-            <div class="datetime-value">{{ currentDate }}</div>
+      <div class="bg-surface-dark p-6 rounded-lg shadow-lg text-center">
+        <MdiIcon :path="mdiPill" size="48" class="mx-auto text-primary" />
+        <h3 class="text-xl font-bold mt-4">Welcome, {{ authStore.user?.displayName || 'User' }}</h3>
+        <p class="text-text-muted mt-2">Pharmacy daily summary:</p>
+        <div class="mt-6 flex justify-around">
+          <div class="text-center">
+            <p class="text-3xl font-bold text-primary">{{ todayStats.prescriptionsDispensed }}</p>
+            <p class="text-sm text-text-muted">Prescriptions Dispensed</p>
           </div>
-          <div class="datetime-card">
-            <div class="datetime-label">TIME</div>
-            <div class="datetime-value">{{ currentTime }}</div>
-          </div>
-        </div>
-
-        <!-- Welcome Message -->
-        <div class="welcome-section">
-          <div class="welcome-card">
-            <div class="client-logo">
-              <!-- Replaced mdiPills with mdiPill -->
-              <mdi-icon :path="mdiPill" size="64" color="#0066B2" />
-            </div>
-            <h3>CLIENT NAME AND LOGO</h3>
-            <p>WELCOME MESSAGE</p>
-            <div class="pharmacy-stats">
-              <div class="stat-item">
-                <span class="stat-number">{{ todayStats.prescriptionsDispensed }}</span>
-                <span class="stat-label">Prescriptions Dispensed</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-number">{{ todayStats.lowStockItems }}</span>
-                <span class="stat-label">Low Stock Alerts</span>
-              </div>
-            </div>
+          <div class="text-center">
+            <p class="text-3xl font-bold text-red-500">{{ todayStats.lowStockItems }}</p>
+            <p class="text-sm text-text-muted">Low Stock Alerts</p>
           </div>
         </div>
       </div>
@@ -113,329 +72,73 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
-import { usePatientStore } from '@/stores/patientStore'
-import MdiIcon from '@/components/common/MdiIcon.vue'
-import M3Button from '@/components/common/M3Button.vue'
-import M3TextField from '@/components/common/M3TextField.vue'
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
+import { usePatientStore } from '@/stores/patientStore';
+import MdiIcon from '@/components/common/MdiIcon.vue';
 import {
   mdiPackageVariant,
   mdiMagnify,
-  mdiPill
-} from '@mdi/js'
+  mdiPill,
+} from '@mdi/js';
 
-const router = useRouter()
-const authStore = useAuthStore()
-const patientStore = usePatientStore()
+const router = useRouter();
+const authStore = useAuthStore();
+const patientStore = usePatientStore();
 
-const searchQuery = ref('')
-const searchResults = ref([])
-const currentDate = ref('')
-const currentTime = ref('')
+const searchQuery = ref('');
+const searchResults = ref([]);
+const currentDate = ref('');
+const currentTime = ref('');
 const todayStats = ref({
   prescriptionsDispensed: 24,
-  lowStockItems: 3
-})
+  lowStockItems: 3,
+});
 
-let timeInterval = null
+let timeInterval = null;
 
-// Initialize datetime display
 const updateDateTime = () => {
-  const now = new Date()
-  currentDate.value = now.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  })
-  currentTime.value = now.toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  })
-}
+  const now = new Date();
+  currentDate.value = now.toLocaleDateString('en-US', { dateStyle: 'long' });
+  currentTime.value = now.toLocaleTimeString('en-US', { timeStyle: 'short' });
+};
 
-// Handle patient search
 const handleSearch = async () => {
   if (searchQuery.value.length < 2) {
-    searchResults.value = []
-    return
+    searchResults.value = [];
+    return;
   }
-
   try {
-    const results = await patientStore.searchPatients(searchQuery.value)
-    searchResults.value = results
+    const results = await patientStore.searchPatients(searchQuery.value);
+    searchResults.value = results;
   } catch (error) {
-    console.error('Search error:', error)
+    console.error('Search error:', error);
   }
-}
+};
 
-// Navigate to patient profile
 const selectPatient = (patient) => {
-  router.push(`/patient/${patient.id}`)
-  searchQuery.value = ''
-  searchResults.value = []
-}
+  router.push(`/patient/${patient.id}`);
+  searchQuery.value = '';
+  searchResults.value = [];
+};
 
-// Navigation helper
 const navigateTo = (path) => {
-  router.push(path)
-}
+  router.push(path);
+};
 
 onMounted(() => {
-  updateDateTime()
-  timeInterval = setInterval(updateDateTime, 1000)
-})
+  updateDateTime();
+  timeInterval = setInterval(updateDateTime, 1000);
+});
 
 onUnmounted(() => {
   if (timeInterval) {
-    clearInterval(timeInterval)
+    clearInterval(timeInterval);
   }
-})
+});
 </script>
 
 <style scoped>
-.dashboard {
-  min-height: 100vh;
-  background: #F7F9FC;
-  font-family: 'Roboto', sans-serif;
-}
-
-.dashboard-header {
-  background: white;
-  padding: 24px 32px;
-  border-bottom: 1px solid #E5E7EB;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.header-info {
-  flex: 1;
-}
-
-.page-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #0066B2;
-  margin: 0 0 8px 0;
-}
-
-.user-info {
-  font-size: 14px;
-  color: #6B7280;
-  font-weight: 500;
-}
-
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.dashboard-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  padding: 32px;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.left-section,
-.right-section {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-/* Main Actions */
-.main-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.main-action-btn {
-  height: 64px;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-/* Search Section */
-.search-section {
-  position: relative;
-}
-
-.search-results {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #E5E7EB;
-  border-radius: 8px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  max-height: 300px;
-  overflow-y: auto;
-  z-index: 10;
-}
-
-.search-result-item {
-  padding: 16px;
-  border-bottom: 1px solid #F3F4F6;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.search-result-item:hover {
-  background: #F9FAFB;
-}
-
-.search-result-item:last-child {
-  border-bottom: none;
-}
-
-.patient-name {
-  font-weight: 600;
-  color: #1F2937;
-  margin-bottom: 4px;
-}
-
-.patient-details {
-  font-size: 14px;
-  color: #6B7280;
-}
-
-/* DateTime Section */
-.datetime-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.datetime-card {
-  background: white;
-  padding: 24px;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.datetime-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6B7280;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 8px;
-}
-
-.datetime-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: #0066B2;
-}
-
-/* Welcome Section */
-.welcome-section {
-  flex: 1;
-}
-
-.welcome-card {
-  background: white;
-  padding: 32px;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.client-logo {
-  margin-bottom: 24px;
-}
-
-.welcome-card h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #0066B2;
-  margin: 0 0 12px 0;
-}
-
-.welcome-card p {
-  font-size: 14px;
-  color: #6B7280;
-  margin: 0 0 32px 0;
-}
-
-.pharmacy-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-top: 24px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.stat-number {
-  font-size: 32px;
-  font-weight: 800;
-  color: #0066B2;
-}
-
-.stat-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: #6B7280;
-  text-align: center;
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .dashboard-content {
-    grid-template-columns: 1fr;
-    gap: 24px;
-    padding: 24px 16px;
-  }
-
-  .dashboard-header {
-    padding: 16px 20px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .header-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  .page-title {
-    font-size: 20px;
-  }
-
-  .datetime-section {
-    grid-template-columns: 1fr;
-  }
-
-  .main-action-btn {
-    height: 56px;
-    font-size: 14px;
-  }
-
-  .pharmacy-stats {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-}
+/* All styles are handled by Tailwind CSS utility classes */
 </style>
