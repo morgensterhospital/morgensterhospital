@@ -33,7 +33,7 @@ export const usePatientStore = defineStore('patient', () => {
       const authStore = useAuthStore()
       const result = await apiService.createPatient(patientData, authStore.user.uid)
       
-      return result.patientId
+      return result.patient
     } catch (err) {
       error.value = err.message
       throw err
@@ -169,6 +169,38 @@ export const usePatientStore = defineStore('patient', () => {
     }
   }
 
+  // Update patient discharge status
+  const updatePatientDischargeStatus = async (patientId, dischargeStatus) => {
+    try {
+      const authStore = useAuthStore()
+      await apiService.updatePatientDischargeStatus(patientId, dischargeStatus, authStore.user.uid)
+    } catch (err) {
+      error.value = err.message
+      throw err
+    }
+  }
+
+  // Create discharge notification
+  const createDischargeNotification = async (notificationData) => {
+    try {
+      const authStore = useAuthStore()
+      await apiService.createDischargeNotification({ ...notificationData, doctorId: authStore.user.uid, doctorName: authStore.user.displayName })
+    } catch (err) {
+      error.value = err.message
+      throw err
+    }
+  }
+
+  // Get discharge notifications
+  const getDischargeNotifications = async () => {
+    try {
+      return await apiService.getDischargeNotifications()
+    } catch (err) {
+      error.value = err.message
+      throw err
+    }
+  }
+
   return {
     patients: computed(() => patients.value),
     currentPatient: computed(() => currentPatient.value),
@@ -183,6 +215,7 @@ export const usePatientStore = defineStore('patient', () => {
     addPrescription,
     addLabRequest,
     addRadiologyRequest,
-    processBilling
+    processBilling,
+    updatePatientDischargeStatus
   }
 })

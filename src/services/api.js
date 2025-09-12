@@ -129,6 +129,31 @@ class ApiService {
       throw error
     }
   }
+
+  // Update patient discharge status
+  async updatePatientDischargeStatus(patientId, dischargeStatus, approvedBy) {
+    return this.request('/update-patient-discharge-status', {
+      method: 'POST',
+      body: JSON.stringify({
+        patientId,
+        dischargeStatus,
+        approvedBy
+      })
+    })
+  }
+
+  // Create discharge notification
+  async createDischargeNotification(notificationData) {
+    return this.request('/create-discharge-notification', {
+      method: 'POST',
+      body: JSON.stringify(notificationData)
+    })
+  }
+
+  // Get discharge notifications
+  async getDischargeNotifications() {
+    return this.request('/get-discharge-notifications')
+  }
 }
 
 export default new ApiService()

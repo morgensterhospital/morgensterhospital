@@ -112,6 +112,13 @@ const allNavigationItems = [
     roles: ['Accounts Clerk', 'Doctor', 'Nurse'],
   },
   {
+    name: 'accountant-register',
+    label: 'New Patient',
+    icon: mdiAccountPlus,
+    path: '/accountant/patient/register',
+    roles: ['Accountant'],
+  },
+  {
     name: 'prescriptions',
     label: 'Prescriptions',
     icon: mdiPill,

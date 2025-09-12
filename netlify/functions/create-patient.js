@@ -127,13 +127,14 @@ export const handler = async (event, context) => {
       triggeredBy: 'patient_registration'
     })
 
+    const createdPatient = (await patientRef.get()).data();
+
     return {
       statusCode: 200,
       headers: corsHeaders,
       body: JSON.stringify({
         success: true,
-        patientId: patientRef.id,
-        hospitalNumber,
+        patient: { id: patientRef.id, ...createdPatient },
         message: 'Patient registered successfully'
       })
     }

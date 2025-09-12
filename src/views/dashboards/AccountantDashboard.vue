@@ -1,5 +1,17 @@
 <template>
   <div class="space-y-6">
+    <DischargeNotificationModal
+      v-if="isDischargeModalOpen"
+      :notification="selectedNotification"
+      @close="closeDischargeModal"
+      @approve="approveDischarge"
+      @deny="denyDischarge"
+    />
+    <PatientProfileModal
+      v-if="isPatientProfileModalOpen"
+      :patient="selectedPatient"
+      @close="closePatientProfileModal"
+    />
     <!-- Welcome Header -->
     <div class="flex justify-between items-center">
       <div>
@@ -27,7 +39,7 @@
           <p class="text-sm text-text-muted">Total Revenue</p>
           <MdiIcon :path="mdiCashMultiple" size="24" class="text-primary" />
         </div>
-        <p class="text-3xl font-bold mt-2">M{{ formatCurrency(financialStats.totalRevenue) }}</p>
+        <p class="text-3xl font-bold mt-2">${{ formatCurrency(financialStats.totalRevenue) }}</p>
       </div>
       <div class="p-6 bg-surface-dark rounded-lg">
         <div class="flex items-center justify-between">
@@ -73,8 +85,21 @@
         </div>
       </div>
 
-      <!-- Patient Search -->
+      <!-- Notifications -->
       <div class="p-6 bg-surface-dark rounded-lg">
+        <h2 class="text-lg font-semibold mb-4">Notifications</h2>
+        <div class="space-y-4">
+          <div v-if="dischargeNotifications.length === 0" class="text-center text-text-muted">No new notifications</div>
+          <div v-for="notification in dischargeNotifications" :key="notification.id" class="p-4 bg-background-dark rounded-lg cursor-pointer" @click="openDischargeModal(notification)">
+            <p><strong>{{ notification.patientName }}</strong> discharge request</p>
+            <p class="text-sm text-text-muted">From Dr. {{ notification.doctorName }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Patient Search -->
+    <div class="p-6 bg-surface-dark rounded-lg">
         <h2 class="text-lg font-semibold mb-4">Find a Patient's Financial Record</h2>
         <div class="relative">
           <MdiIcon :path="mdiMagnify" size="20" class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
@@ -115,6 +140,8 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 import { usePatientStore } from '@/stores/patientStore';
 import MdiIcon from '@/components/common/MdiIcon.vue';
+import DischargeNotificationModal from '@/components/common/DischargeNotificationModal.vue';
+import PatientProfileModal from '@/components/common/PatientProfileModal.vue';
 import {
   mdiAccountGroup,
   mdiChartLine,
@@ -135,13 +162,63 @@ const searchResults = ref([]);
 const currentDate = ref('');
 const currentTime = ref('');
 const financialStats = ref({
-  totalRevenue: 125000.00,
+  totalRevenue: 0.00,
   monthlyGrowth: 12.5,
   pendingApprovals: 8,
   invoicesProcessed: 156,
 });
+const dischargeNotifications = ref([]);
+const selectedNotification = ref(null);
+const isDischargeModalOpen = ref(false);
 
 let timeInterval = null;
+
+const fetchDischargeNotifications = async () => {
+  try {
+    dischargeNotifications.value = await patientStore.getDischargeNotifications();
+  } catch (error) {
+    console.error('Error fetching discharge notifications:', error);
+  }
+};
+
+const openDischargeModal = (notification) => {
+  selectedNotification.value = notification;
+  isDischargeModalOpen.value = true;
+};
+
+const closeDischargeModal = () => {
+  isDischargeModalOpen.value = false;
+  selectedNotification.value = null;
+};
+
+const approveDischarge = async () => {
+  if (selectedNotification.value) {
+    await patientStore.updatePatientDischargeStatus(selectedNotification.value.patientId, 'approved');
+    closeDischargeModal();
+    fetchDischargeNotifications();
+  }
+};
+
+const denyDischarge = async () => {
+  if (selectedNotification.value) {
+    await patientStore.updatePatientDischargeStatus(selectedNotification.value.patientId, 'denied');
+    closeDischargeModal();
+    fetchDischargeNotifications();
+  }
+};
+
+const isPatientProfileModalOpen = ref(false);
+const selectedPatient = ref(null);
+
+const openPatientProfileModal = (patient) => {
+  selectedPatient.value = patient;
+  isPatientProfileModalOpen.value = true;
+};
+
+const closePatientProfileModal = () => {
+  isPatientProfileModalOpen.value = false;
+  selectedPatient.value = null;
+};
 
 const updateDateTime = () => {
   const now = new Date();
@@ -171,7 +248,7 @@ const handleSearch = async () => {
 };
 
 const selectPatient = (patient) => {
-  router.push(`/patient/billing/${patient.id}`); // Navigate to a specific billing page
+  openPatientProfileModal(patient);
   searchQuery.value = '';
   searchResults.value = [];
 };
@@ -190,6 +267,7 @@ const formatCurrency = (amount) => {
 onMounted(() => {
   updateDateTime();
   timeInterval = setInterval(updateDateTime, 1000);
+  fetchDischargeNotifications();
 });
 
 onUnmounted(() => {
