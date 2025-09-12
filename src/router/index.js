@@ -159,33 +159,20 @@ const router = createRouter({
   },
 });
 
-// Navigation guards
-router.beforeEach(async (to, from, next) => {
+// Simplified Navigation Guard
+router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
-
-  // Wait for auth to initialize
-  if (authStore.loading) {
-    await new Promise(resolve => {
-      const unwatch = authStore.$subscribe(() => {
-        if (!authStore.loading) {
-          unwatch();
-          resolve();
-        }
-      });
-    });
-  }
-
+  const isAuthenticated = authStore.isAuthenticated;
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const userIsAuthenticated = authStore.isAuthenticated;
 
-  if (requiresAuth && !userIsAuthenticated) {
-    // If the route requires auth and the user is not authenticated, redirect to login
-    next('/auth/login');
-  } else if (to.matched.some(record => record.path === '/auth/login') && userIsAuthenticated) {
-    // If the user is authenticated and tries to access the login page, redirect to the dashboard
-    next('/');
+  if (requiresAuth && !isAuthenticated) {
+    // Redirect unauthenticated users to the login page
+    next({ name: 'Login' });
+  } else if (to.name === 'Login' && isAuthenticated) {
+    // Redirect authenticated users from the login page to the dashboard
+    next({ path: '/' });
   } else {
-    // In all other cases, proceed as normal
+    // Allow navigation
     next();
   }
 });
