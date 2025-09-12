@@ -16,7 +16,24 @@
         <div class="lg:col-span-1">
           <div class="p-6 bg-surface-dark rounded-lg">
             <h3 class="text-lg font-semibold text-primary mb-4">Patient Details</h3>
-            <!-- Patient details will be populated here -->
+            <div class="space-y-3">
+              <div>
+                <p class="text-sm text-text-muted">Hospital Number</p>
+                <p class="text-text-light">{{ patient.hospitalNumber }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-text-muted">Full Name</p>
+                <p class="text-text-light">{{ patient.name }} {{ patient.surname }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-text-muted">Age</p>
+                <p class="text-text-light">{{ patient.age }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-text-muted">Gender</p>
+                <p class="text-text-light">{{ patient.gender }}</p>
+              </div>
+            </div>
           </div>
         </div>
         <!-- Right Column: Billing -->
@@ -43,30 +60,33 @@
             <M3Button @click="addToBill" class="w-full">Add to Bill</M3Button>
           </div>
           <!-- Items Table -->
-          <div class="mt-8">
+          <div class="mt-8 bg-surface-dark rounded-lg p-4">
             <table class="w-full text-left">
-              <thead>
+              <thead class="border-b-2 border-gray-700">
                 <tr>
-                  <th class="p-2">Item No.</th>
-                  <th class="p-2">Description</th>
-                  <th class="p-2">Qty</th>
-                  <th class="p-2">Unit Price</th>
-                  <th class="p-2">Total</th>
-                  <th class="p-2"></th>
+                  <th class="p-3 text-sm font-semibold text-text-muted">Item No.</th>
+                  <th class="p-3 text-sm font-semibold text-text-muted">Description</th>
+                  <th class="p-3 text-sm font-semibold text-text-muted text-center">Qty</th>
+                  <th class="p-3 text-sm font-semibold text-text-muted text-right">Unit Price</th>
+                  <th class="p-3 text-sm font-semibold text-text-muted text-right">Total</th>
+                  <th class="p-3"></th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(item, index) in billItems" :key="index" class="border-b border-gray-700">
-                  <td class="p-2">{{ item.id }}</td>
-                  <td class="p-2">{{ item.name }}</td>
-                  <td class="p-2">{{ item.quantity }}</td>
-                  <td class="p-2">{{ item.price }}</td>
-                  <td class="p-2">{{ item.total }}</td>
-                  <td class="p-2">
+                <tr v-for="(item, index) in billItems" :key="index" class="border-b border-gray-800">
+                  <td class="p-3">{{ item.id }}</td>
+                  <td class="p-3">{{ item.name }}</td>
+                  <td class="p-3 text-center">{{ item.quantity }}</td>
+                  <td class="p-3 text-right">{{ item.price.toFixed(2) }}</td>
+                  <td class="p-3 text-right">{{ item.total.toFixed(2) }}</td>
+                  <td class="p-3 text-center">
                     <button @click="removeFromBill(index)" class="text-red-500 hover:text-red-400">
                       <MdiIcon :path="mdiDelete" />
                     </button>
                   </td>
+                </tr>
+                <tr v-if="billItems.length === 0">
+                  <td colspan="6" class="p-8 text-center text-text-muted">No items added to the bill yet.</td>
                 </tr>
               </tbody>
             </table>
@@ -113,8 +133,8 @@ import BillingHistoryModal from '@/components/common/BillingHistoryModal.vue';
 import { mdiClose, mdiDelete } from '@mdi/js';
 
 const props = defineProps({
-  patientId: {
-    type: String,
+  patient: {
+    type: Object,
     required: true,
   },
 });

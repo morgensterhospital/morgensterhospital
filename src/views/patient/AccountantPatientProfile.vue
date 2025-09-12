@@ -1,6 +1,6 @@
 <template>
   <div class="p-4">
-    <BillingModal v-if="isBillingModalOpen" @close="closeModal" />
+    <BillingModal v-if="isBillingModalOpen" :patient="patient" @close="closeModal" />
     <InfoModal v-if="isInfoModalOpen" :title="modalTitle" :has-data="modalHasData" @close="closeModal" />
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
