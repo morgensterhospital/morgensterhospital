@@ -1,77 +1,231 @@
 <template>
-  <div class="space-y-6">
-    <h1 class="text-2xl font-bold">New Patient Registration</h1>
-    <form @submit.prevent="handleSubmit" class="bg-surface-dark p-6 rounded-lg shadow-lg">
-      <div class="space-y-8 divide-y divide-gray-700">
-        <div>
-          <h2 class="text-xl font-bold mb-4 border-b border-gray-700 pb-2">Hospital Information</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-1">
-              <label class="block text-sm font-medium text-text-muted">Hospital Number</label>
-              <input type="text" :value="form.hospitalNumber" readonly class="mt-1 block w-full bg-background-dark border-gray-600 rounded-md shadow-sm py-2 px-3 text-text-muted" />
+  <div class="patient-registration">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="breadcrumb">
+          <router-link to="/" class="breadcrumb-link">Home</router-link>
+          <mdi-icon :path="mdiChevronRight" size="16" />
+          <span class="breadcrumb-current">Patient Registration</span>
+        </div>
+        <h1 class="page-title">NEW PATIENT REGISTRATION</h1>
+      </div>
+    </div>
+
+    <!-- Registration Form -->
+    <div class="form-container">
+      <form @submit.prevent="handleSubmit" class="registration-form">
+        <!-- Hospital Number (Auto-generated) -->
+        <div class="form-section">
+          <h2 class="section-title">Hospital Information</h2>
+          <div class="form-grid">
+            <m3-text-field
+              v-model="form.hospitalNumber"
+              label="Hospital Number"
+              variant="outlined"
+              readonly
+              helper-text="Auto-generated upon registration"
+            />
+          </div>
+        </div>
+
+        <!-- Patient Demographics -->
+        <div class="form-section">
+          <h2 class="section-title">Patient Demographics</h2>
+          <div class="form-grid">
+            <m3-text-field
+              v-model="form.idNumber"
+              label="ID Number"
+              variant="outlined"
+              required
+              :error="errors.idNumber"
+            />
+
+            <m3-text-field
+              v-model="form.name"
+              label="Name"
+              variant="outlined"
+              required
+              :error="errors.name"
+            />
+
+            <m3-text-field
+              v-model="form.surname"
+              label="Surname"
+              variant="outlined"
+              required
+              :error="errors.surname"
+            />
+
+            <m3-text-field
+              v-model="form.phone"
+              label="Phone Number"
+              variant="outlined"
+              type="tel"
+              required
+              :error="errors.phone"
+            />
+          </div>
+        </div>
+
+        <!-- Address & Personal Info -->
+        <div class="form-section">
+          <h2 class="section-title">Address & Personal Information</h2>
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <m3-text-field
+                v-model="form.address"
+                label="Residential Address"
+                variant="outlined"
+                type="textarea"
+                :rows="3"
+                required
+                :error="errors.address"
+              />
+            </div>
+
+            <m3-text-field
+              v-model="form.dob"
+              label="Date of Birth"
+              variant="outlined"
+              type="date"
+              required
+              :error="errors.dob"
+              @input="calculateAge"
+            />
+
+            <m3-text-field
+              v-model="form.age"
+              label="Age"
+              variant="outlined"
+              readonly
+              helper-text="Calculated from date of birth"
+            />
+
+            <div class="form-group">
+              <label class="form-label">Gender *</label>
+              <select
+                v-model="form.gender"
+                class="form-select"
+                required
+              >
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+              <span v-if="errors.gender" class="error-text">{{ errors.gender }}</span>
+            </div>
+
+            <m3-text-field
+              v-model="form.countryOfBirth"
+              label="Country of Birth"
+              variant="outlined"
+              required
+              :error="errors.countryOfBirth"
+            />
+
+            <div class="form-group">
+              <label class="form-label">Marital Status</label>
+              <select
+                v-model="form.maritalStatus"
+                class="form-select"
+              >
+                <option value="">Select Status</option>
+                <option value="Single">Single</option>
+                <option value="Married">Married</option>
+                <option value="Divorced">Divorced</option>
+                <option value="Widowed">Widowed</option>
+              </select>
             </div>
           </div>
         </div>
 
-        <div class="pt-8">
-          <h2 class="text-xl font-bold mb-4 border-b border-gray-700 pb-2">Patient Demographics</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <input v-model="form.idNumber" type="text" placeholder="ID Number" required class="w-full bg-background-dark border-gray-600 rounded-md py-2 px-3 focus:ring-primary focus:border-primary" />
-            <input v-model="form.name" type="text" placeholder="Name" required class="w-full bg-background-dark border-gray-600 rounded-md py-2 px-3 focus:ring-primary focus:border-primary" />
-            <input v-model="form.surname" type="text" placeholder="Surname" required class="w-full bg-background-dark border-gray-600 rounded-md py-2 px-3 focus:ring-primary focus:border-primary" />
-            <input v-model="form.phone" type="tel" placeholder="Phone Number" required class="w-full bg-background-dark border-gray-600 rounded-md py-2 px-3 focus:ring-primary focus:border-primary" />
-            <input v-model="form.dob" type="date" placeholder="Date of Birth" required @input="calculateAge" class="w-full bg-background-dark border-gray-600 rounded-md py-2 px-3 focus:ring-primary focus:border-primary" />
-            <input v-model="form.age" type="text" placeholder="Age" readonly class="w-full bg-background-dark border-gray-600 rounded-md py-2 px-3 text-text-muted" />
-            <select v-model="form.gender" required class="w-full bg-background-dark border-gray-600 rounded-md py-2 px-3 focus:ring-primary focus:border-primary">
-              <option value="">Select Gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
-            <input v-model="form.countryOfBirth" type="text" placeholder="Country of Birth" required class="w-full bg-background-dark border-gray-600 rounded-md py-2 px-3 focus:ring-primary focus:border-primary" />
-            <select v-model="form.maritalStatus" class="w-full bg-background-dark border-gray-600 rounded-md py-2 px-3 focus:ring-primary focus:border-primary">
-              <option value="">Select Marital Status</option>
-              <option value="Single">Single</option>
-              <option value="Married">Married</option>
-              <option value="Divorced">Divorced</option>
-              <option value="Widowed">Widowed</option>
-            </select>
-            <textarea v-model="form.address" placeholder="Residential Address" rows="3" required class="md:col-span-3 w-full bg-background-dark border-gray-600 rounded-md py-2 px-3 focus:ring-primary focus:border-primary"></textarea>
+        <!-- Next of Kin Information -->
+        <div class="form-section">
+          <h2 class="section-title">Next of Kin Information</h2>
+          <div class="form-grid">
+            <m3-text-field
+              v-model="form.nokName"
+              label="N.O.K Name"
+              variant="outlined"
+              required
+              :error="errors.nokName"
+            />
+
+            <m3-text-field
+              v-model="form.nokSurname"
+              label="N.O.K Surname"
+              variant="outlined"
+              required
+              :error="errors.nokSurname"
+            />
+
+            <m3-text-field
+              v-model="form.nokPhone"
+              label="N.O.K Phone Number"
+              variant="outlined"
+              type="tel"
+              required
+              :error="errors.nokPhone"
+            />
+
+            <div class="form-group full-width">
+              <m3-text-field
+                v-model="form.nokAddress"
+                label="N.O.K Address"
+                variant="outlined"
+                type="textarea"
+                :rows="3"
+                required
+                :error="errors.nokAddress"
+              />
+            </div>
           </div>
         </div>
 
-        <div class="pt-8">
-          <h2 class="text-xl font-bold mb-4 border-b border-gray-700 pb-2">Next of Kin</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <input v-model="form.nokName" type="text" placeholder="N.O.K. Name" required class="w-full bg-background-dark border-gray-600 rounded-md py-2 px-3 focus:ring-primary focus:border-primary" />
-            <input v-model="form.nokSurname" type="text" placeholder="N.O.K. Surname" required class="w-full bg-background-dark border-gray-600 rounded-md py-2 px-3 focus:ring-primary focus:border-primary" />
-            <input v-model="form.nokPhone" type="tel" placeholder="N.O.K. Phone Number" required class="w-full bg-background-dark border-gray-600 rounded-md py-2 px-3 focus:ring-primary focus:border-primary" />
-            <textarea v-model="form.nokAddress" placeholder="N.O.K. Address" rows="3" required class="md:col-span-3 w-full bg-background-dark border-gray-600 rounded-md py-2 px-3 focus:ring-primary focus:border-primary"></textarea>
-          </div>
-        </div>
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <m3-button
+            variant="outlined"
+            @click="resetForm"
+            :disabled="loading"
+          >
+            Reset Form
+          </m3-button>
 
-        <div class="pt-8 flex justify-end gap-4">
-          <button type="button" @click="resetForm" :disabled="loading" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600">Reset Form</button>
-          <button type="submit" :disabled="loading" class="px-4 py-2 bg-primary text-background-dark font-bold rounded-lg hover:bg-primary-hover disabled:opacity-50 flex items-center gap-2">
-            <MdiIcon v-if="loading" :path="mdiLoading" size="20" class="animate-spin" />
-            <MdiIcon v-else :path="mdiAccountPlus" size="20" />
-            <span>{{ loading ? 'Registering...' : 'Register Patient' }}</span>
-          </button>
+          <m3-button
+            type="submit"
+            variant="filled"
+            :disabled="loading"
+            :icon="loading ? mdiLoading : mdiAccountPlus"
+          >
+            <span v-if="loading">Registering...</span>
+            <span v-else>Register Patient</span>
+          </m3-button>
         </div>
-      </div>
-    </form>
+      </form>
+    </div>
 
     <!-- Success Modal -->
-    <div v-if="showSuccessModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" @click="closeSuccessModal">
-      <div class="bg-surface-dark rounded-lg shadow-xl w-full max-w-md p-6 text-center" @click.stop>
-        <MdiIcon :path="mdiCheckCircle" size="64" class="mx-auto text-green-500" />
-        <h2 class="text-2xl font-bold mt-4">Patient Registered!</h2>
-        <p class="mt-2 text-text-muted">
-          <strong>{{ registeredPatient.name }} {{ registeredPatient.surname }}</strong> has been registered with hospital number: <strong>{{ registeredPatient.hospitalNumber }}</strong>
+    <div v-if="showSuccessModal" class="modal-overlay" @click="closeSuccessModal">
+      <div class="success-modal" @click.stop>
+        <div class="success-icon">
+          <mdi-icon :path="mdiCheckCircle" size="64" color="#16A34A" />
+        </div>
+        <h2>Patient Registered Successfully!</h2>
+        <p>
+          <strong>{{ registeredPatient.name }} {{ registeredPatient.surname }}</strong>
+          has been registered with hospital number:
+          <strong>{{ registeredPatient.hospitalNumber }}</strong>
         </p>
-        <div class="mt-6 flex gap-4">
-          <button @click="closeSuccessModal" class="flex-1 py-2 px-4 bg-gray-700 rounded-lg hover:bg-gray-600">Register Another</button>
-          <button @click="viewPatientProfile" class="flex-1 py-2 px-4 bg-primary text-background-dark font-bold rounded-lg hover:bg-primary-hover">View Profile</button>
+        <div class="modal-actions">
+          <m3-button variant="outlined" @click="closeSuccessModal">
+            Register Another
+          </m3-button>
+          <m3-button variant="filled" @click="viewPatientProfile">
+            View Profile
+          </m3-button>
         </div>
       </div>
     </div>
@@ -79,85 +233,393 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { usePatientStore } from '@/stores/patientStore';
-import MdiIcon from '@/components/common/MdiIcon.vue';
-import { mdiChevronRight, mdiAccountPlus, mdiCheckCircle, mdiLoading } from '@mdi/js';
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { usePatientStore } from '@/stores/patientStore'
+import MdiIcon from '@/components/common/MdiIcon.vue'
+import M3Button from '@/components/common/M3Button.vue'
+import M3TextField from '@/components/common/M3TextField.vue'
+import {
+  mdiChevronRight,
+  mdiAccountPlus,
+  mdiCheckCircle,
+  mdiLoading
+} from '@mdi/js'
 
-const router = useRouter();
-const patientStore = usePatientStore();
+const router = useRouter()
+const patientStore = usePatientStore()
 
-const loading = ref(false);
-const showSuccessModal = ref(false);
-const registeredPatient = ref({});
+const loading = ref(false)
+const showSuccessModal = ref(false)
+const registeredPatient = ref({})
 
+// Form data
 const form = reactive({
   hospitalNumber: 'Auto-generated',
-  idNumber: '', name: '', surname: '', phone: '', address: '',
-  dob: '', age: '', gender: '', countryOfBirth: '', maritalStatus: '',
-  nokName: '', nokSurname: '', nokPhone: '', nokAddress: ''
-});
+  idNumber: '',
+  name: '',
+  surname: '',
+  phone: '',
+  address: '',
+  dob: '',
+  age: '',
+  gender: '',
+  countryOfBirth: '',
+  maritalStatus: '',
+  nokName: '',
+  nokSurname: '',
+  nokPhone: '',
+  nokAddress: ''
+})
 
-const errors = reactive({});
+// Form errors
+const errors = reactive({})
 
+// Calculate age from date of birth
 const calculateAge = () => {
   if (form.dob) {
-    const today = new Date();
-    const birthDate = new Date(form.dob);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    form.age = age.toString();
-  }
-};
+    const today = new Date()
+    const birthDate = new Date(form.dob)
+    let age = today.getFullYear() - birthDate.getFullYear()
+    const monthDiff = today.getMonth() - birthDate.getMonth()
 
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--
+    }
+
+    form.age = age.toString()
+  }
+}
+
+// Validate form
+const validateForm = () => {
+  Object.keys(errors).forEach(key => delete errors[key])
+
+  let isValid = true
+
+  // Required field validation
+  const requiredFields = [
+    'idNumber', 'name', 'surname', 'phone', 'address',
+    'dob', 'gender', 'countryOfBirth', 'nokName',
+    'nokSurname', 'nokPhone', 'nokAddress'
+  ]
+
+  requiredFields.forEach(field => {
+    if (!form[field] || form[field].trim() === '') {
+      errors[field] = 'This field is required'
+      isValid = false
+    }
+  })
+
+  // Phone validation
+  if (form.phone && !/^\+?[\d\s\-\(\)]{10,}$/.test(form.phone)) {
+    errors.phone = 'Please enter a valid phone number'
+    isValid = false
+  }
+
+  if (form.nokPhone && !/^\+?[\d\s\-\(\)]{10,}$/.test(form.nokPhone)) {
+    errors.nokPhone = 'Please enter a valid phone number'
+    isValid = false
+  }
+
+  // Age validation
+  const age = parseInt(form.age)
+  if (age < 0 || age > 150) {
+    errors.dob = 'Please enter a valid date of birth'
+    isValid = false
+  }
+
+  return isValid
+}
+
+// Handle form submission
 const handleSubmit = async () => {
-  loading.value = true;
+  if (!validateForm()) {
+    return
+  }
+
   try {
-    const patientData = { ...form };
-    delete patientData.hospitalNumber;
-    delete patientData.age;
-    patientData.dob = new Date(form.dob);
+    loading.value = true
     
-    const patientId = await patientStore.registerPatient(patientData);
+    // Prepare patient data
+    const patientData = {
+      idNumber: form.idNumber.trim(),
+      name: form.name.trim(),
+      surname: form.surname.trim(),
+      phone: form.phone.trim(),
+      address: form.address.trim(),
+      dob: new Date(form.dob),
+      gender: form.gender,
+      countryOfBirth: form.countryOfBirth.trim(),
+      maritalStatus: form.maritalStatus,
+      nokName: form.nokName.trim(),
+      nokSurname: form.nokSurname.trim(),
+      nokPhone: form.nokPhone.trim(),
+      nokAddress: form.nokAddress.trim()
+    }
+
+    // Register patient
+    const patientId = await patientStore.registerPatient(patientData)
+
+    // Store registered patient info
     registeredPatient.value = {
       id: patientId,
       name: form.name,
       surname: form.surname,
       hospitalNumber: 'MHS' + new Date().getFullYear().toString().slice(-2) + Math.floor(Math.random() * 10000).toString().padStart(4, '0')
-    };
-    showSuccessModal.value = true;
-  } catch (error) {
-    console.error('Registration error:', error);
-    alert('Failed to register patient. Please try again.');
-  } finally {
-    loading.value = false;
-  }
-};
+    }
 
+    showSuccessModal.value = true
+
+  } catch (error) {
+    console.error('Registration error:', error)
+    alert('Failed to register patient. Please try again.')
+  } finally {
+    loading.value = false
+  }
+}
+
+// Reset form
 const resetForm = () => {
   Object.keys(form).forEach(key => {
-    form[key] = key === 'hospitalNumber' ? 'Auto-generated' : '';
-  });
-};
+    if (key === 'hospitalNumber') {
+      form[key] = 'Auto-generated'
+    } else {
+      form[key] = ''
+    }
+  })
+  Object.keys(errors).forEach(key => delete errors[key])
+}
 
+// Close success modal and reset form
 const closeSuccessModal = () => {
-  showSuccessModal.value = false;
-  resetForm();
-};
+  showSuccessModal.value = false
+  resetForm()
+}
 
+// Navigate to patient profile
 const viewPatientProfile = () => {
-  router.push(`/patient/${registeredPatient.value.id}`);
-};
+  router.push(`/patient/${registeredPatient.value.id}`)
+}
 
 onMounted(() => {
-  form.countryOfBirth = 'Lesotho';
-});
+  // Set default country
+  form.countryOfBirth = 'Lesotho'
+})
 </script>
 
 <style scoped>
-/* All styles are handled by Tailwind CSS utility classes */
+.patient-registration {
+  min-height: 100vh;
+  background: #F7F9FC;
+}
+
+.page-header {
+  background: white;
+  padding: 24px 32px;
+  border-bottom: 1px solid #E5E7EB;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.breadcrumb-link {
+  color: #0066B2;
+  text-decoration: none;
+}
+
+.breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-current {
+  color: #6B7280;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0066B2;
+  margin: 0;
+}
+
+.form-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.registration-form {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.form-section {
+  margin-bottom: 32px;
+}
+
+.form-section:last-of-type {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0 0 20px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #E5E7EB;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.form-select {
+  padding: 16px;
+  border: 2px solid #E5E7EB;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  background: white;
+  cursor: pointer;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: #0066B2;
+  box-shadow: 0 0 0 3px rgba(0, 102, 178, 0.1);
+}
+
+.error-text {
+  font-size: 12px;
+  color: #DC2626;
+  margin-top: 4px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #E5E7EB;
+}
+
+/* Success Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.success-modal {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.success-icon {
+  margin-bottom: 20px;
+}
+
+.success-modal h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #16A34A;
+  margin: 0 0 16px 0;
+}
+
+.success-modal p {
+  color: #6B7280;
+  margin: 0 0 32px 0;
+  line-height: 1.6;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .form-container {
+    padding: 16px;
+  }
+
+  .registration-form {
+    padding: 24px 16px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .page-header {
+    padding: 16px 20px;
+  }
+
+  .page-title {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .success-modal {
+    margin: 10px;
+    padding: 24px 20px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+}
 </style>

@@ -1,70 +1,81 @@
 <template>
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <!-- Left Column -->
-    <div class="space-y-6">
-      <div class="bg-surface-dark p-6 rounded-lg shadow-lg">
-        <h2 class="text-xl font-bold mb-4">Dispensary Actions</h2>
-        <div class="space-y-4">
-          <button @click="navigateTo('/stock-management')" class="w-full p-4 bg-primary text-background-dark font-bold rounded-lg flex items-center justify-center space-x-2 hover:bg-primary-hover">
-            <MdiIcon :path="mdiPackageVariant" size="24" />
-            <span>Stock Management</span>
-          </button>
-          <div class="relative">
-            <input
-              type="text"
-              v-model="searchQuery"
-              placeholder="Search for a patient..."
-              @input="handleSearch"
-              class="w-full bg-background-dark border border-gray-600 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <MdiIcon :path="mdiMagnify" size="20" class="absolute right-3 top-2.5 text-text-muted" />
-          </div>
-          <div v-if="searchResults.length > 0" class="space-y-2">
-            <div
-              v-for="patient in searchResults"
-              :key="patient.id"
-              class="p-3 bg-background-dark rounded-md cursor-pointer hover:bg-primary/20"
-              @click="selectPatient(patient)"
-            >
-              <p class="font-semibold">{{ patient.name }} {{ patient.surname }}</p>
-              <p class="text-sm text-text-muted">{{ patient.hospitalNumber }} • {{ patient.age }} years</p>
-            </div>
-          </div>
-          <button @click="navigateTo('/dispensary')" class="w-full p-4 bg-primary text-background-dark font-bold rounded-lg flex items-center justify-center space-x-2 hover:bg-primary-hover">
-            <MdiIcon :path="mdiPill" size="24" />
-            <span>Dispense Medication</span>
-          </button>
+  <div class="space-y-6">
+    <!-- Welcome Header -->
+    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-text-light">
+          Dispensary Dashboard
+        </h1>
+        <p class="text-text-muted">
+          Welcome, {{ authStore.user?.displayName || 'Pharmacist' }}! Manage stock and dispense medication.
+        </p>
+      </div>
+      <div class="flex items-center space-x-4">
+        <div class="p-4 bg-surface-dark rounded-lg text-center">
+          <p class="text-sm text-text-muted">Date</p>
+          <p class="text-lg font-semibold text-text-light">{{ currentDate }}</p>
+        </div>
+        <div class="p-4 bg-surface-dark rounded-lg text-center">
+          <p class="text-sm text-text-muted">Time</p>
+          <p class="text-lg font-semibold text-text-light">{{ currentTime }}</p>
         </div>
       </div>
     </div>
 
-    <!-- Right Column -->
-    <div class="space-y-6">
-      <div class="bg-surface-dark p-6 rounded-lg shadow-lg">
-        <div class="grid grid-cols-2 gap-4 text-center">
-          <div>
-            <p class="text-sm text-text-muted">Date</p>
-            <p class="text-lg font-bold">{{ currentDate }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-text-muted">Time</p>
-            <p class="text-lg font-bold">{{ currentTime }}</p>
+    <!-- Quick Actions & Stats -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Actions -->
+      <div class="lg:col-span-1 p-6 bg-surface-dark rounded-lg">
+        <h2 class="text-lg font-semibold mb-4">Core Functions</h2>
+        <div class="space-y-4">
+          <button @click="navigateTo('/stock-management')" class="w-full flex items-center p-4 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
+            <MdiIcon :path="mdiPackageVariant" size="24" class="mr-3 text-primary" />
+            <span class="font-medium">Stock Management</span>
+          </button>
+          <button @click="navigateTo('/dispensary')" class="w-full flex items-center p-4 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
+            <MdiIcon :path="mdiPill" size="24" class="mr-3 text-primary" />
+            <span class="font-medium">Go to Dispensary</span>
+          </button>
+          <div class="relative">
+            <MdiIcon :path="mdiMagnify" size="20" class="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search for a patient..."
+              class="w-full pl-12 pr-4 py-3 bg-background-dark border border-gray-600 rounded-lg focus:ring-primary focus:border-primary"
+              @input="handleSearch"
+            />
+            <div
+              v-if="searchResults.length > 0"
+              class="absolute top-full mt-2 w-full bg-background-dark border border-gray-600 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto"
+            >
+              <ul>
+                <li
+                  v-for="patient in searchResults"
+                  :key="patient.id"
+                  class="px-4 py-3 hover:bg-primary/10 cursor-pointer"
+                  @click="selectPatient(patient)"
+                >
+                  <p class="font-semibold">{{ patient.name }} {{ patient.surname }}</p>
+                  <p class="text-sm text-text-muted">
+                    ID: {{ patient.hospitalNumber }} &bull; Age: {{ patient.age }}
+                  </p>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
-      <div class="bg-surface-dark p-6 rounded-lg shadow-lg text-center">
-        <MdiIcon :path="mdiPill" size="48" class="mx-auto text-primary" />
-        <h3 class="text-xl font-bold mt-4">Welcome, {{ authStore.user?.displayName || 'User' }}</h3>
-        <p class="text-text-muted mt-2">Dispensary daily summary:</p>
-        <div class="mt-6 flex justify-around">
-          <div class="text-center">
-            <p class="text-3xl font-bold text-primary">{{ todayStats.prescriptionsDispensed }}</p>
-            <p class="text-sm text-text-muted">Prescriptions Dispensed</p>
-          </div>
-          <div class="text-center">
-            <p class="text-3xl font-bold text-red-500">{{ todayStats.lowStockItems }}</p>
-            <p class="text-sm text-text-muted">Low Stock Alerts</p>
-          </div>
+
+      <!-- Today's Stats -->
+      <div class="lg:col-span-2 p-6 bg-surface-dark rounded-lg grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div class="flex flex-col items-center justify-center p-6 bg-background-dark rounded-lg">
+          <p class="text-6xl font-bold text-primary">{{ todayStats.prescriptionsDispensed }}</p>
+          <p class="mt-2 text-center text-text-muted">Prescriptions Dispensed</p>
+        </div>
+        <div class="flex flex-col items-center justify-center p-6 bg-background-dark rounded-lg">
+          <p class="text-6xl font-bold text-yellow-400">{{ todayStats.lowStockItems }}</p>
+          <p class="mt-2 text-center text-text-muted">Low Stock Alerts</p>
         </div>
       </div>
     </div>
@@ -100,8 +111,16 @@ let timeInterval = null;
 
 const updateDateTime = () => {
   const now = new Date();
-  currentDate.value = now.toLocaleDateString('en-US', { dateStyle: 'long' });
-  currentTime.value = now.toLocaleTimeString('en-US', { timeStyle: 'short' });
+  currentDate.value = now.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  currentTime.value = now.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
 };
 
 const handleSearch = async () => {
@@ -110,10 +129,10 @@ const handleSearch = async () => {
     return;
   }
   try {
-    const results = await patientStore.searchPatients(searchQuery.value);
-    searchResults.value = results;
+    searchResults.value = await patientStore.searchPatients(searchQuery.value);
   } catch (error) {
     console.error('Search error:', error);
+    searchResults.value = [];
   }
 };
 
@@ -138,7 +157,3 @@ onUnmounted(() => {
   }
 });
 </script>
-
-<style scoped>
-/* All styles are handled by Tailwind CSS utility classes */
-</style>

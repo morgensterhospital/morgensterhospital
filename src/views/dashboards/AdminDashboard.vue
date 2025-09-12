@@ -1,103 +1,124 @@
 <template>
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Left Column -->
-    <div class="lg:col-span-2 space-y-6">
-      <div class="bg-surface-dark p-6 rounded-lg shadow-lg">
-        <h2 class="text-xl font-bold mb-4">Quick Actions</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <button @click="navigateTo('/users')" class="p-4 bg-primary text-background-dark font-bold rounded-lg flex items-center justify-center space-x-2 hover:bg-primary-hover">
-            <MdiIcon :path="mdiAccountGroup" size="24" />
-            <span>User Management</span>
-          </button>
-          <button @click="navigateTo('/patient/register')" class="p-4 bg-primary text-background-dark font-bold rounded-lg flex items-center justify-center space-x-2 hover:bg-primary-hover">
-            <MdiIcon :path="mdiAccountPlus" size="24" />
-            <span>New Patient Registration</span>
-          </button>
-          <button @click="navigateTo('/reports')" class="p-4 bg-primary text-background-dark font-bold rounded-lg flex items-center justify-center space-x-2 hover:bg-primary-hover">
-            <MdiIcon :path="mdiChartLine" size="24" />
-            <span>Reports</span>
-          </button>
-          <button @click="navigateTo('/settings')" class="p-4 bg-primary text-background-dark font-bold rounded-lg flex items-center justify-center space-x-2 hover:bg-primary-hover">
-            <MdiIcon :path="mdiCog" size="24" />
-            <span>System Settings</span>
-          </button>
-        </div>
+  <div class="space-y-6">
+    <!-- Welcome Header -->
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-text-light">
+          Welcome, {{ authStore.user?.displayName || 'Admin' }}!
+        </h1>
+        <p class="text-text-muted">Here's a summary of the hospital's status.</p>
       </div>
-      <div class="bg-surface-dark p-6 rounded-lg shadow-lg">
-        <h2 class="text-xl font-bold mb-4">Patient Search</h2>
-        <div class="relative">
-          <input
-            type="text"
-            v-model="searchQuery"
-            placeholder="Search by name or hospital number..."
-            @input="handleSearch"
-            class="w-full bg-background-dark border border-gray-600 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-          <MdiIcon :path="mdiMagnify" size="20" class="absolute right-3 top-2.5 text-text-muted" />
+      <div class="flex items-center space-x-4">
+        <div class="p-4 bg-surface-dark rounded-lg text-center">
+          <p class="text-sm text-text-muted">Date</p>
+          <p class="text-lg font-semibold text-text-light">{{ currentDate }}</p>
         </div>
-        <div v-if="searchResults.length > 0" class="mt-4 space-y-2">
-          <div
-            v-for="patient in searchResults"
-            :key="patient.id"
-            class="p-3 bg-background-dark rounded-md cursor-pointer hover:bg-primary/20"
-            @click="selectPatient(patient)"
-          >
-            <p class="font-semibold">{{ patient.name }} {{ patient.surname }}</p>
-            <p class="text-sm text-text-muted">{{ patient.hospitalNumber }} • {{ patient.age }} years</p>
-          </div>
+        <div class="p-4 bg-surface-dark rounded-lg text-center">
+          <p class="text-sm text-text-muted">Time</p>
+          <p class="text-lg font-semibold text-text-light">{{ currentTime }}</p>
         </div>
       </div>
     </div>
 
-    <!-- Right Column -->
-    <div class="space-y-6">
-      <div class="bg-surface-dark p-6 rounded-lg shadow-lg">
-        <div class="grid grid-cols-2 gap-4 text-center">
-          <div>
-            <p class="text-sm text-text-muted">Date</p>
-            <p class="text-lg font-bold">{{ currentDate }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-text-muted">Time</p>
-            <p class="text-lg font-bold">{{ currentTime }}</p>
-          </div>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="p-6 bg-surface-dark rounded-lg flex items-center space-x-4">
+        <div class="p-3 rounded-full bg-primary/20 text-primary">
+          <MdiIcon :path="mdiAccountGroup" size="28" />
+        </div>
+        <div>
+          <p class="text-sm text-text-muted">Total Users</p>
+          <p class="text-2xl font-bold text-text-light">{{ systemStats.totalUsers }}</p>
         </div>
       </div>
-      <div class="bg-surface-dark p-6 rounded-lg shadow-lg">
-        <h2 class="text-xl font-bold mb-4">System Stats</h2>
-        <div class="space-y-4">
-          <div class="flex items-center">
-            <div class="p-3 bg-primary rounded-lg mr-4">
-              <MdiIcon :path="mdiAccountGroup" size="24" class="text-background-dark" />
-            </div>
-            <div>
-              <p class="text-sm text-text-muted">Total Users</p>
-              <p class="text-xl font-bold">{{ systemStats.totalUsers }}</p>
-            </div>
-          </div>
-          <div class="flex items-center">
-            <div class="p-3 bg-green-500 rounded-lg mr-4">
-              <MdiIcon :path="mdiAccountPlus" size="24" class="text-background-dark" />
-            </div>
-            <div>
-              <p class="text-sm text-text-muted">Total Patients</p>
-              <p class="text-xl font-bold">{{ systemStats.totalPatients }}</p>
-            </div>
-          </div>
-          <div class="flex items-center">
-            <div class="p-3 bg-yellow-500 rounded-lg mr-4">
-              <MdiIcon :path="mdiHospitalBuilding" size="24" class="text-background-dark" />
-            </div>
-            <div>
-              <p class="text-sm text-text-muted">Active Departments</p>
-              <p class="text-xl font-bold">{{ systemStats.activeDepartments }}</p>
-            </div>
-          </div>
+      <div class="p-6 bg-surface-dark rounded-lg flex items-center space-x-4">
+        <div class="p-3 rounded-full bg-green-500/20 text-green-400">
+          <MdiIcon :path="mdiAccountPlus" size="28" />
+        </div>
+        <div>
+          <p class="text-sm text-text-muted">Total Patients</p>
+          <p class="text-2xl font-bold text-text-light">{{ systemStats.totalPatients }}</p>
         </div>
       </div>
-      <div class="bg-surface-dark p-6 rounded-lg shadow-lg text-center">
-        <h3 class="text-lg font-bold text-primary">Morgenster Hospital</h3>
-        <p class="text-text-muted mt-2">Welcome, {{ authStore.user?.displayName || 'Admin' }}!</p>
+      <div class="p-6 bg-surface-dark rounded-lg flex items-center space-x-4">
+        <div class="p-3 rounded-full bg-yellow-500/20 text-yellow-400">
+          <MdiIcon :path="mdiHospitalBuilding" size="28" />
+        </div>
+        <div>
+          <p class="text-sm text-text-muted">Active Departments</p>
+          <p class="text-2xl font-bold text-text-light">{{ systemStats.activeDepartments }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions and Patient Search -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Quick Actions -->
+      <div class="p-6 bg-surface-dark rounded-lg">
+        <h2 class="text-lg font-semibold mb-4">Quick Actions</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <button
+            @click="navigateTo('/users')"
+            class="flex items-center p-4 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
+          >
+            <MdiIcon :path="mdiAccountGroup" size="24" class="mr-3 text-primary" />
+            <span class="font-medium">User Management</span>
+          </button>
+          <button
+            @click="navigateTo('/patient/register')"
+            class="flex items-center p-4 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
+          >
+            <MdiIcon :path="mdiAccountPlus" size="24" class="mr-3 text-primary" />
+            <span class="font-medium">New Patient</span>
+          </button>
+          <button
+            @click="navigateTo('/reports')"
+            class="flex items-center p-4 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
+          >
+            <MdiIcon :path="mdiChartLine" size="24" class="mr-3 text-primary" />
+            <span class="font-medium">Reports</span>
+          </button>
+          <button
+            @click="navigateTo('/settings')"
+            class="flex items-center p-4 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
+          >
+            <MdiIcon :path="mdiCog" size="24" class="mr-3 text-primary" />
+            <span class="font-medium">Settings</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Patient Search -->
+      <div class="p-6 bg-surface-dark rounded-lg">
+        <h2 class="text-lg font-semibold mb-4">Find a Patient</h2>
+        <div class="relative">
+          <MdiIcon :path="mdiMagnify" size="20" class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search by name or hospital number..."
+            class="w-full pl-10 pr-4 py-2 bg-background-dark border border-gray-600 rounded-lg focus:ring-primary focus:border-primary"
+            @input="handleSearch"
+          />
+          <div
+            v-if="searchResults.length > 0"
+            class="absolute top-full mt-2 w-full bg-background-dark border border-gray-600 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto"
+          >
+            <ul>
+              <li
+                v-for="patient in searchResults"
+                :key="patient.id"
+                class="px-4 py-3 hover:bg-primary/10 cursor-pointer"
+                @click="selectPatient(patient)"
+              >
+                <p class="font-semibold">{{ patient.name }} {{ patient.surname }}</p>
+                <p class="text-sm text-text-muted">
+                  ID: {{ patient.hospitalNumber }} &bull; Age: {{ patient.age }}
+                </p>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -136,8 +157,16 @@ let timeInterval = null;
 
 const updateDateTime = () => {
   const now = new Date();
-  currentDate.value = now.toLocaleDateString('en-US', { dateStyle: 'long' });
-  currentTime.value = now.toLocaleTimeString('en-US', { timeStyle: 'short' });
+  currentDate.value = now.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  currentTime.value = now.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
 };
 
 const handleSearch = async () => {
@@ -146,10 +175,10 @@ const handleSearch = async () => {
     return;
   }
   try {
-    const results = await patientStore.searchPatients(searchQuery.value);
-    searchResults.value = results;
+    searchResults.value = await patientStore.searchPatients(searchQuery.value);
   } catch (error) {
     console.error('Search error:', error);
+    searchResults.value = [];
   }
 };
 
@@ -166,8 +195,10 @@ const navigateTo = (path) => {
 onMounted(() => {
   updateDateTime();
   timeInterval = setInterval(updateDateTime, 1000);
-  // Fetch initial stats if needed
-  // patientStore.fetchTotalPatients().then(count => systemStats.value.totalPatients = count);
+  // Fetch initial stats
+  patientStore.getPatients().then(patients => {
+    systemStats.value.totalPatients = patients.length;
+  });
 });
 
 onUnmounted(() => {
@@ -176,7 +207,3 @@ onUnmounted(() => {
   }
 });
 </script>
-
-<style scoped>
-/* All styles are handled by Tailwind CSS utility classes */
-</style>

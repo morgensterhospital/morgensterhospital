@@ -1,105 +1,67 @@
 <template>
   <div class="space-y-6">
+    <!-- Header -->
+    <div>
+      <h1 class="text-2xl font-bold text-text-light">Laboratory Dashboard</h1>
+      <p class="text-text-muted">
+        Welcome, {{ authStore.user?.displayName || 'Lab Scientist' }}! Manage and track lab tests.
+      </p>
+    </div>
+
     <!-- Patient Search -->
     <div class="relative max-w-xl mx-auto">
+      <MdiIcon :path="mdiMagnify" size="20" class="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
       <input
-        type="text"
         v-model="searchQuery"
-        placeholder="Search for a patient by name or hospital number..."
+        type="text"
+        placeholder="Search for a patient to view their lab history..."
+        class="w-full pl-12 pr-4 py-3 bg-surface-dark border border-gray-600 rounded-lg focus:ring-primary focus:border-primary"
         @input="handleSearch"
-        class="w-full bg-surface-dark border border-gray-700 rounded-full py-2 px-6 focus:outline-none focus:ring-2 focus:ring-primary"
       />
-      <MdiIcon :path="mdiMagnify" size="20" class="absolute right-4 top-2.5 text-text-muted" />
-      <div v-if="searchResults.length > 0" class="absolute mt-2 w-full bg-surface-dark border border-gray-700 rounded-lg shadow-lg z-10">
-        <div
-          v-for="patient in searchResults"
-          :key="patient.id"
-          class="p-3 cursor-pointer hover:bg-primary/20"
-          @click="selectPatient(patient)"
-        >
-          <p class="font-semibold">{{ patient.name }} {{ patient.surname }}</p>
-          <p class="text-sm text-text-muted">{{ patient.hospitalNumber }} • {{ patient.age }} years</p>
-        </div>
+      <div
+        v-if="searchResults.length > 0"
+        class="absolute top-full mt-2 w-full bg-background-dark border border-gray-600 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto"
+      >
+        <ul>
+          <li
+            v-for="patient in searchResults"
+            :key="patient.id"
+            class="px-4 py-3 hover:bg-primary/10 cursor-pointer"
+            @click="selectPatient(patient)"
+          >
+            <p class="font-semibold">{{ patient.name }} {{ patient.surname }}</p>
+            <p class="text-sm text-text-muted">ID: {{ patient.hospitalNumber }} &bull; Age: {{ patient.age }}</p>
+          </li>
+        </ul>
       </div>
     </div>
 
     <!-- Test Status Columns -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-      <!-- Incoming Tests -->
-      <div class="bg-surface-dark rounded-lg shadow-lg flex flex-col">
-        <div class="p-4 border-b border-gray-700 flex items-center justify-between">
-          <h3 class="font-bold text-lg flex items-center"><MdiIcon :path="mdiClockOutline" size="20" class="mr-2 text-yellow-400" /> Incoming</h3>
-          <span class="px-3 py-1 bg-yellow-400/20 text-yellow-300 rounded-full text-sm font-semibold">{{ incomingTests.length }}</span>
-        </div>
-        <div class="p-4 space-y-3 overflow-y-auto h-96">
-          <div v-for="test in incomingTests" :key="test.id" @click="viewTest(test)" class="p-3 bg-background-dark rounded-md cursor-pointer hover:bg-primary/10">
-            <p class="font-semibold">{{ test.patientName }}</p>
-            <p class="text-sm text-primary">{{ test.testType }}</p>
-            <p class="text-xs text-text-muted mt-1">{{ formatTime(test.timestamp) }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Pending Tests -->
-      <div class="bg-surface-dark rounded-lg shadow-lg flex flex-col">
-        <div class="p-4 border-b border-gray-700 flex items-center justify-between">
-          <h3 class="font-bold text-lg flex items-center"><MdiIcon :path="mdiClockAlert" size="20" class="mr-2 text-orange-400" /> Pending</h3>
-          <span class="px-3 py-1 bg-orange-400/20 text-orange-300 rounded-full text-sm font-semibold">{{ pendingTests.length }}</span>
-        </div>
-        <div class="p-4 space-y-3 overflow-y-auto h-96">
-          <div v-for="test in pendingTests" :key="test.id" @click="viewTest(test)" class="p-3 bg-background-dark rounded-md cursor-pointer hover:bg-primary/10">
-            <p class="font-semibold">{{ test.patientName }}</p>
-            <p class="text-sm text-primary">{{ test.testType }}</p>
-            <p class="text-xs text-text-muted mt-1">{{ formatTime(test.timestamp) }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Done Tests -->
-      <div class="bg-surface-dark rounded-lg shadow-lg flex flex-col">
-        <div class="p-4 border-b border-gray-700 flex items-center justify-between">
-          <h3 class="font-bold text-lg flex items-center"><MdiIcon :path="mdiCheckCircle" size="20" class="mr-2 text-green-400" /> Done</h3>
-          <span class="px-3 py-1 bg-green-400/20 text-green-300 rounded-full text-sm font-semibold">{{ doneTests.length }}</span>
-        </div>
-        <div class="p-4 space-y-3 overflow-y-auto h-96">
-          <div v-for="test in doneTests" :key="test.id" @click="viewTest(test)" class="p-3 bg-background-dark rounded-md cursor-pointer hover:bg-primary/10">
-            <p class="font-semibold">{{ test.patientName }}</p>
-            <p class="text-sm text-primary">{{ test.testType }}</p>
-            <p class="text-xs text-text-muted truncate">{{ test.resultDetails }}</p>
-            <p class="text-xs text-text-muted mt-1">{{ formatTime(test.resultTimestamp) }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Failed Tests -->
-      <div class="bg-surface-dark rounded-lg shadow-lg flex flex-col">
-        <div class="p-4 border-b border-gray-700 flex items-center justify-between">
-          <h3 class="font-bold text-lg flex items-center"><MdiIcon :path="mdiCloseCircle" size="20" class="mr-2 text-red-400" /> Failed</h3>
-          <span class="px-3 py-1 bg-red-400/20 text-red-300 rounded-full text-sm font-semibold">{{ failedTests.length }}</span>
-        </div>
-        <div class="p-4 space-y-3 overflow-y-auto h-96">
-          <div v-for="test in failedTests" :key="test.id" @click="viewTest(test)" class="p-3 bg-background-dark rounded-md cursor-pointer hover:bg-primary/10">
-            <p class="font-semibold">{{ test.patientName }}</p>
-            <p class="text-sm text-primary">{{ test.testType }}</p>
-            <p class="text-xs text-text-muted truncate">{{ test.resultDetails }}</p>
-            <p class="text-xs text-text-muted mt-1">{{ formatTime(test.resultTimestamp) }}</p>
-          </div>
-        </div>
-      </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <RequestStatusColumn title="Incoming" :icon="mdiClockOutline" :items="incomingTests" @view="viewTest" color="blue" />
+      <RequestStatusColumn title="Pending" :icon="mdiClockAlert" :items="pendingTests" @view="viewTest" color="yellow" />
+      <RequestStatusColumn title="Completed" :icon="mdiCheckCircle" :items="doneTests" @view="viewTest" color="green" />
+      <RequestStatusColumn title="Failed" :icon="mdiCloseCircle" :items="failedTests" @view="viewTest" color="red" />
     </div>
 
     <!-- Reports Section -->
-    <div class="bg-surface-dark p-6 rounded-lg shadow-lg">
-      <h3 class="text-xl font-bold mb-4">Generate Reports</h3>
-      <div class="flex flex-col md:flex-row gap-4 items-center">
-        <input type="date" v-model="reportDateFrom" class="bg-background-dark border border-gray-600 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary" />
-        <input type="date" v-model="reportDateTo" class="bg-background-dark border border-gray-600 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary" />
-        <button @click="generateReport" class="w-full md:w-auto p-2 bg-primary text-background-dark font-bold rounded-lg flex items-center justify-center space-x-2 hover:bg-primary-hover">
-          <span>Generate by Test Type</span>
+    <div class="p-6 bg-surface-dark rounded-lg">
+      <h2 class="text-lg font-semibold mb-4">Generate Reports</h2>
+      <div class="flex flex-col sm:flex-row gap-4 items-end">
+        <div class="flex-1">
+          <label for="date-from" class="text-sm font-medium text-text-muted">From</label>
+          <input v-model="reportDateFrom" id="date-from" type="date" class="mt-1 w-full p-2 bg-background-dark border border-gray-600 rounded-lg" />
+        </div>
+        <div class="flex-1">
+          <label for="date-to" class="text-sm font-medium text-text-muted">To</label>
+          <input v-model="reportDateTo" id="date-to" type="date" class="mt-1 w-full p-2 bg-background-dark border border-gray-600 rounded-lg" />
+        </div>
+        <button @click="generateReport" class="w-full sm:w-auto px-4 py-2 bg-primary text-background-dark font-semibold rounded-lg hover:bg-primary/90 transition-colors">
+          Generate by Test Type
         </button>
-        <button @click="downloadLabReportPDF" class="w-full md:w-auto p-2 bg-blue-500 text-white font-bold rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-600">
-          <MdiIcon :path="mdiDownload" size="20" />
-          <span>Download PDF</span>
+        <button @click="downloadLabReportPDF" class="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary/20 text-primary font-semibold rounded-lg hover:bg-primary/30 transition-colors">
+          <MdiIcon :path="mdiDownload" size="18" />
+          Download PDF
         </button>
       </div>
     </div>
@@ -113,6 +75,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { usePatientStore } from '@/stores/patientStore';
 import apiService from '@/services/api';
 import MdiIcon from '@/components/common/MdiIcon.vue';
+import RequestStatusColumn from '@/components/common/RequestStatusColumn.vue';
 import {
   mdiMagnify,
   mdiClockOutline,
@@ -151,8 +114,9 @@ const loadLabRequests = () => {
 
     for (const doc of snapshot.docs) {
       const request = { id: doc.id, ...doc.data() };
-      
       const patientId = doc.ref.parent.parent.id;
+      request.patientId = patientId;
+
       try {
         const patient = await patientStore.getPatient(patientId);
         request.patientName = `${patient.name} ${patient.surname}`;
@@ -162,23 +126,22 @@ const loadLabRequests = () => {
 
       switch (request.status) {
         case 'pending':
-          if (request.resultDetails) {
-            pending.push(request);
-          } else {
-            incoming.push(request);
-          }
+          incoming.push(request);
+          break;
+        case 'in-progress':
+          pending.push(request);
           break;
         case 'completed':
           done.push(request);
           break;
         case 'failed':
+        case 'cancelled':
           failed.push(request);
           break;
         default:
           incoming.push(request);
       }
     }
-
     incomingTests.value = incoming;
     pendingTests.value = pending;
     doneTests.value = done;
@@ -192,10 +155,10 @@ const handleSearch = async () => {
     return;
   }
   try {
-    const results = await patientStore.searchPatients(searchQuery.value);
-    searchResults.value = results;
+    searchResults.value = await patientStore.searchPatients(searchQuery.value);
   } catch (error) {
     console.error('Search error:', error);
+    searchResults.value = [];
   }
 };
 
@@ -206,21 +169,12 @@ const selectPatient = (patient) => {
 };
 
 const viewTest = (test) => {
-  const patientId = test.patientId || 'unknown';
-  router.push(`/patient/${patientId}?tab=laboratory&testId=${test.id}`);
-};
-
-const formatTime = (timestamp) => {
-  if (!timestamp) return '';
-  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-  return date.toLocaleString('en-US', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  });
+  router.push(`/patient/${test.patientId}?tab=laboratory&testId=${test.id}`);
 };
 
 const generateReport = () => {
   console.log('Generating report from', reportDateFrom.value, 'to', reportDateTo.value);
+  // This would typically trigger a report generation service
 };
 
 const downloadLabReportPDF = async () => {
@@ -234,10 +188,8 @@ const downloadLabReportPDF = async () => {
 
 onMounted(() => {
   loadLabRequests();
-  
   const today = new Date();
-  const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-  
+  const thirtyDaysAgo = new Date(new Date().setDate(today.getDate() - 30));
   reportDateFrom.value = thirtyDaysAgo.toISOString().split('T')[0];
   reportDateTo.value = today.toISOString().split('T')[0];
 });
@@ -248,7 +200,3 @@ onUnmounted(() => {
   }
 });
 </script>
-
-<style scoped>
-/* All styles are handled by Tailwind CSS utility classes */
-</style>
