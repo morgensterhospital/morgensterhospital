@@ -45,23 +45,41 @@ export const usePatientStore = defineStore('patient', () => {
   // Search patients
   const searchPatients = async (searchTerm) => {
     try {
-      loading.value = true
+      loading.value = true;
+      const patientsRef = collection(db, 'patients');
       
-      const q = query(
-        collection(db, 'patients'),
+      // Query by name
+      const nameQuery = query(
+        patientsRef,
         where('name', '>=', searchTerm),
         where('name', '<=', searchTerm + '\uf8ff'),
         limit(10)
-      )
+      );
       
-      const querySnapshot = await getDocs(q)
-      const results = []
+      // Query by hospital number
+      const hospitalNumberQuery = query(
+        patientsRef,
+        where('hospitalNumber', '>=', searchTerm),
+        where('hospitalNumber', '<=', searchTerm + '\uf8ff'),
+        limit(10)
+      );
+
+      const [nameSnapshot, hospitalNumberSnapshot] = await Promise.all([
+        getDocs(nameQuery),
+        getDocs(hospitalNumberQuery)
+      ]);
+
+      const resultsMap = new Map();
       
-      querySnapshot.forEach((doc) => {
-        results.push({ id: doc.id, ...doc.data() })
-      })
+      nameSnapshot.forEach((doc) => {
+        resultsMap.set(doc.id, { id: doc.id, ...doc.data() });
+      });
       
-      return results
+      hospitalNumberSnapshot.forEach((doc) => {
+        resultsMap.set(doc.id, { id: doc.id, ...doc.data() });
+      });
+
+      return Array.from(resultsMap.values());
     } catch (err) {
       error.value = err.message
       throw err

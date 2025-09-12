@@ -7,9 +7,9 @@
       @approve="approveDischarge"
       @deny="denyDischarge"
     />
-    <PatientProfileModal
+    <BigProfileModal
       v-if="isPatientProfileModalOpen"
-      :patient="selectedPatient"
+      :patientId="selectedPatientId"
       @close="closePatientProfileModal"
     />
     <!-- Welcome Header -->
@@ -140,7 +140,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { usePatientStore } from '@/stores/patientStore';
 import MdiIcon from '@/components/common/MdiIcon.vue';
 import DischargeNotificationModal from '@/components/common/DischargeNotificationModal.vue';
-import PatientProfileModal from '@/components/common/PatientProfileModal.vue';
+import BigProfileModal from '@/components/common/BigProfileModal.vue';
 import {
   mdiAccountGroup,
   mdiChartLine,
@@ -207,16 +207,16 @@ const denyDischarge = async () => {
 };
 
 const isPatientProfileModalOpen = ref(false);
-const selectedPatient = ref(null);
+const selectedPatientId = ref(null);
 
 const openPatientProfileModal = (patient) => {
-  selectedPatient.value = patient;
+  selectedPatientId.value = patient.id;
   isPatientProfileModalOpen.value = true;
 };
 
 const closePatientProfileModal = () => {
   isPatientProfileModalOpen.value = false;
-  selectedPatient.value = null;
+  selectedPatientId.value = null;
 };
 
 const updateDateTime = () => {
