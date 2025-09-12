@@ -5,10 +5,10 @@ def run(playwright):
     page = browser.new_page()
 
     # 1. Navigate to the login page
-    page.goto("http://localhost:5173/auth/login")
+    page.goto("http://localhost:5174/auth/login")
 
     # Wait for the heading to be visible to ensure the page has loaded
-    expect(page.locator("h1:has-text('Morgenster HMS')")).to_be_visible()
+    expect(page.locator("h1:has-text('Morgenster HMS')")).to_be_visible(timeout=10000)
 
     # Wait for animations to finish
     page.wait_for_timeout(1000)
@@ -24,9 +24,9 @@ def run(playwright):
 
     # 4. Wait for the dashboard to load and take a screenshot
     # The URL should redirect to /admin for the Admin user
-    expect(page).to_have_url("http://localhost:5173/admin", timeout=10000)
+    expect(page).to_have_url("http://localhost:5174/admin", timeout=10000)
     # Also wait for a specific element on the dashboard to be visible
-    expect(page.locator("h1:has-text('AdminDashboard')")).to_be_visible()
+    expect(page.locator("h2:has-text('Quick Actions')")).to_be_visible()
 
     # Wait for animations to finish
     page.wait_for_timeout(1000)
