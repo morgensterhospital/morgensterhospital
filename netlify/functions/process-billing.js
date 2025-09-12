@@ -45,14 +45,22 @@ export const handler = async (event, context) => {
       processedByRef: db.doc(`users/${processedBy}`)
     })
 
-    // Add items to invoice
-    const batch = db.batch()
-    items.forEach(item => {
-      const itemRef = db.collection(`patients/${patientId}/invoices/${invoiceRef.id}/items`).doc()
-      batch.set(itemRef, item)
-    })
+    // Add items to invoice and update inventory
+    const batch = db.batch();
+    const inventoryRef = db.collection('app_config').doc('inventory');
+
+    for (const item of items) {
+      const itemRef = db.collection(`patients/${patientId}/invoices/${invoiceRef.id}/items`).doc();
+      batch.set(itemRef, item);
+
+      // Decrement inventory
+      const inventoryItemRef = db.collection('app_config').doc('inventory');
+      batch.update(inventoryItemRef, {
+        [`items.${item.id}.stockLevel`]: admin.firestore.FieldValue.increment(-item.quantity)
+      });
+    }
     
-    await batch.commit()
+    await batch.commit();
 
     // Create notification for payment
     await db.collection('notifications').add({

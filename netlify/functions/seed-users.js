@@ -116,7 +116,12 @@ const seedUsers = async () => {
         { id: 'vaccination', name: 'Vaccination', price: 80.00 },
         { id: 'dressing', name: 'Wound Dressing', price: 50.00 },
         { id: 'injection', name: 'Injection', price: 30.00 },
-        { id: 'admission_fee', name: 'Admission Fee', price: 500.00 }
+        { id: 'admission_fee', name: 'Admission Fee', price: 500.00 },
+        { "id": "med001", "name": "Aspirin 100mg", "price": 10.50 },
+        { "id": "med002", "name": "Ibuprofen 200mg", "price": 15.00 },
+        { "id": "med003", "name": "Paracetamol 500mg", "price": 8.75 },
+        { "id": "med004", "name": "Amoxicillin 250mg", "price": 25.00 },
+        { "id": "med005", "name": "Loratadine 10mg", "price": 12.25 }
       ],
       lastUpdated: admin.firestore.FieldValue.serverTimestamp()
     })
@@ -127,6 +132,11 @@ const seedUsers = async () => {
         { id: 'paracetamol', name: 'Paracetamol 500mg', stockLevel: 1000, unit: 'tablets', category: 'medication', minimumLevel: 100 },
         { id: 'amoxicillin', name: 'Amoxicillin 250mg', stockLevel: 500, unit: 'capsules', category: 'medication', minimumLevel: 50 },
         { id: 'ibuprofen', name: 'Ibuprofen 200mg', stockLevel: 750, unit: 'tablets', category: 'medication', minimumLevel: 75 },
+        { "id": "med001", "name": "Aspirin 100mg", "stockLevel": 1000, "unit": "tablets", "category": "medication", "minimumLevel": 100 },
+        { "id": "med002", "name": "Ibuprofen 200mg", "stockLevel": 800, "unit": "tablets", "category": "medication", "minimumLevel": 100 },
+        { "id": "med003", "name": "Paracetamol 500mg", "stockLevel": 1200, "unit": "tablets", "category": "medication", "minimumLevel": 150 },
+        { "id": "med004", "name": "Amoxicillin 250mg", "stockLevel": 600, "unit": "capsules", "category": "medication", "minimumLevel": 50 },
+        { "id": "med005", "name": "Loratadine 10mg", "stockLevel": 400, "unit": "tablets", "category": "medication", "minimumLevel": 40 },
         { id: 'bandages', name: 'Elastic Bandages', stockLevel: 200, unit: 'rolls', category: 'supplies', minimumLevel: 20 },
         { id: 'syringes', name: 'Disposable Syringes', stockLevel: 2000, unit: 'pieces', category: 'supplies', minimumLevel: 200 },
         { id: 'gloves', name: 'Medical Gloves', stockLevel: 500, unit: 'boxes', category: 'supplies', minimumLevel: 50 },
