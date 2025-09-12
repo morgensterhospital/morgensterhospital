@@ -1,62 +1,75 @@
 <template>
   <div class="space-y-6">
-    <h1 class="text-2xl font-bold text-text-light">New Patient Registration</h1>
-    <div class="p-8 bg-surface-dark rounded-lg">
-      <form @submit.prevent="handleSubmit" class="space-y-8">
-        <!-- Patient Demographics -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <M3TextField v-model="form.name" label="Name" required />
-          <M3TextField v-model="form.surname" label="Surname" required />
-          <M3TextField v-model="form.idNumber" label="ID Number" required />
-          <M3TextField v-model="form.phone" label="Phone Number" type="tel" required />
-          <M3TextField v-model="form.dob" label="Date of Birth" type="date" required @input="calculateAge" />
-          <M3TextField v-model="form.age" label="Age" readonly />
-        </div>
-
-        <!-- Address and Personal Info -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div class="md:col-span-2">
-            <M3TextField v-model="form.address" label="Residential Address" type="textarea" :rows="3" required />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-text-muted mb-2">Gender *</label>
-            <select v-model="form.gender" class="w-full p-3 bg-background-dark border border-gray-600 rounded-lg" required>
-              <option value="">Select Gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <M3TextField v-model="form.countryOfBirth" label="Country of Birth" required />
-          <div>
-            <label class="block text-sm font-medium text-text-muted mb-2">Marital Status</label>
-            <select v-model="form.maritalStatus" class="w-full p-3 bg-background-dark border border-gray-600 rounded-lg">
-              <option value="">Select Status</option>
-              <option value="Single">Single</option>
-              <option value="Married">Married</option>
-              <option value="Divorced">Divorced</option>
-              <option value="Widowed">Widowed</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Next of Kin Information -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <M3TextField v-model="form.nokName" label="N.O.K Name" required />
-            <M3TextField v-model="form.nokSurname" label="N.O.K Surname" required />
-            <M3TextField v-model="form.nokPhone" label="N.O.K Phone Number" type="tel" required />
-            <div class="md:col-span-2">
-                <M3TextField v-model="form.nokAddress" label="N.O.K Address" type="textarea" :rows="3" required />
+    <div class="flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-text-light">New Patient Registration</h1>
+      <M3Button variant="outlined" @click="resetForm" :disabled="loading">
+        <MdiIcon :path="mdiBroom" class="mr-2" />
+        Clear Form
+      </M3Button>
+    </div>
+    <div class="p-8 bg-surface-dark rounded-lg shadow-lg">
+      <form @submit.prevent="handleSubmit" class="space-y-12">
+        <!-- Patient Information Section -->
+        <div>
+          <h2 class="text-xl font-semibold text-primary mb-6 border-b-2 border-primary/20 pb-3">Patient Information</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <M3TextField v-model="form.name" label="First Name" required />
+            <M3TextField v-model="form.surname" label="Last Name" required />
+            <M3TextField v-model="form.idNumber" label="ID Number" required />
+            <M3TextField v-model="form.phone" label="Phone Number" type="tel" required />
+            <M3TextField v-model="form.dob" label="Date of Birth" type="date" required @input="calculateAge" />
+            <M3TextField v-model="form.age" label="Age" readonly helper-text="Calculated automatically" />
+            <div>
+              <label class="block text-sm font-medium text-text-muted mb-2">Gender *</label>
+              <select v-model="form.gender" class="w-full p-4 bg-background-dark border border-gray-600 rounded-lg" required>
+                <option disabled value="">Please select one</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
             </div>
+            <div>
+              <label class="block text-sm font-medium text-text-muted mb-2">Marital Status</label>
+              <select v-model="form.maritalStatus" class="w-full p-4 bg-background-dark border border-gray-600 rounded-lg">
+                <option disabled value="">Please select one</option>
+                <option>Single</option>
+                <option>Married</option>
+                <option>Divorced</option>
+                <option>Widowed</option>
+              </select>
+            </div>
+            <M3TextField v-model="form.countryOfBirth" label="Country of Birth" required />
+            <div class="md:col-span-2">
+              <M3TextField v-model="form.address" label="Residential Address" type="textarea" :rows="3" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- Next of Kin Information Section -->
+        <div>
+          <h2 class="text-xl font-semibold text-primary mb-6 border-b-2 border-primary/20 pb-3">Next of Kin</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <M3TextField v-model="form.nokName" label="First Name" required />
+            <M3TextField v-model="form.nokSurname" label="Last Name" required />
+            <M3TextField v-model="form.nokPhone" label="Phone Number" type="tel" required />
+            <div class="md:col-span-2">
+              <M3TextField v-model="form.nokAddress" label="Residential Address" type="textarea" :rows="3" required />
+            </div>
+          </div>
         </div>
 
         <!-- Form Actions -->
-        <div class="flex justify-end space-x-4">
-            <M3Button variant="outlined" @click="resetForm" :disabled="loading">Reset</M3Button>
-            <M3Button type="submit" variant="filled" :disabled="loading">
-                <span v-if="loading">Registering...</span>
-                <span v-else>Register Patient</span>
-            </M3Button>
+        <div class="flex justify-end pt-8 border-t border-gray-700">
+          <M3Button type="submit" variant="filled" size="large" :disabled="loading">
+            <span v-if="loading">
+              <MdiIcon :path="mdiLoading" class="animate-spin mr-2" />
+              Registering...
+            </span>
+            <span v-else>
+              <MdiIcon :path="mdiAccountPlus" class="mr-2" />
+              Register Patient
+            </span>
+          </M3Button>
         </div>
       </form>
     </div>
@@ -67,9 +80,9 @@
         </div>
         <h2>Patient Registered Successfully!</h2>
         <p>
-          <strong>{{ registeredPatient.name }} {{ registeredPatient.surname }}</strong>
+          <strong>{{ registeredPatient.patient.name }} {{ registeredPatient.patient.surname }}</strong>
           has been registered with hospital number:
-          <strong>{{ registeredPatient.hospitalNumber }}</strong>
+          <strong>{{ registeredPatient.patient.hospitalNumber }}</strong>
         </p>
         <div class="modal-actions">
           <M3Button variant="outlined" @click="closeSuccessModal">

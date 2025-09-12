@@ -1,6 +1,6 @@
-const { db } = require('../../src/services/firebase-admin');
+import { db } from './lib/firebase-admin.js';
 
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }

@@ -1,21 +1,7 @@
-import admin from "firebase-admin";
-
-if (!admin.apps.length) {
-  try {
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        project_id: process.env.FIREBASE_PROJECT_ID,
-        client_email: process.env.FIREBASE_CLIENT_EMAIL,
-        private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
-      }),
-    });
-  } catch (err) {
-    console.error("🔥 Firebase init error:", err);
-  }
-}
+import { db } from './lib/firebase-admin.js';
+import admin from 'firebase-admin';
 
 const auth = admin.auth();
-const db = admin.firestore();
 
 
 // User roles and their counts
