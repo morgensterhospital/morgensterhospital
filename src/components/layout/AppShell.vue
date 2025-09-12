@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-screen bg-background-dark text-text-light">
     <!-- Sidebar -->
-    <aside class="w-64 flex-shrink-0 bg-surface-dark p-4 flex flex-col">
+    <aside class="hidden md:flex w-64 flex-shrink-0 bg-surface-dark p-4 flex-col">
       <!-- Logo and App Name -->
       <div class="flex items-center mb-8">
         <MdiIcon :path="mdiHospital" size="32" class="text-primary" />
@@ -60,10 +60,13 @@
       </header>
 
       <!-- Page Content -->
-      <div class="flex-1 p-6 overflow-y-auto">
+      <div class="flex-1 p-6 overflow-y-auto pb-16 md:pb-6">
         <router-view />
       </div>
     </main>
+
+    <!-- Bottom Navigation -->
+    <BottomNavigation :navigation-items="filteredNavigationItems" />
   </div>
 </template>
 
@@ -72,6 +75,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 import MdiIcon from '@/components/common/MdiIcon.vue';
+import BottomNavigation from './BottomNavigation.vue';
 import {
   mdiHospital,
   mdiAccount,
