@@ -257,7 +257,7 @@ const closeSuccessModal = () => {
 
 // Navigate to patient profile
 const viewPatientProfile = () => {
-  router.push(`/patient/${registeredPatient.value.id}`)
+  router.push(`/accountant?new_patient_id=${registeredPatient.value.patient.id}`);
 }
 
 onMounted(() => {

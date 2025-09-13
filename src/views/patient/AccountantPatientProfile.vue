@@ -50,8 +50,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { usePatientStore } from '@/stores/patientStore';
+import { ref, computed, toRefs } from 'vue';
 import MdiIcon from '@/components/common/MdiIcon.vue';
 import M3Button from '@/components/common/M3Button.vue';
 import BillingModal from '@/components/common/BillingModal.vue';
@@ -70,14 +69,13 @@ import {
 } from '@mdi/js';
 
 const props = defineProps({
-  patientId: {
-    type: String,
+  patient: {
+    type: Object,
     required: true,
   },
 });
 
-const patientStore = usePatientStore();
-const patient = ref({});
+const { patient } = toRefs(props);
 
 const patientDetails = computed(() => [
   { label: 'Hospital Number', value: patient.value.hospitalNumber },
@@ -137,14 +135,4 @@ const actionCards = ref([
 ]);
 
 
-onMounted(async () => {
-  if (props.patientId) {
-    const fetchedPatient = await patientStore.getPatient(props.patientId);
-    if (fetchedPatient) {
-      patient.value = fetchedPatient;
-      // You might want to fetch admission status separately if it's not part of the main patient object
-      patient.value.admissionStatus = 'Admitted'; // Placeholder
-    }
-  }
-});
 </script>

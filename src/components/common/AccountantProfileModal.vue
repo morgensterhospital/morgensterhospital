@@ -8,14 +8,16 @@
         </button>
       </header>
       <div class="overflow-y-auto flex-grow">
-        <AccountantPatientProfile :patientId="patientId" />
+        <AccountantPatientProfile v-if="patient" :patient="patient" />
+        <div v-else class="p-8 text-center text-text-muted">Loading patient data...</div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { defineProps } from 'vue';
+import { defineProps, ref, onMounted, watch } from 'vue';
+import { usePatientStore } from '@/stores/patientStore';
 import MdiIcon from '@/components/common/MdiIcon.vue';
 import AccountantPatientProfile from '@/views/patient/AccountantPatientProfile.vue';
 import { mdiClose } from '@mdi/js';
@@ -25,5 +27,22 @@ const props = defineProps({
     type: String,
     required: true,
   },
+});
+
+const patientStore = usePatientStore();
+const patient = ref(null);
+
+const fetchPatient = async (id) => {
+  if (id) {
+    patient.value = await patientStore.getPatient(id);
+  }
+};
+
+onMounted(() => {
+  fetchPatient(props.patientId);
+});
+
+watch(() => props.patientId, (newId) => {
+  fetchPatient(newId);
 });
 </script>

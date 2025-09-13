@@ -135,7 +135,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 import { usePatientStore } from '@/stores/patientStore';
 import MdiIcon from '@/components/common/MdiIcon.vue';
@@ -267,6 +267,12 @@ onMounted(() => {
   updateDateTime();
   timeInterval = setInterval(updateDateTime, 1000);
   fetchDischargeNotifications();
+
+  const route = useRoute();
+  const newPatientId = route.query.new_patient_id;
+  if (newPatientId) {
+    openPatientProfileModal({ id: newPatientId });
+  }
 });
 
 onUnmounted(() => {
