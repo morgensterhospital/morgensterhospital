@@ -60,7 +60,7 @@ export const useBillingStore = defineStore('billing', () => {
       error.value = null;
 
       // The URL should point to your Netlify function endpoint
-      const response = await fetch('/.netlify/functions/billingProcess', {
+      const response = await fetch('/.netlify/functions/process-billing', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

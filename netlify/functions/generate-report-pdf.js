@@ -1,62 +1,84 @@
-import { db } from './lib/firebase-admin.js';
 import PDFDocument from 'pdfkit';
 
-const generateBillingReport = async (patientId) => {
-  const patientDoc = await db.collection('patients').doc(patientId).get();
-  const patient = patientDoc.data();
-
-  const invoicesSnapshot = await db.collection(`patients/${patientId}/invoices`).get();
-  const invoices = invoicesSnapshot.docs.map(doc => doc.data());
-
-  const doc = new PDFDocument({ margin: 50 });
-  const buffers = [];
-  doc.on('data', buffers.push.bind(buffers));
-
+// A helper function to build the PDF table
+function buildTable(doc, title, transactions) {
   // Header
-  doc.fontSize(20).text('Morgenster Hospital', { align: 'center' });
-  doc.fontSize(12).text('Patient Billing History', { align: 'center' });
+  doc
+    .fontSize(20)
+    .font('Helvetica-Bold')
+    .text('Morgenster Hospital', { align: 'center' });
+
+  doc
+    .fontSize(16)
+    .font('Helvetica')
+    .text(title, { align: 'center' });
+
+  doc.moveDown(2);
+
+  // Table Headers
+  const tableTop = doc.y;
+  const itemX = 50;
+  const dateX = 250;
+  const amountX = 450;
+
+  doc
+    .fontSize(12)
+    .font('Helvetica-Bold')
+    .text('Patient Name', itemX, tableTop)
+    .text('Date', dateX, tableTop)
+    .text('Amount ($)', amountX, tableTop, { align: 'right' });
+
+  doc.moveTo(itemX, doc.y + 5).lineTo(doc.page.width - itemX, doc.y + 5).stroke();
   doc.moveDown();
 
-  // Patient Details
-  doc.fontSize(14).text('Patient Details', { underline: true });
-  doc.text(`Name: ${patient.name} ${patient.surname}`);
-  doc.text(`Hospital Number: ${patient.hospitalNumber}`);
-  doc.moveDown();
-
-  // Invoices
-  invoices.forEach(invoice => {
-    doc.fontSize(12).text(`Invoice Date: ${new Date(invoice.creationDate.seconds * 1000).toLocaleDateString()}`, { underline: true });
-    doc.text(`Total Amount: ${invoice.totalAmount}`);
-    doc.text(`Amount Paid: ${invoice.amountPaid}`);
-    doc.text(`Balance: ${invoice.balance}`);
-    doc.text(`Status: ${invoice.status}`);
+  // Table Rows
+  for (const transaction of transactions) {
+    const y = doc.y;
+    doc
+      .fontSize(10)
+      .font('Helvetica')
+      .text(transaction.patientName, itemX, y)
+      .text(new Date(transaction.date).toLocaleString(), dateX, y)
+      .text(transaction.amount.toFixed(2), amountX, y, { align: 'right' });
     doc.moveDown();
-  });
+  }
+}
 
-  return new Promise((resolve) => {
-    doc.on('end', () => {
-      resolve(Buffer.concat(buffers));
-    });
-    doc.end();
-  });
-};
-
-export const handler = async (event) => {
+export const handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  const { reportType, patientId } = JSON.parse(event.body);
+  try {
+    const { reportType, transactions } = JSON.parse(event.body);
 
-  if (reportType === 'patient_billing_history' && patientId) {
-    const pdfBuffer = await generateBillingReport(patientId);
+    const doc = new PDFDocument({ margin: 50 });
+    const buffers = [];
+    doc.on('data', buffers.push.bind(buffers));
+    doc.on('end', () => {});
+
+    // Generate the table based on the data
+    buildTable(doc, reportType, transactions);
+
+    doc.end();
+
+    // Concatenate the buffers to get the full PDF
+    const pdfData = Buffer.concat(buffers);
+
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/pdf' },
-      body: pdfBuffer.toString('base64'),
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="${reportType}.pdf"`
+      },
+      body: pdfData.toString('base64'),
       isBase64Encoded: true,
     };
+  } catch (error) {
+    console.error('PDF Generation Error:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Failed to generate PDF', details: error.message }),
+    };
   }
-
-  return { statusCode: 400, body: 'Invalid report type or missing patient ID' };
 };

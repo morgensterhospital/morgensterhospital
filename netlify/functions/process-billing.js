@@ -47,6 +47,19 @@ export const handler = async (event, context) => {
 
     // Use a transaction to ensure atomicity
     await db.runTransaction(async (transaction) => {
+      const billableItemsToUpdate = [];
+
+      // 1. Read all billable items first
+      for (const item of items) {
+        const billableItemRef = db.collection('billable_items').doc(item.id);
+        const billableItemDoc = await transaction.get(billableItemRef);
+        if (billableItemDoc.exists) {
+          const newQuantity = billableItemDoc.data().quantity - item.quantity;
+          billableItemsToUpdate.push({ ref: billableItemRef, newQuantity });
+        }
+      }
+
+      // 2. Now perform all writes
       // Add items to invoice subcollection
       for (const item of items) {
         const itemRef = db.collection(`patients/${patientId}/invoices/${invoiceRef.id}/items`).doc();
@@ -54,13 +67,8 @@ export const handler = async (event, context) => {
       }
 
       // Update inventory
-      for (const item of items) {
-        const billableItemRef = db.collection('billable_items').doc(item.id);
-        const billableItemDoc = await transaction.get(billableItemRef);
-        if (billableItemDoc.exists) {
-          const newQuantity = billableItemDoc.data().quantity - item.quantity;
-          transaction.update(billableItemRef, { quantity: newQuantity });
-        }
+      for (const itemToUpdate of billableItemsToUpdate) {
+        transaction.update(itemToUpdate.ref, { quantity: itemToUpdate.newQuantity });
       }
     });
 
