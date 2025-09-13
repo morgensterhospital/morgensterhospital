@@ -73,8 +73,13 @@ export const handler = async (event, context) => {
     for (const doc of invoicesSnapshot.docs) {
       const invoice = doc.data();
 
-      // Skip invoice if essential data is missing to prevent crashes
-      if (!invoice.creationDate || !invoice.totalAmount) {
+      // Skip invoice if essential data is missing or invalid to prevent crashes
+      if (!invoice.creationDate || typeof invoice.creationDate.toDate !== 'function') {
+        console.warn('Skipping invoice with invalid creationDate:', doc.id);
+        continue;
+      }
+      if (typeof invoice.totalAmount !== 'number') {
+        console.warn('Skipping invoice with invalid totalAmount:', doc.id);
         continue;
       }
 

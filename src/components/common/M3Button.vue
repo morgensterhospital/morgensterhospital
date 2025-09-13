@@ -11,8 +11,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, useSlots } from 'vue'
 import MdiIcon from './MdiIcon.vue'
+
+const slots = useSlots()
 
 const props = defineProps({
   variant: {
@@ -54,7 +56,7 @@ const buttonClass = computed(() => {
     {
       'm3-button--disabled': props.disabled,
       'm3-button--full-width': props.fullWidth,
-      'm3-button--icon': props.icon && !$slots.default
+      'm3-button--icon': props.icon && !slots.default
     }
   ]
 })
