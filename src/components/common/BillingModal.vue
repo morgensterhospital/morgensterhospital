@@ -61,25 +61,25 @@
           </div>
           <!-- Items Table -->
           <div class="mt-8 bg-surface-dark rounded-lg p-4">
-            <table class="w-full text-left">
-              <thead class="border-b-2 border-gray-700">
+            <table class="billing-table">
+              <thead>
                 <tr>
-                  <th class="p-3 text-sm font-semibold text-text-muted">Item No.</th>
-                  <th class="p-3 text-sm font-semibold text-text-muted">Description</th>
-                  <th class="p-3 text-sm font-semibold text-text-muted text-center">Qty</th>
-                  <th class="p-3 text-sm font-semibold text-text-muted text-right">Unit Price</th>
-                  <th class="p-3 text-sm font-semibold text-text-muted text-right">Total</th>
-                  <th class="p-3"></th>
+                  <th>Item No.</th>
+                  <th>Description</th>
+                  <th class="text-center">Qty</th>
+                  <th class="text-right">Unit Price</th>
+                  <th class="text-right">Total</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(item, index) in billItems" :key="index" class="border-b border-gray-800">
-                  <td class="p-3">{{ item.id }}</td>
-                  <td class="p-3">{{ item.name }}</td>
-                  <td class="p-3 text-center">{{ item.quantity }}</td>
-                  <td class="p-3 text-right">{{ item.price.toFixed(2) }}</td>
-                  <td class="p-3 text-right">{{ item.total.toFixed(2) }}</td>
-                  <td class="p-3 text-center">
+                <tr v-for="(item, index) in billItems" :key="index">
+                  <td>{{ item.id }}</td>
+                  <td>{{ item.name }}</td>
+                  <td class="text-center">{{ item.quantity }}</td>
+                  <td class="text-right">{{ item.price.toFixed(2) }}</td>
+                  <td class="text-right">{{ item.total.toFixed(2) }}</td>
+                  <td class="text-center">
                     <button @click="removeFromBill(index)" class="text-red-500 hover:text-red-400">
                       <MdiIcon :path="mdiDelete" />
                     </button>
@@ -222,3 +222,18 @@ const processBill = async () => {
   }
 };
 </script>
+
+<style scoped>
+.billing-table {
+  @apply w-full text-left;
+}
+.billing-table th {
+  @apply p-3 text-sm font-semibold text-text-muted border-b-2 border-gray-700;
+}
+.billing-table td {
+  @apply p-3 border-b border-gray-800;
+}
+.billing-table tbody tr:last-child td {
+  @apply border-b-0;
+}
+</style>

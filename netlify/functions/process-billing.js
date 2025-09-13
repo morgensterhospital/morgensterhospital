@@ -47,24 +47,21 @@ export const handler = async (event, context) => {
 
     // Use a transaction to ensure atomicity
     await db.runTransaction(async (transaction) => {
-      const inventoryRef = db.collection('app_config').doc('inventory');
-      const inventoryDoc = await transaction.get(inventoryRef);
-      const inventoryItems = inventoryDoc.data().items;
-
-      // Add items to invoice and prepare inventory updates
+      // Add items to invoice subcollection
       for (const item of items) {
         const itemRef = db.collection(`patients/${patientId}/invoices/${invoiceRef.id}/items`).doc();
         transaction.set(itemRef, item);
-
-        // Find item in inventory and decrement stock
-        const inventoryItemIndex = inventoryItems.findIndex(invItem => invItem.id === item.id);
-        if (inventoryItemIndex > -1) {
-          inventoryItems[inventoryItemIndex].stockLevel -= item.quantity;
-        }
       }
 
-      // Update the entire items array in inventory
-      transaction.update(inventoryRef, { items: inventoryItems });
+      // Update inventory
+      for (const item of items) {
+        const billableItemRef = db.collection('billable_items').doc(item.id);
+        const billableItemDoc = await transaction.get(billableItemRef);
+        if (billableItemDoc.exists) {
+          const newQuantity = billableItemDoc.data().quantity - item.quantity;
+          transaction.update(billableItemRef, { quantity: newQuantity });
+        }
+      }
     });
 
     // Create notification for payment

@@ -101,50 +101,29 @@ const seedUsers = async () => {
       }
     }
 
-    // Create app configuration documents
-    console.log('\n🏥 Setting up application configuration...')
-    
-    // Initialize price list
-    await db.collection('app_config').doc('price_list').set({
-      items: [
-        { id: 'consultation', name: 'Doctor Consultation', price: 150.00 },
-        { id: 'xray_chest', name: 'Chest X-Ray', price: 300.00 },
-        { id: 'blood_test_full', name: 'Full Blood Count', price: 200.00 },
-        { id: 'urine_test', name: 'Urine Analysis', price: 100.00 },
-        { id: 'ecg', name: 'ECG', price: 250.00 },
-        { id: 'ultrasound', name: 'Ultrasound', price: 400.00 },
-        { id: 'vaccination', name: 'Vaccination', price: 80.00 },
-        { id: 'dressing', name: 'Wound Dressing', price: 50.00 },
-        { id: 'injection', name: 'Injection', price: 30.00 },
-        { id: 'admission_fee', name: 'Admission Fee', price: 500.00 },
-        { "id": "med001", "name": "Aspirin 100mg", "price": 10.50 },
-        { "id": "med002", "name": "Ibuprofen 200mg", "price": 15.00 },
-        { "id": "med003", "name": "Paracetamol 500mg", "price": 8.75 },
-        { "id": "med004", "name": "Amoxicillin 250mg", "price": 25.00 },
-        { "id": "med005", "name": "Loratadine 10mg", "price": 12.25 }
-      ],
-      lastUpdated: admin.firestore.FieldValue.serverTimestamp()
-    })
+    // Seed billable items
+    console.log('\n📦 Seeding billable items...');
+    const billableItems = [
+      { name: 'Levofloxacin 500mg IV', quantity: 150, description: 'Fluoroquinolone antibiotic for severe bacterial infections.', price: 8.25 },
+      { name: 'Heparin 5000 units/mL', quantity: 200, description: 'Anticoagulant to prevent blood clots.', price: 1.50 },
+      { name: 'Dextrose 5% Solution', quantity: 1000, description: 'Intravenous fluid for hydration and providing calories.', price: 0.75 },
+      { name: 'Lidocaine 2%', quantity: 500, description: 'Local anesthetic for minor procedures and pain relief.', price: 0.90 },
+      { name: 'Insulin Aspart (Novolog)', quantity: 50, description: 'Rapid-acting insulin for managing blood sugar levels.', price: 25.00 },
+      { name: 'Cefepime 1g IV', quantity: 125, description: 'Fourth-generation cephalosporin antibiotic.', price: 12.00 },
+      { name: 'Lorazepam 2mg tablets', quantity: 1000, description: 'Benzodiazepine used to treat anxiety and seizures.', price: 0.50 },
+      { name: 'Pantoprazole 40mg IV', quantity: 100, description: 'Proton pump inhibitor for severe acid reflux and ulcers.', price: 4.75 },
+      { name: 'Ondansetron 4mg IV', quantity: 300, description: 'Anti-emetic used to prevent nausea and vomiting.', price: 3.50 },
+      { name: 'Epinephrine 1mg/mL', quantity: 250, description: 'Adrenergic agonist for anaphylaxis and cardiac arrest.', price: 1.80 },
+    ];
 
-    // Initialize inventory
-    await db.collection('app_config').doc('inventory').set({
-      items: [
-        { id: 'paracetamol', name: 'Paracetamol 500mg', stockLevel: 1000, unit: 'tablets', category: 'medication', minimumLevel: 100 },
-        { id: 'amoxicillin', name: 'Amoxicillin 250mg', stockLevel: 500, unit: 'capsules', category: 'medication', minimumLevel: 50 },
-        { id: 'ibuprofen', name: 'Ibuprofen 200mg', stockLevel: 750, unit: 'tablets', category: 'medication', minimumLevel: 75 },
-        { "id": "med001", "name": "Aspirin 100mg", "stockLevel": 1000, "unit": "tablets", "category": "medication", "minimumLevel": 100 },
-        { "id": "med002", "name": "Ibuprofen 200mg", "stockLevel": 800, "unit": "tablets", "category": "medication", "minimumLevel": 100 },
-        { "id": "med003", "name": "Paracetamol 500mg", "stockLevel": 1200, "unit": "tablets", "category": "medication", "minimumLevel": 150 },
-        { "id": "med004", "name": "Amoxicillin 250mg", "stockLevel": 600, "unit": "capsules", "category": "medication", "minimumLevel": 50 },
-        { "id": "med005", "name": "Loratadine 10mg", "stockLevel": 400, "unit": "tablets", "category": "medication", "minimumLevel": 40 },
-        { id: 'bandages', name: 'Elastic Bandages', stockLevel: 200, unit: 'rolls', category: 'supplies', minimumLevel: 20 },
-        { id: 'syringes', name: 'Disposable Syringes', stockLevel: 2000, unit: 'pieces', category: 'supplies', minimumLevel: 200 },
-        { id: 'gloves', name: 'Medical Gloves', stockLevel: 500, unit: 'boxes', category: 'supplies', minimumLevel: 50 },
-        { id: 'masks', name: 'Surgical Masks', stockLevel: 1000, unit: 'pieces', category: 'supplies', minimumLevel: 100 },
-        { id: 'antiseptic', name: 'Antiseptic Solution', stockLevel: 100, unit: 'bottles', category: 'supplies', minimumLevel: 10 }
-      ],
-      lastUpdated: admin.firestore.FieldValue.serverTimestamp()
-    })
+    const batch = db.batch();
+    billableItems.forEach((item, index) => {
+      const id = `item-${String(index + 1).padStart(3, '0')}`;
+      const docRef = db.collection('billable_items').doc(id);
+      batch.set(docRef, { ...item, id });
+    });
+    await batch.commit();
+    console.log(`✅ Seeded ${billableItems.length} billable items.`);
 
     console.log('✅ Application configuration created')
 

@@ -10,7 +10,7 @@ export const useBillingStore = defineStore('billing', () => {
   const searchItems = async (searchTerm) => {
     try {
       loading.value = true;
-      const itemsRef = collection(db, 'app_config', 'price_list', 'items');
+      const itemsRef = collection(db, 'billable_items');
       const q = query(
         itemsRef,
         where('name', '>=', searchTerm),
