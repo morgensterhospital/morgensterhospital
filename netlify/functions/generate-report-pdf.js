@@ -33,14 +33,22 @@ function buildTable(doc, title, transactions) {
 
   // Table Rows
   for (const transaction of transactions) {
-    const y = doc.y;
-    doc
-      .fontSize(10)
-      .font('Helvetica')
-      .text(transaction.patientName, itemX, y)
-      .text(new Date(transaction.date).toLocaleString(), dateX, y)
-      .text(transaction.amount.toFixed(2), amountX, y, { align: 'right' });
-    doc.moveDown();
+    try {
+      const y = doc.y;
+      const patientName = transaction.patientName || 'N/A';
+      const date = transaction.date ? new Date(transaction.date).toLocaleString() : 'N/A';
+      const amount = typeof transaction.amount === 'number' ? transaction.amount.toFixed(2) : '0.00';
+
+      doc
+        .fontSize(10)
+        .font('Helvetica')
+        .text(patientName, itemX, y)
+        .text(date, dateX, y)
+        .text(amount, amountX, y, { align: 'right' });
+      doc.moveDown();
+    } catch (loopError) {
+      console.error('Error processing a transaction for PDF, skipping.', loopError, transaction);
+    }
   }
 }
 
@@ -51,6 +59,13 @@ export const handler = async (event, context) => {
 
   try {
     const { reportType, transactions } = JSON.parse(event.body);
+
+    if (typeof reportType !== 'string' || !Array.isArray(transactions)) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Invalid input: reportType must be a string and transactions must be an array.' })
+      };
+    }
 
     const doc = new PDFDocument({ margin: 50 });
     const buffers = [];

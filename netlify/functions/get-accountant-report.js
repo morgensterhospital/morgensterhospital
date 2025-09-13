@@ -71,48 +71,67 @@ export const handler = async (event, context) => {
     };
 
     for (const doc of invoicesSnapshot.docs) {
-      const invoice = doc.data();
-      const patientId = doc.ref.parent.parent.id;
-      const patient = await getPatient(patientId);
-      const patientName = patient ? `${patient.name} ${patient.surname}` : 'Unknown Patient';
+      try {
+        const invoice = doc.data();
 
-      const transaction = {
-        patientId,
-        patientName,
-        date: invoice.creationDate.toDate().toISOString(),
-        amount: invoice.totalAmount,
-      };
-
-      totalSales += invoice.totalAmount;
-      salesTransactions.push(transaction);
-
-      if (invoice.status === 'paid') {
-        if (invoice.paymentMethod === 'Cash') {
-          totalCash += invoice.amountPaid;
-          cashTransactions.push({ ...transaction, amount: invoice.amountPaid });
-        } else if (invoice.paymentMethod === 'EFT') {
-          totalEft += invoice.amountPaid;
-          eftTransactions.push({ ...transaction, amount: invoice.amountPaid });
+        // Skip invoice if essential data is missing or invalid to prevent crashes
+        if (!invoice.creationDate || typeof invoice.creationDate.toDate !== 'function') {
+          console.warn('Skipping invoice with invalid creationDate:', doc.id);
+          continue;
         }
-      } else {
-        totalUnpaid += invoice.balance;
-        unpaidTransactions.push({ ...transaction, amount: invoice.balance });
-      }
+        if (typeof invoice.totalAmount !== 'number') {
+          console.warn('Skipping invoice with invalid totalAmount:', doc.id);
+          continue;
+        }
 
-      // Aggregate items for top-selling calculation
-      const itemsSnapshot = await doc.ref.collection('items').get();
-      itemsSnapshot.forEach(itemDoc => {
-        const item = itemDoc.data();
-        const existingItem = itemsSold.get(item.id) || {
-          id: item.id,
-          name: item.description,
-          quantitySold: 0,
-          totalRevenue: 0,
+        const patientId = doc.ref.parent.parent.id;
+        const patient = await getPatient(patientId);
+        const patientName = patient ? `${patient.name || ''} ${patient.surname || ''}`.trim() : 'Unknown Patient';
+
+        const transaction = {
+          patientId,
+          patientName,
+          date: invoice.creationDate.toDate().toISOString(),
+          amount: invoice.totalAmount || 0,
         };
-        existingItem.quantitySold += item.quantity;
-        existingItem.totalRevenue += item.totalPrice;
-        itemsSold.set(item.id, existingItem);
-      });
+
+        totalSales += invoice.totalAmount || 0;
+        salesTransactions.push(transaction);
+
+        if (invoice.status === 'paid') {
+          if (invoice.paymentMethod === 'Cash') {
+            totalCash += invoice.amountPaid || 0;
+            cashTransactions.push({ ...transaction, amount: invoice.amountPaid || 0 });
+          } else if (invoice.paymentMethod === 'EFT') {
+            totalEft += invoice.amountPaid || 0;
+            eftTransactions.push({ ...transaction, amount: invoice.amountPaid || 0 });
+          }
+        } else {
+          totalUnpaid += invoice.balance || 0;
+          unpaidTransactions.push({ ...transaction, amount: invoice.balance || 0 });
+        }
+
+        // Aggregate items for top-selling calculation
+        const itemsSnapshot = await doc.ref.collection('items').get();
+        itemsSnapshot.forEach(itemDoc => {
+          const item = itemDoc.data();
+          if (!item || !item.id || typeof item.quantity !== 'number' || typeof item.totalPrice !== 'number') {
+            console.warn(`Skipping malformed item in invoice ${doc.id}:`, item);
+            return; // continue forEach
+          }
+          const existingItem = itemsSold.get(item.id) || {
+            id: item.id,
+            name: item.description || 'Unnamed Item',
+            quantitySold: 0,
+            totalRevenue: 0,
+          };
+          existingItem.quantitySold += item.quantity;
+          existingItem.totalRevenue += item.totalPrice;
+          itemsSold.set(item.id, existingItem);
+        });
+      } catch (loopError) {
+        console.error(`Error processing invoice doc ${doc.id}. Skipping.`, loopError);
+      }
     }
 
     const topSellingItems = Array.from(itemsSold.values())
