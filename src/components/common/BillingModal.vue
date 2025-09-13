@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" @click.self="$emit('close')">
     <div class="bg-background-dark rounded-lg shadow-xl w-full max-w-7xl max-h-full flex flex-col">
-      <BillingHistoryModal v-if="isBillingHistoryOpen" :patientId="patientId" @close="isBillingHistoryOpen = false" />
+      <BillingHistoryModal v-if="isBillingHistoryOpen" :patientId="patient.id" @close="isBillingHistoryOpen = false" />
       <div v-if="showReceipt" class="hidden">
         <Receipt :patient="patient" :items="billItems" :totalBill="totalBill" :amountPaid="amountPaid" :balance="balance" ref="receipt" />
       </div>
@@ -78,7 +78,8 @@
                   <td>{{ item.name }}</td>
                   <td class="text-center">{{ item.quantity }}</td>
                   <td class="text-right">{{ item.price.toFixed(2) }}</td>
-                  <td class="text-right">{{ item.total.toFixed(2) }}</td>
+                  <!-- FIX: Your items already have a total, use that. Renamed to totalPrice for clarity -->
+                  <td class="text-right">{{ item.totalPrice.toFixed(2) }}</td>
                   <td class="text-center">
                     <button @click="removeFromBill(index)" class="text-red-500 hover:text-red-400">
                       <MdiIcon :path="mdiDelete" />
@@ -96,7 +97,7 @@
             <div class="w-full max-w-sm space-y-4">
               <div class="flex justify-between">
                 <span class="font-semibold">Total Bill:</span>
-                <span>{{ totalBill }}</span>
+                <span>{{ totalBill.toFixed(2) }}</span>
               </div>
               <div class="flex justify-between items-center">
                 <span class="font-semibold">Amount Paid:</span>
@@ -104,7 +105,7 @@
               </div>
               <div class="flex justify-between">
                 <span class="font-semibold">Balance:</span>
-                <span>{{ balance }}</span>
+                <span>{{ balance.toFixed(2) }}</span>
               </div>
             </div>
           </div>
@@ -116,7 +117,9 @@
           <M3Button variant="outlined" class="ml-4" @click="isBillingHistoryOpen = true">Billing History</M3Button>
           <M3Button variant="outlined" class="ml-4">Reports</M3Button>
         </div>
-        <M3Button variant="filled" @click="processBill">Process Bill</M3Button>
+        <M3Button variant="filled" @click="processBill" :disabled="billingStore.loading">
+          {{ billingStore.loading ? 'Processing...' : 'Process Bill' }}
+        </M3Button>
       </footer>
     </div>
   </div>
@@ -125,7 +128,8 @@
 <script setup>
 import { ref, computed, nextTick } from 'vue';
 import { useBillingStore } from '@/stores/billingStore';
-import { usePatientStore } from '@/stores/patientStore';
+// You will likely need an auth store to get the current user's ID
+// import { useAuthStore } from '@/stores/authStore';
 import MdiIcon from '@/components/common/MdiIcon.vue';
 import M3Button from '@/components/common/M3Button.vue';
 import Receipt from '@/components/common/Receipt.vue';
@@ -140,7 +144,7 @@ const props = defineProps({
 });
 
 const billingStore = useBillingStore();
-const patientStore = usePatientStore();
+// const authStore = useAuthStore(); // Example of using an auth store
 
 const searchTerm = ref('');
 const suggestions = ref([]);
@@ -149,7 +153,7 @@ const paymentMethod = ref('Cash');
 const billItems = ref([]);
 const amountPaid = ref(0);
 
-const totalBill = computed(() => billItems.value.reduce((sum, item) => sum + item.total, 0));
+const totalBill = computed(() => billItems.value.reduce((sum, item) => sum + item.totalPrice, 0));
 const balance = computed(() => totalBill.value - amountPaid.value);
 
 const handleSearch = async () => {
@@ -175,9 +179,10 @@ const addToBill = () => {
   const item = {
     id: selectedItem.value.id,
     name: selectedItem.value.name,
-    quantity: quantity.value,
-    price: selectedItem.value.price,
-    total: quantity.value * selectedItem.value.price,
+    quantity: Number(quantity.value),
+    price: Number(selectedItem.value.price),
+    // Changed 'total' to 'totalPrice' to match backend expectation
+    totalPrice: Number(quantity.value) * Number(selectedItem.value.price),
   };
   billItems.value.push(item);
   searchTerm.value = '';
@@ -191,34 +196,53 @@ const removeFromBill = (index) => {
 
 const showReceipt = ref(false);
 const receipt = ref(null);
-const patient = ref({});
 const isBillingHistoryOpen = ref(false);
 
 const processBill = async () => {
+  if (billItems.value.length === 0) {
+    alert("Cannot process an empty bill.");
+    return;
+  }
+
+  // --- IMPORTANT: Get the real user ID ---
+  // Replace this with your actual authentication logic
+  // const currentUserId = authStore.currentUser.uid;
+  const currentUserId = 'REPLACE_WITH_ACTUAL_LOGGED_IN_USER_ID';
+
   try {
-    await billingStore.processBill({
-      patientId: props.patientId,
+    const result = await billingStore.processBill({
+      // FIX: Changed props.patientId to props.patient.id
+      patientId: props.patient.id, 
       items: billItems.value,
       paymentMethod: paymentMethod.value,
-      amountPaid: amountPaid.value,
-      processedBy: 'accountant-id' // placeholder
+      amountPaid: Number(amountPaid.value),
+      processedBy: currentUserId 
     });
 
-    patient.value = await patientStore.getPatient(props.patientId);
+    console.log('Bill processed successfully:', result);
+
+    // This logic seems to be for printing, which won't work in a headless environment
+    // like a serverless function. Printing should be handled entirely on the client.
+    // I am keeping your original logic here.
     showReceipt.value = true;
     await nextTick();
 
     if (confirm('Do you want to print a receipt?')) {
-      window.print();
+      // You might need a dedicated print function for the receipt component
+      // This is a placeholder for how you might trigger it.
+       window.print(); 
     }
 
     showReceipt.value = false;
+    // Reset state after successful processing
     billItems.value = [];
     amountPaid.value = 0;
+    alert('Bill processed successfully!');
+    // emit('close'); // Optionally close the modal after success
 
   } catch (error) {
     console.error('Failed to process bill:', error);
-    alert('Failed to process bill. Please try again.');
+    alert(`Failed to process bill: ${error.message}`);
   }
 };
 </script>
