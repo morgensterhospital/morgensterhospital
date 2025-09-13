@@ -101,6 +101,7 @@ const seedUsers = async () => {
       }
     }
 
+const seedBillableItems = async () => {
     // Seed billable items
     console.log('\n📦 Seeding billable items...');
     const billableItems = [
@@ -124,8 +125,7 @@ const seedUsers = async () => {
     });
     await batch.commit();
     console.log(`✅ Seeded ${billableItems.length} billable items.`);
-
-    console.log('✅ Application configuration created')
+}
 
     console.log('\n🎉 User seeding completed successfully!')
     console.log(`📈 Total users created: ${totalCreated}`)
@@ -181,26 +181,26 @@ export const handler = async (event, context) => {
 
   try {
     // Check if users already exist
-    const existingUsers = await db.collection('users').limit(1).get()
-    if (!existingUsers.empty) {
-      return {
-        statusCode: 200,
-        headers: corsHeaders,
-        body: JSON.stringify({ 
-          message: 'Users already seeded',
-          totalUsers: userRoles.reduce((sum, r) => sum + r.count, 0)
-        })
-      }
+    const usersSnapshot = await db.collection('users').limit(1).get();
+    if (usersSnapshot.empty) {
+      await seedUsers();
+    } else {
+      console.log('Users collection already exists, skipping user seeding.');
     }
 
-    await seedUsers()
+    // Check if billable items already exist
+    const itemsSnapshot = await db.collection('billable_items').limit(1).get();
+    if (itemsSnapshot.empty) {
+      await seedBillableItems();
+    } else {
+      console.log('Billable items collection already exists, skipping item seeding.');
+    }
 
     return {
       statusCode: 200,
       headers: corsHeaders,
       body: JSON.stringify({
-        message: 'User seeding completed successfully!',
-        totalCreated: userRoles.reduce((sum, r) => sum + r.count, 0)
+        message: 'Seeding process checked.',
       })
     }
 
