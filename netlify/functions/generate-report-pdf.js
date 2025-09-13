@@ -1,6 +1,6 @@
 import PDFDocument from 'pdfkit';
 
-// A helper function to build the PDF table
+// A helper function to build the PDF table with pagination
 function buildTable(doc, title, transactions) {
   // Header
   doc
@@ -20,20 +20,30 @@ function buildTable(doc, title, transactions) {
   const itemX = 50;
   const dateX = 250;
   const amountX = 450;
+  const pageBottom = doc.page.height - doc.page.margins.bottom;
 
-  doc
-    .fontSize(12)
-    .font('Helvetica-Bold')
-    .text('Patient Name', itemX, tableTop)
-    .text('Date', dateX, tableTop)
-    .text('Amount ($)', amountX, tableTop, { align: 'right' });
+  const drawHeader = () => {
+    doc
+      .fontSize(12)
+      .font('Helvetica-Bold')
+      .text('Patient Name', itemX, doc.y)
+      .text('Date', dateX, doc.y)
+      .text('Amount ($)', amountX, doc.y, { align: 'right' });
+    doc.moveTo(itemX, doc.y + 15).lineTo(doc.page.width - itemX, doc.y + 15).stroke();
+    doc.moveDown();
+  };
 
-  doc.moveTo(itemX, doc.y + 5).lineTo(doc.page.width - itemX, doc.y + 5).stroke();
-  doc.moveDown();
+  drawHeader();
 
   // Table Rows
   for (const transaction of transactions) {
     try {
+      // Check if there is enough space for the next row, if not, add a new page
+      if (doc.y + 20 > pageBottom) {
+        doc.addPage();
+        drawHeader();
+      }
+
       const y = doc.y;
       const patientName = transaction.patientName || 'N/A';
       const date = transaction.date ? new Date(transaction.date).toLocaleString() : 'N/A';
@@ -42,7 +52,7 @@ function buildTable(doc, title, transactions) {
       doc
         .fontSize(10)
         .font('Helvetica')
-        .text(patientName, itemX, y)
+        .text(patientName, itemX, y, { width: dateX - itemX - 10 }) // Add width to prevent text overlap
         .text(date, dateX, y)
         .text(amount, amountX, y, { align: 'right' });
       doc.moveDown();
@@ -51,6 +61,23 @@ function buildTable(doc, title, transactions) {
     }
   }
 }
+
+// A promise-based wrapper for the PDF generation
+const generatePdfPromise = (reportType, transactions) => {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ margin: 50 });
+    const buffers = [];
+
+    doc.on('data', buffers.push.bind(buffers));
+    doc.on('end', () => resolve(Buffer.concat(buffers)));
+    doc.on('error', (err) => reject(err));
+
+    buildTable(doc, reportType, transactions);
+
+    doc.end();
+  });
+};
+
 
 export const handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
@@ -67,24 +94,17 @@ export const handler = async (event, context) => {
       };
     }
 
-    const doc = new PDFDocument({ margin: 50 });
-    const buffers = [];
-    doc.on('data', buffers.push.bind(buffers));
-    doc.on('end', () => {});
+    // Sanitize the filename to remove characters that are invalid in a header or filesystem.
+    const sanitizedFilename = reportType.replace(/[^a-zA-Z0-9_.-]/g, '_');
 
-    // Generate the table based on the data
-    buildTable(doc, reportType, transactions);
-
-    doc.end();
-
-    // Concatenate the buffers to get the full PDF
-    const pdfData = Buffer.concat(buffers);
+    // Await the promise to ensure the PDF is fully generated
+    const pdfData = await generatePdfPromise(reportType, transactions);
 
     return {
       statusCode: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${reportType}.pdf"`
+        'Content-Disposition': `attachment; filename="${sanitizedFilename}.pdf"`
       },
       body: pdfData.toString('base64'),
       isBase64Encoded: true,
