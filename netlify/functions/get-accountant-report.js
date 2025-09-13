@@ -72,31 +72,37 @@ export const handler = async (event, context) => {
 
     for (const doc of invoicesSnapshot.docs) {
       const invoice = doc.data();
+
+      // Skip invoice if essential data is missing to prevent crashes
+      if (!invoice.creationDate || !invoice.totalAmount) {
+        continue;
+      }
+
       const patientId = doc.ref.parent.parent.id;
       const patient = await getPatient(patientId);
-      const patientName = patient ? `${patient.name} ${patient.surname}` : 'Unknown Patient';
+      const patientName = patient ? `${patient.name || ''} ${patient.surname || ''}`.trim() : 'Unknown Patient';
 
       const transaction = {
         patientId,
         patientName,
         date: invoice.creationDate.toDate().toISOString(),
-        amount: invoice.totalAmount,
+        amount: invoice.totalAmount || 0,
       };
 
-      totalSales += invoice.totalAmount;
+      totalSales += invoice.totalAmount || 0;
       salesTransactions.push(transaction);
 
       if (invoice.status === 'paid') {
         if (invoice.paymentMethod === 'Cash') {
-          totalCash += invoice.amountPaid;
-          cashTransactions.push({ ...transaction, amount: invoice.amountPaid });
+          totalCash += invoice.amountPaid || 0;
+          cashTransactions.push({ ...transaction, amount: invoice.amountPaid || 0 });
         } else if (invoice.paymentMethod === 'EFT') {
-          totalEft += invoice.amountPaid;
-          eftTransactions.push({ ...transaction, amount: invoice.amountPaid });
+          totalEft += invoice.amountPaid || 0;
+          eftTransactions.push({ ...transaction, amount: invoice.amountPaid || 0 });
         }
       } else {
-        totalUnpaid += invoice.balance;
-        unpaidTransactions.push({ ...transaction, amount: invoice.balance });
+        totalUnpaid += invoice.balance || 0;
+        unpaidTransactions.push({ ...transaction, amount: invoice.balance || 0 });
       }
 
       // Aggregate items for top-selling calculation

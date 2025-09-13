@@ -74,9 +74,29 @@
         </div>
       </div>
 
-      <!-- Top Selling Items -->
-      <div class="bg-gray-800/60 p-6 rounded-lg shadow-lg border border-gray-700">
-        <h3 class="text-lg font-semibold text-white mb-4">Top Selling Items</h3>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Unpaid Patients List -->
+        <div class="bg-gray-800/60 p-6 rounded-lg shadow-lg border border-gray-700">
+          <h3 class="text-lg font-semibold text-white mb-4">Unpaid Patients</h3>
+          <div class="overflow-y-auto max-h-96">
+            <ul v-if="reportData.unpaidTransactions.length > 0" class="space-y-3">
+              <li v-for="transaction in reportData.unpaidTransactions" :key="transaction.patientId" @click="viewPatientProfile(transaction.patientId)" class="p-3 bg-gray-900/50 rounded-lg flex justify-between items-center border border-gray-700 hover:border-indigo-500 transition-all cursor-pointer">
+                <div>
+                  <p class="font-semibold text-indigo-400">{{ transaction.patientName }}</p>
+                  <p class="text-sm text-gray-400">{{ formatDate(transaction.date) }}</p>
+                </div>
+                <p class="text-md font-mono text-red-400">${{ formatCurrency(transaction.amount) }}</p>
+              </li>
+            </ul>
+            <div v-else class="text-center py-12 text-gray-500">
+              <p>No unpaid patients for the selected period.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Selling Items -->
+        <div class="bg-gray-800/60 p-6 rounded-lg shadow-lg border border-gray-700">
+          <h3 class="text-lg font-semibold text-white mb-4">Top Selling Items</h3>
         <div class="overflow-x-auto">
           <table class="w-full text-sm text-left text-gray-400">
             <thead class="text-xs text-gray-300 uppercase bg-gray-700/50">
@@ -104,6 +124,7 @@
               </tr>
             </tbody>
           </table>
+        </div>
         </div>
       </div>
     </main>
@@ -200,9 +221,15 @@ const formatCurrency = (amount) => {
   return amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
 };
 
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  const options = { year: 'numeric', month: 'short', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString(undefined, options);
+};
+
 onMounted(() => {
   initializeDateRange();
-  fetchReportData();
+  // fetchReportData(); // Don't fetch on load, wait for user to click button
 });
 </script>
 
