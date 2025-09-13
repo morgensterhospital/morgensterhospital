@@ -33,7 +33,7 @@ export const usePatientStore = defineStore('patient', () => {
       const authStore = useAuthStore()
       const result = await apiService.createPatient(patientData, authStore.user.uid)
       
-      return result.patientId
+      return result.patient
     } catch (err) {
       error.value = err.message
       throw err
@@ -45,23 +45,41 @@ export const usePatientStore = defineStore('patient', () => {
   // Search patients
   const searchPatients = async (searchTerm) => {
     try {
-      loading.value = true
+      loading.value = true;
+      const patientsRef = collection(db, 'patients');
       
-      const q = query(
-        collection(db, 'patients'),
+      // Query by name
+      const nameQuery = query(
+        patientsRef,
         where('name', '>=', searchTerm),
         where('name', '<=', searchTerm + '\uf8ff'),
         limit(10)
-      )
+      );
       
-      const querySnapshot = await getDocs(q)
-      const results = []
+      // Query by hospital number
+      const hospitalNumberQuery = query(
+        patientsRef,
+        where('hospitalNumber', '>=', searchTerm),
+        where('hospitalNumber', '<=', searchTerm + '\uf8ff'),
+        limit(10)
+      );
+
+      const [nameSnapshot, hospitalNumberSnapshot] = await Promise.all([
+        getDocs(nameQuery),
+        getDocs(hospitalNumberQuery)
+      ]);
+
+      const resultsMap = new Map();
       
-      querySnapshot.forEach((doc) => {
-        results.push({ id: doc.id, ...doc.data() })
-      })
+      nameSnapshot.forEach((doc) => {
+        resultsMap.set(doc.id, { id: doc.id, ...doc.data() });
+      });
       
-      return results
+      hospitalNumberSnapshot.forEach((doc) => {
+        resultsMap.set(doc.id, { id: doc.id, ...doc.data() });
+      });
+
+      return Array.from(resultsMap.values());
     } catch (err) {
       error.value = err.message
       throw err
@@ -169,6 +187,38 @@ export const usePatientStore = defineStore('patient', () => {
     }
   }
 
+  // Update patient discharge status
+  const updatePatientDischargeStatus = async (patientId, dischargeStatus) => {
+    try {
+      const authStore = useAuthStore()
+      await apiService.updatePatientDischargeStatus(patientId, dischargeStatus, authStore.user.uid)
+    } catch (err) {
+      error.value = err.message
+      throw err
+    }
+  }
+
+  // Create discharge notification
+  const createDischargeNotification = async (notificationData) => {
+    try {
+      const authStore = useAuthStore()
+      await apiService.createDischargeNotification({ ...notificationData, doctorId: authStore.user.uid, doctorName: authStore.user.displayName })
+    } catch (err) {
+      error.value = err.message
+      throw err
+    }
+  }
+
+  // Get discharge notifications
+  const getDischargeNotifications = async () => {
+    try {
+      return await apiService.getDischargeNotifications()
+    } catch (err) {
+      error.value = err.message
+      throw err
+    }
+  }
+
   return {
     patients: computed(() => patients.value),
     currentPatient: computed(() => currentPatient.value),
@@ -183,6 +233,7 @@ export const usePatientStore = defineStore('patient', () => {
     addPrescription,
     addLabRequest,
     addRadiologyRequest,
-    processBilling
+    processBilling,
+    updatePatientDischargeStatus
   }
 })

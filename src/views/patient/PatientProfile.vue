@@ -120,20 +120,12 @@
               VIEW
             </m3-button>
             <m3-button
-              v-if="hasPermission('billing:edit')"
+              v-if="authStore.userRole === 'Accountant'"
               variant="outlined"
               size="small"
               @click="navigateTo(`/patient/${patient.id}/billing?mode=edit`)"
             >
               EDIT
-            </m3-button>
-            <m3-button
-              v-if="hasPermission('billing:create')"
-              variant="outlined"
-              size="small"
-              @click="navigateTo(`/patient/${patient.id}/billing?mode=new`)"
-            >
-              SAVE
             </m3-button>
           </div>
         </div>
@@ -149,7 +141,7 @@
               VIEW
             </m3-button>
             <m3-button
-              v-if="hasPermission('doctors_notes:edit')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('doctors_notes:edit')"
               variant="outlined"
               size="small"
               @click="editDoctorNotes"
@@ -157,7 +149,7 @@
               EDIT
             </m3-button>
             <m3-button
-              v-if="hasPermission('doctors_notes:create')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('doctors_notes:create')"
               variant="outlined"
               size="small"
               @click="addDoctorNote"
@@ -178,7 +170,7 @@
               VIEW
             </m3-button>
             <m3-button
-              v-if="hasPermission('nurses_notes:edit')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('nurses_notes:edit')"
               variant="outlined"
               size="small"
               @click="editNurseNotes"
@@ -186,7 +178,7 @@
               EDIT
             </m3-button>
             <m3-button
-              v-if="hasPermission('nurses_notes:create')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('nurses_notes:create')"
               variant="outlined"
               size="small"
               @click="addNurseNote"
@@ -207,7 +199,7 @@
               VIEW
             </m3-button>
             <m3-button
-              v-if="hasPermission('vitals:create')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('vitals:create')"
               variant="outlined"
               size="small"
               @click="addVitals"
@@ -228,7 +220,7 @@
               VIEW
             </m3-button>
             <m3-button
-              v-if="hasPermission('prescriptions:edit')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('prescriptions:edit')"
               variant="outlined"
               size="small"
               @click="editPrescriptions"
@@ -236,7 +228,7 @@
               EDIT
             </m3-button>
             <m3-button
-              v-if="hasPermission('prescriptions:create')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('prescriptions:create')"
               variant="outlined"
               size="small"
               @click="addPrescription"
@@ -244,7 +236,7 @@
               ADD
             </m3-button>
             <m3-button
-              v-if="hasPermission('prescriptions:dispense')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('prescriptions:dispense')"
               variant="outlined"
               size="small"
               @click="dispenseMedication"
@@ -265,7 +257,7 @@
               VIEW
             </m3-button>
             <m3-button
-              v-if="hasPermission('lab_requests:create')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('lab_requests:create')"
               variant="outlined"
               size="small"
               @click="requestLabTest"
@@ -273,7 +265,7 @@
               REQUEST
             </m3-button>
             <m3-button
-              v-if="hasPermission('lab_results:create')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('lab_results:create')"
               variant="outlined"
               size="small"
               @click="enterLabResults"
@@ -294,7 +286,7 @@
               VIEW
             </m3-button>
             <m3-button
-              v-if="hasPermission('radiology_requests:create')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('radiology_requests:create')"
               variant="outlined"
               size="small"
               @click="requestXray"
@@ -302,7 +294,7 @@
               REQUEST
             </m3-button>
             <m3-button
-              v-if="hasPermission('radiology_results:create')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('radiology_results:create')"
               variant="outlined"
               size="small"
               @click="enterRadiologyResults"
@@ -323,7 +315,7 @@
               VIEW
             </m3-button>
             <m3-button
-              v-if="hasPermission('operations:create')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('operations:create')"
               variant="outlined"
               size="small"
               @click="addOperation"
@@ -344,7 +336,7 @@
               VIEW
             </m3-button>
             <m3-button
-              v-if="hasPermission('rehabilitation_notes:edit')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('rehabilitation_notes:edit')"
               variant="outlined"
               size="small"
               @click="editRehabNotes"
@@ -352,7 +344,7 @@
               EDIT
             </m3-button>
             <m3-button
-              v-if="hasPermission('rehabilitation_notes:create')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('rehabilitation_notes:create')"
               variant="outlined"
               size="small"
               @click="addRehabNote"
@@ -373,7 +365,7 @@
               VIEW
             </m3-button>
             <m3-button
-              v-if="hasPermission('admission_discharge:create')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('admission_discharge:create')"
               variant="outlined"
               size="small"
               @click="addAdmissionDischarge"
@@ -381,7 +373,7 @@
               ADD
             </m3-button>
             <m3-button
-              v-if="hasPermission('admission_discharge:approve')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('admission_discharge:approve')"
               variant="outlined"
               size="small"
               @click="approveDischarge"
@@ -402,7 +394,7 @@
               VIEW
             </m3-button>
             <m3-button
-              v-if="hasPermission('consent_forms:create')"
+              v-if="authStore.userRole !== 'Accountant' && hasPermission('consent_forms:create')"
               variant="outlined"
               size="small"
               @click="addConsentForm"

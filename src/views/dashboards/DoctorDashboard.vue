@@ -60,6 +60,10 @@
               </ul>
             </div>
           </div>
+          <button @click="openDischargeModal" class="w-full flex items-center p-4 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg transition-colors">
+            <MdiIcon :path="mdiClipboardArrowUpOutline" size="24" class="mr-3 text-blue-400" />
+            <span class="font-medium">Request Patient Discharge</span>
+          </button>
         </div>
       </div>
 
@@ -75,6 +79,21 @@
         </div>
       </div>
     </div>
+
+    <!-- Discharge Confirmation Modal -->
+    <div v-if="isDischargeModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-surface-dark rounded-lg p-8 max-w-md w-full shadow-xl">
+        <h2 class="text-xl font-bold text-text-light mb-4">Confirm Discharge Request</h2>
+        <p class="text-text-muted mb-6">
+          Are you sure you want to request the discharge for patient
+          <strong class="text-primary">{{ patientToDischarge.name }}</strong>?
+        </p>
+        <div class="flex justify-end space-x-4">
+          <M3Button variant="outlined" @click="closeDischargeModal">Cancel</M3Button>
+          <M3Button variant="filled" @click="requestDischarge">Confirm Request</M3Button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -87,7 +106,9 @@ import MdiIcon from '@/components/common/MdiIcon.vue';
 import {
   mdiAccountPlus,
   mdiMagnify,
+  mdiClipboardArrowUpOutline,
 } from '@mdi/js';
+import M3Button from '@/components/common/M3Button.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -101,8 +122,33 @@ const todayStats = ref({
   appointments: 12,
   prescriptions: 8,
 });
+const isDischargeModalOpen = ref(false);
+const patientToDischarge = ref({ id: '', name: '' });
 
 let timeInterval = null;
+
+const openDischargeModal = (patient) => {
+  patientToDischarge.value = patient;
+  isDischargeModalOpen.value = true;
+};
+
+const closeDischargeModal = () => {
+  isDischargeModalOpen.value = false;
+};
+
+const requestDischarge = async () => {
+  try {
+    await patientStore.createDischargeNotification({
+      patientId: patientToDischarge.value.id,
+      patientName: patientToDischarge.value.name,
+    });
+    closeDischargeModal();
+    alert('Discharge request sent successfully!');
+  } catch (error) {
+    console.error('Failed to send discharge request:', error);
+    alert('Failed to send discharge request. Please try again.');
+  }
+};
 
 const updateDateTime = () => {
   const now = new Date();
@@ -132,7 +178,7 @@ const handleSearch = async () => {
 };
 
 const selectPatient = (patient) => {
-  router.push(`/patient/${patient.id}`);
+  openDischargeModal(patient);
   searchQuery.value = '';
   searchResults.value = [];
 };
