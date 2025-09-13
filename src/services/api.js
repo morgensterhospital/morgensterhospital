@@ -90,7 +90,7 @@ class ApiService {
   }
 
   // Generate and download PDF report
-  async generateReportPDF(reportType, dateFrom, dateTo, userId) {
+  async generateReportPDF(reportType, transactions) {
     try {
       const response = await fetch(`${API_BASE}/generate-report-pdf`, {
         method: 'POST',
@@ -99,34 +99,42 @@ class ApiService {
         },
         body: JSON.stringify({
           reportType,
-          dateFrom,
-          dateTo,
-          userId
+          transactions
         })
-      })
+      });
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to generate report')
+        // Try to parse error from JSON, but fallback for other errors
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.details || errorMessage;
+        } catch (e) {
+          // Response was not JSON, use status text
+          errorMessage = response.statusText;
+        }
+        throw new Error(errorMessage);
       }
 
       // Get the PDF blob
-      const blob = await response.blob()
+      const blob = await response.blob();
       
       // Create download link
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `${reportType}_${dateFrom}_${dateTo}.pdf`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      // Use a cleaner filename
+      const fileName = `${reportType.replace(/ /g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
 
-      return { success: true, message: 'Report downloaded successfully' }
+      return { success: true, message: 'Report downloaded successfully' };
     } catch (error) {
-      console.error('Error generating PDF report:', error)
-      throw error
+      console.error('Error generating PDF report:', error);
+      throw error;
     }
   }
 
@@ -153,6 +161,14 @@ class ApiService {
   // Get discharge notifications
   async getDischargeNotifications() {
     return this.request('/get-discharge-notifications')
+  }
+
+  // Get accountant report data
+  async getAccountantReport(payload) {
+    return this.request('/get-accountant-report', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
   }
 }
 
