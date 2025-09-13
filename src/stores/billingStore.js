@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+// Added 'orderBy' to the import list
+import { collection, query, where, getDocs, limit, orderBy } from 'firebase/firestore';
 import { db } from '@/services/firebase';
 
 export const useBillingStore = defineStore('billing', () => {
@@ -10,6 +11,7 @@ export const useBillingStore = defineStore('billing', () => {
   const searchItems = async (searchTerm) => {
     try {
       loading.value = true;
+      error.value = null; // Clear previous errors
       const itemsRef = collection(db, 'billable_items');
       const q = query(
         itemsRef,
@@ -34,6 +36,7 @@ export const useBillingStore = defineStore('billing', () => {
   const getBillingHistory = async (patientId) => {
     try {
       loading.value = true;
+      error.value = null; // Clear previous errors
       const invoicesRef = collection(db, `patients/${patientId}/invoices`);
       const q = query(invoicesRef, orderBy('creationDate', 'desc'));
       const querySnapshot = await getDocs(q);
@@ -49,11 +52,43 @@ export const useBillingStore = defineStore('billing', () => {
       loading.value = false;
     }
   };
+  
+  // --- FIXED: Added the missing processBill function ---
+  const processBill = async (billingData) => {
+    try {
+      loading.value = true;
+      error.value = null;
+
+      // The URL should point to your Netlify function endpoint
+      const response = await fetch('/.netlify/functions/billingProcess', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(billingData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Failed to process the bill.');
+      }
+
+      return await response.json();
+
+    } catch (err) {
+      error.value = err.message;
+      throw err; // Re-throw the error so the component can catch it
+    } finally {
+      loading.value = false;
+    }
+  };
+
 
   return {
     loading,
     error,
     searchItems,
     getBillingHistory,
+    processBill, // Expose the new function
   };
 });
