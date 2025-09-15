@@ -1,165 +1,120 @@
 <template>
-  <div class="billing-page">
-    <!-- Page Header -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="breadcrumb">
-          <router-link to="/" class="breadcrumb-link">Home</router-link>
-          <mdi-icon :path="mdiChevronRight" size="16" />
-          <router-link :to="`/patient/${patientId}`" class="breadcrumb-link">Patient Profile</router-link>
-          <mdi-icon :path="mdiChevronRight" size="16" />
-          <span class="breadcrumb-current">Billing</span>
-        </div>
-        <h1 class="page-title">PATIENT BILLING</h1>
+  <div class="bg-background-dark min-h-screen text-text-light font-sans p-4 md:p-8">
+    <!-- Header -->
+    <header class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-text-light">Patient Billing</h1>
+        <p class="text-text-muted">Creating and managing patient invoices.</p>
       </div>
-    </div>
+      <button @click="viewProfile" class="flex items-center px-4 py-2 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
+        <MdiIcon :path="mdiAccount" size="20" class="mr-2 text-primary" />
+        Back to Profile
+      </button>
+    </header>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-container">
-      <div class="loading-spinner"></div>
-      <p>Loading billing information...</p>
+    <div v-if="loading" class="flex justify-center items-center h-64">
+      <MdiIcon :path="mdiLoading" class="animate-spin text-4xl text-primary" />
     </div>
 
-    <!-- Main Billing Content -->
-    <div v-else class="billing-content">
-      <!-- Patient Information Panel -->
-      <div class="patient-info-panel">
-        <div class="patient-card">
-          <div class="patient-header">
-            <h2>Patient Information</h2>
-            <div class="hospital-number">{{ patient?.hospitalNumber }}</div>
+    <!-- Main Content -->
+    <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Left Column: Patient Info & Bill Summary -->
+      <div class="lg:col-span-1 space-y-8">
+        <!-- Patient Info -->
+        <div class="bg-surface-dark rounded-lg p-6 shadow-lg">
+          <div class="flex justify-between items-start">
+            <h2 class="text-xl font-semibold text-text-light">Patient Information</h2>
+            <span class="px-3 py-1 bg-primary/20 text-primary text-sm font-bold rounded-full">{{ patient?.hospitalNumber }}</span>
           </div>
+          <div class="mt-6 space-y-4">
+            <div>
+              <label class="text-sm font-medium text-text-muted">Name</label>
+              <p class="mt-1 text-text-light">{{ patient?.name }} {{ patient?.surname }}</p>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-text-muted">Phone</label>
+              <p class="mt-1 text-text-light">{{ patient?.phone }}</p>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-text-muted">Age</label>
+              <p class="mt-1 text-text-light">{{ patient?.age }} years</p>
+            </div>
+          </div>
+        </div>
 
-          <div class="patient-details">
-            <div class="detail-item">
-              <label>Name</label>
-              <span>{{ patient?.name }} {{ patient?.surname }}</span>
+        <!-- Bill Summary -->
+        <div class="bg-surface-dark rounded-lg p-6 shadow-lg">
+          <h2 class="text-xl font-semibold text-text-light mb-4">Bill Summary</h2>
+          <div class="space-y-4">
+            <div class="flex justify-between items-center text-lg">
+              <span class="text-text-muted">Total Bill:</span>
+              <span class="font-bold text-text-light">M{{ formatCurrency(totalBill) }}</span>
             </div>
-            <div class="detail-item">
-              <label>ID Number</label>
-              <span>{{ patient?.idNumber }}</span>
+            <div class="flex justify-between items-center text-lg">
+              <span class="text-text-muted">Amount Paid:</span>
+              <span class="font-bold text-green-400">M{{ formatCurrency(amountPaid) }}</span>
             </div>
-            <div class="detail-item">
-              <label>Phone</label>
-              <span>{{ patient?.phone }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Age</label>
-              <span>{{ patient?.age }} years</span>
-            </div>
-            <div class="detail-item">
-              <label>Gender</label>
-              <span>{{ patient?.gender }}</span>
+            <div class="flex justify-between items-center text-xl font-bold border-t border-gray-700 pt-4 mt-4">
+              <span class="text-primary">Balance:</span>
+              <span class="text-primary">M{{ formatCurrency(balance) }}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Billing Panel -->
-      <div class="billing-panel">
-        <!-- Add Item Section -->
-        <div class="add-item-section">
-          <h2>Add Items to Bill</h2>
-
-          <div class="item-form">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Item</label>
-                <select v-model="newItem.id" @change="updateItemPrice" class="form-select">
-                  <option value="">Select Item</option>
-                  <option
-                    v-for="item in priceList"
-                    :key="item.id"
-                    :value="item.id"
-                  >
-                    {{ item.name }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Quantity</label>
-                <input
-                  v-model.number="newItem.quantity"
-                  type="number"
-                  min="1"
-                  class="form-input"
-                  @input="calculateItemTotal"
-                />
-              </div>
-
-              <div class="form-group">
-                <label>Unit Price (M)</label>
-                <input
-                  v-model.number="newItem.unitPrice"
-                  type="number"
-                  step="0.01"
-                  class="form-input"
-                  @input="calculateItemTotal"
-                />
-              </div>
-
-              <div class="form-group">
-                <label>Total Price (M)</label>
-                <input
-                  v-model.number="newItem.totalPrice"
-                  type="number"
-                  step="0.01"
-                  class="form-input"
-                  readonly
-                />
-              </div>
-
-              <div class="form-group">
-                <m3-button
-                  variant="filled"
-                  @click="addItemToBill"
-                  :disabled="!canAddItem"
-                >
-                  ADD TO BILL
-                </m3-button>
-              </div>
+      <!-- Right Column: Billing Actions -->
+      <div class="lg:col-span-2 space-y-8">
+        <!-- Add Item -->
+        <div class="bg-surface-dark rounded-lg p-6 shadow-lg">
+          <h2 class="text-xl font-semibold text-text-light mb-4">Add Items to Bill</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+            <div class="md:col-span-2 lg:col-span-2">
+              <label class="text-sm font-medium text-text-muted">Item</label>
+              <select v-model="newItem.id" @change="updateItemPrice" class="mt-1 w-full bg-background-dark border-gray-600 rounded-md shadow-sm text-text-light focus:ring-primary focus:border-primary">
+                <option value="">Select Item</option>
+                <option v-for="item in priceList" :key="item.id" :value="item.id">{{ item.name }}</option>
+              </select>
             </div>
+            <div>
+              <label class="text-sm font-medium text-text-muted">Qty</label>
+              <input v-model.number="newItem.quantity" type="number" min="1" @input="calculateItemTotal" class="mt-1 w-full bg-background-dark border-gray-600 rounded-md shadow-sm text-text-light focus:ring-primary focus:border-primary">
+            </div>
+            <div>
+              <label class="text-sm font-medium text-text-muted">Unit Price</label>
+              <input v-model.number="newItem.unitPrice" type="number" step="0.01" @input="calculateItemTotal" class="mt-1 w-full bg-background-dark border-gray-600 rounded-md shadow-sm text-text-light focus:ring-primary focus:border-primary">
+            </div>
+            <button @click="addItemToBill" :disabled="!canAddItem" class="h-10 px-4 bg-primary hover:bg-primary-hover text-background-dark font-semibold rounded-lg transition-colors disabled:opacity-50">Add</button>
           </div>
         </div>
 
-        <!-- Bill Items Table -->
-        <div class="bill-items-section">
-          <h2>Current Bill Items</h2>
-
-          <div class="bill-table-container">
-            <table class="bill-table">
-              <thead>
+        <!-- Bill Items -->
+        <div class="bg-surface-dark rounded-lg p-6 shadow-lg">
+          <h2 class="text-xl font-semibold text-text-light mb-4">Current Bill Items</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left text-text-muted">
+              <thead class="text-xs text-text-light uppercase bg-surface-dark/50">
                 <tr>
-                  <th>Item #</th>
-                  <th>Item Description</th>
-                  <th>Qty</th>
-                  <th>Unit Price</th>
-                  <th>Total Price</th>
-                  <th>Action</th>
+                  <th scope="col" class="px-4 py-3">Item</th>
+                  <th scope="col" class="px-4 py-3 text-center">Qty</th>
+                  <th scope="col" class="px-4 py-3 text-right">Unit Price</th>
+                  <th scope="col" class="px-4 py-3 text-right">Total</th>
+                  <th scope="col" class="px-4 py-3 text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(item, index) in billItems" :key="index">
-                  <td>{{ index + 1 }}</td>
-                  <td>{{ item.description }}</td>
-                  <td>{{ item.quantity }}</td>
-                  <td>M{{ formatCurrency(item.unitPrice) }}</td>
-                  <td>M{{ formatCurrency(item.totalPrice) }}</td>
-                  <td>
-                    <m3-button
-                      variant="outlined"
-                      size="small"
-                      color="error"
-                      @click="removeItem(index)"
-                    >
-                      DELETE
-                    </m3-button>
-                  </td>
-                </tr>
                 <tr v-if="billItems.length === 0">
-                  <td colspan="6" class="empty-state">
-                    No items added to bill yet
+                  <td colspan="5" class="text-center py-8 text-text-muted">No items added to bill yet.</td>
+                </tr>
+                <tr v-for="(item, index) in billItems" :key="index" class="border-b border-gray-700 hover:bg-surface-dark/40">
+                  <td class="px-4 py-3 font-medium text-text-light">{{ item.description }}</td>
+                  <td class="px-4 py-3 text-center">{{ item.quantity }}</td>
+                  <td class="px-4 py-3 text-right">M{{ formatCurrency(item.unitPrice) }}</td>
+                  <td class="px-4 py-3 text-right font-semibold text-primary">M{{ formatCurrency(item.totalPrice) }}</td>
+                  <td class="px-4 py-3 text-center">
+                    <button @click="removeItem(index)" class="text-red-400 hover:text-red-500">
+                      <MdiIcon :path="mdiDelete" size="20" />
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -167,101 +122,29 @@
           </div>
         </div>
 
-        <!-- Payment Section -->
-        <div class="payment-section">
-          <h2>Payment Processing</h2>
-
-          <div class="payment-methods">
-            <div class="payment-method">
-              <m3-button
-                variant="filled"
-                :class="{ active: paymentMethod === 'cash' }"
-                @click="setPaymentMethod('cash')"
-              >
-                CASH
-              </m3-button>
-              <input
-                v-if="paymentMethod === 'cash'"
-                v-model.number="cashAmount"
-                type="number"
-                step="0.01"
-                placeholder="Cash Amount"
-                class="payment-input"
-              />
+        <!-- Payment -->
+        <div class="bg-surface-dark rounded-lg p-6 shadow-lg">
+          <h2 class="text-xl font-semibold text-text-light mb-4">Payment Processing</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="text-sm font-medium text-text-muted">Payment Method</label>
+              <div class="mt-2 flex space-x-2">
+                <button @click="setPaymentMethod('cash')" :class="paymentMethod === 'cash' ? 'bg-primary text-background-dark' : 'bg-primary/10 text-primary'" class="px-4 py-2 rounded-lg transition-colors">Cash</button>
+                <button @click="setPaymentMethod('eft')" :class="paymentMethod === 'eft' ? 'bg-primary text-background-dark' : 'bg-primary/10 text-primary'" class="px-4 py-2 rounded-lg transition-colors">EFT</button>
+                <button @click="setPaymentMethod('invoice')" :class="paymentMethod === 'invoice' ? 'bg-primary text-background-dark' : 'bg-primary/10 text-primary'" class="px-4 py-2 rounded-lg transition-colors">Invoice</button>
+              </div>
             </div>
-
-            <div class="payment-method">
-              <m3-button
-                variant="filled"
-                :class="{ active: paymentMethod === 'eft' }"
-                @click="setPaymentMethod('eft')"
-              >
-                EFT
-              </m3-button>
-              <input
-                v-if="paymentMethod === 'eft'"
-                v-model.number="eftAmount"
-                type="number"
-                step="0.01"
-                placeholder="EFT Amount"
-                class="payment-input"
-              />
-            </div>
-
-            <div class="payment-method">
-              <m3-button
-                variant="outlined"
-                :class="{ active: paymentMethod === 'invoice' }"
-                @click="setPaymentMethod('invoice')"
-              >
-                INVOICE
-              </m3-button>
+            <div v-if="paymentMethod === 'cash' || paymentMethod === 'eft'">
+              <label class="text-sm font-medium text-text-muted">Amount</label>
+              <input v-if="paymentMethod === 'cash'" v-model.number="cashAmount" type="number" step="0.01" class="mt-1 w-full bg-background-dark border-gray-600 rounded-md shadow-sm text-text-light focus:ring-primary focus:border-primary" placeholder="Cash Amount">
+              <input v-if="paymentMethod === 'eft'" v-model.number="eftAmount" type="number" step="0.01" class="mt-1 w-full bg-background-dark border-gray-600 rounded-md shadow-sm text-text-light focus:ring-primary focus:border-primary" placeholder="EFT Amount">
             </div>
           </div>
-        </div>
-
-        <!-- Bill Summary -->
-        <div class="bill-summary">
-          <div class="summary-row">
-            <label>Total Bill:</label>
-            <span class="amount">M{{ formatCurrency(totalBill) }}</span>
+          <div class="mt-6 flex justify-end">
+            <button @click="processBillAndPrint" :disabled="billItems.length === 0" class="px-6 py-3 bg-primary hover:bg-primary-hover text-background-dark font-bold rounded-lg transition-colors disabled:opacity-50">
+              Process Bill & Print Receipt
+            </button>
           </div>
-          <div class="summary-row">
-            <label>Amount Paid:</label>
-            <span class="amount">M{{ formatCurrency(amountPaid) }}</span>
-          </div>
-          <div class="summary-row balance">
-            <label>Balance:</label>
-            <span class="amount">M{{ formatCurrency(balance) }}</span>
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="action-buttons">
-          <m3-button variant="outlined" @click="viewBillingHistory">
-            BILLING HISTORY
-          </m3-button>
-          <m3-button variant="outlined" @click="viewPatientHistory">
-            PATIENT HISTORY
-          </m3-button>
-          <m3-button
-            variant="filled"
-            @click="processBillAndPrint"
-            :disabled="billItems.length === 0"
-          >
-            PROCESS BILL AND PRINT RECEIPT
-          </m3-button>
-          <m3-button variant="outlined" @click="viewProfile">
-            VIEW PROFILE
-          </m3-button>
-          <m3-button
-            v-if="hasPermission('admission_discharge:approve')"
-            variant="outlined"
-            color="success"
-            @click="dischargePatient"
-          >
-            DISCHARGE
-          </m3-button>
         </div>
       </div>
     </div>
@@ -275,8 +158,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { usePatientStore } from '@/stores/patientStore'
 import { useConfigStore } from '@/stores/configStore'
 import MdiIcon from '@/components/common/MdiIcon.vue'
-import M3Button from '@/components/common/M3Button.vue'
-import { mdiChevronRight } from '@mdi/js'
+import { mdiChevronRight, mdiAccount, mdiLoading, mdiDelete } from '@mdi/js'
 
 const route = useRoute()
 const router = useRouter()
@@ -420,20 +302,8 @@ const processBillAndPrint = async () => {
 }
 
 // Action handlers
-const viewBillingHistory = () => {
-  console.log('View billing history')
-}
-
-const viewPatientHistory = () => {
-  console.log('View patient history')
-}
-
 const viewProfile = () => {
   router.push(`/patient/${patientId.value}`)
-}
-
-const dischargePatient = () => {
-  console.log('Discharge patient')
 }
 
 // Permission check
@@ -453,336 +323,3 @@ onMounted(() => {
   loadData()
 })
 </script>
-
-<style scoped>
-.billing-page {
-  min-height: 100vh;
-  background: #F7F9FC;
-}
-
-.page-header {
-  background: white;
-  padding: 24px 32px;
-  border-bottom: 1px solid #E5E7EB;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  font-size: 14px;
-}
-
-.breadcrumb-link {
-  color: #0066B2;
-  text-decoration: none;
-}
-
-.breadcrumb-link:hover {
-  text-decoration: underline;
-}
-
-.breadcrumb-current {
-  color: #6B7280;
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #0066B2;
-  margin: 0;
-}
-
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  text-align: center;
-}
-
-.loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #E5E7EB;
-  border-top: 4px solid #0066B2;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.billing-content {
-  display: grid;
-  grid-template-columns: 350px 1fr;
-  gap: 32px;
-  padding: 32px;
-  max-width: 1600px;
-  margin: 0 auto;
-}
-
-.patient-info-panel {
-  position: sticky;
-  top: 32px;
-  height: fit-content;
-}
-
-.patient-card {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.patient-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #E5E7EB;
-}
-
-.patient-header h2 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1F2937;
-  margin: 0;
-}
-
-.hospital-number {
-  background: #0066B2;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 12px;
-}
-
-.patient-details {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.detail-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.detail-item label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6B7280;
-  text-transform: uppercase;
-}
-
-.detail-item span {
-  font-size: 14px;
-  color: #1F2937;
-  font-weight: 500;
-}
-
-.billing-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-.add-item-section,
-.bill-items-section,
-.payment-section {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.add-item-section h2,
-.bill-items-section h2,
-.payment-section h2 {
-  font-size: 20px;
-  font-weight: 600;
-  color: #1F2937;
-  margin: 0 0 20px 0;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr auto;
-  gap: 16px;
-  align-items: end;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form-group label {
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-}
-
-.form-select,
-.form-input {
-  padding: 12px;
-  border: 2px solid #E5E7EB;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: border-color 0.2s ease;
-}
-
-.form-select:focus,
-.form-input:focus {
-  outline: none;
-  border-color: #0066B2;
-}
-
-.bill-table-container {
-  overflow-x: auto;
-}
-
-.bill-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 16px;
-}
-
-.bill-table th,
-.bill-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #E5E7EB;
-}
-
-.bill-table th {
-  background: #F9FAFB;
-  font-weight: 600;
-  color: #374151;
-  font-size: 14px;
-}
-
-.bill-table td {
-  font-size: 14px;
-  color: #1F2937;
-}
-
-.empty-state {
-  text-align: center;
-  color: #6B7280;
-  font-style: italic;
-  padding: 32px;
-}
-
-.payment-methods {
-  display: flex;
-  gap: 24px;
-  align-items: center;
-}
-
-.payment-method {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: center;
-}
-
-.payment-input {
-  padding: 8px 12px;
-  border: 2px solid #E5E7EB;
-  border-radius: 6px;
-  font-size: 14px;
-  width: 120px;
-  text-align: center;
-}
-
-.payment-input:focus {
-  outline: none;
-  border-color: #0066B2;
-}
-
-.bill-summary {
-  background: #F9FAFB;
-  padding: 24px;
-  border-radius: 8px;
-  border: 2px solid #E5E7EB;
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-}
-
-.summary-row.balance {
-  border-top: 2px solid #E5E7EB;
-  margin-top: 8px;
-  padding-top: 16px;
-  font-weight: 600;
-  font-size: 18px;
-}
-
-.summary-row label {
-  font-weight: 500;
-  color: #374151;
-}
-
-.summary-row .amount {
-  font-weight: 600;
-  color: #0066B2;
-  font-size: 16px;
-}
-
-.action-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
-  padding-top: 24px;
-  border-top: 1px solid #E5E7EB;
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .billing-content {
-    grid-template-columns: 1fr;
-    padding: 16px;
-  }
-
-  .patient-info-panel {
-    position: static;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .payment-methods {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-  }
-
-  .payment-method {
-    flex-direction: row;
-    justify-content: space-between;
-  }
-
-  .action-buttons {
-    flex-direction: column;
-  }
-}
-</style>
