@@ -1,80 +1,72 @@
-Reimagined: A Futuristic and Animated Login Experience
 
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-background-dark text-text-light font-sans overflow-hidden">
-    <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
-    <transition name="fade-scale" appear>
-      <div class="w-full max-w-md p-8 space-y-8 bg-surface-dark/80 backdrop-blur-xl rounded-2xl shadow-lg border border-primary/20 relative z-10">
-        <div class="text-center">
-          <MdiIcon :path="mdiHospital" size="48" class="text-primary mx-auto" />
-          <h1 class="mt-4 text-3xl font-bold tracking-tight text-glow">Morgenster HMS</h1>
-          <p class="mt-2 text-text-muted">Welcome back! Please sign in to your account.</p>
-        </div>
+  <div class="flex items-center justify-center min-h-screen bg-slate-900 text-text-light font-sans overflow-hidden p-4">
+    <!-- Background Effects -->
+    <div class="absolute inset-0 bg-tech-pattern opacity-20"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 rounded-full blur-3xl opacity-50"></div>
 
-        <form @submit.prevent="handleLogin" class="space-y-6">
-          <div>
-            <label for="email" class="text-sm font-medium text-text-muted">Email address</label>
-            <div class="relative">
+    <!-- Login Form Transition -->
+    <transition name="fade-scale" appear>
+      <!-- Animated Gradient Border Wrapper -->
+      <div class="w-full max-w-md p-1 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animated-gradient relative z-10">
+        <!-- Main Form Container -->
+        <div class="w-full p-8 space-y-8 bg-slate-900/80 backdrop-blur-xl rounded-xl shadow-lg">
+          <div class="text-center">
+            <MdiIcon :path="mdiSecurity" size="48" class="text-primary mx-auto icon-glow" />
+            <h1 class="mt-4 text-3xl font-bold tracking-tight text-glow">Morgenster HMS</h1>
+            <p class="mt-2 text-text-muted">Secure Access Portal. Authentication required.</p>
+          </div>
+
+          <form @submit.prevent="handleLogin" class="space-y-6">
+            <div>
+              <label for="email" class="text-sm font-medium text-text-muted">Operator ID (Email)</label>
               <input
                 id="email"
                 v-model="email"
                 type="email"
                 autocomplete="email"
                 required
-                class="mt-1 block w-full px-4 py-3 bg-background-dark border border-gray-600 rounded-lg focus:ring-primary focus:border-primary focus:outline-none transition-all duration-300"
-                placeholder="you@example.com"
+                class="mt-1 block w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg focus:ring-primary focus:border-primary focus:outline-none transition-all duration-300 placeholder-slate-500"
+                placeholder="operator@morgenster.sys"
               />
-              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                </svg>
-              </div>
             </div>
-          </div>
 
-          <div>
-            <div class="flex items-center justify-between">
-              <label for="password" class="text-sm font-medium text-text-muted">Password</label>
-              <a href="#" class="text-sm text-primary hover:underline">Forgot password?</a>
-            </div>
-            <div class="relative">
+            <div>
+              <div class="flex items-center justify-between">
+                <label for="password" class="text-sm font-medium text-text-muted">Password</label>
+                <a href="#" class="text-sm text-primary hover:underline">Auth Failure?</a>
+              </div>
               <input
                 id="password"
                 v-model="password"
                 type="password"
                 autocomplete="current-password"
                 required
-                class="mt-1 block w-full px-4 py-3 bg-background-dark border border-gray-600 rounded-lg focus:ring-primary focus:border-primary focus:outline-none transition-all duration-300"
+                class="mt-1 block w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg focus:ring-primary focus:border-primary focus:outline-none transition-all duration-300 placeholder-slate-500"
                 placeholder="••••••••"
               />
-              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-                </svg>
-              </div>
             </div>
-          </div>
 
-          <div v-if="error" class="p-3 bg-red-500/20 text-red-400 rounded-lg text-sm">
-            {{ error }}
-          </div>
+            <div v-if="error" class="p-3 bg-red-500/20 text-red-400 rounded-lg text-sm">
+              {{ error }}
+            </div>
 
-          <div>
-            <button
-              type="submit"
-              :disabled="loading"
-              class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-gradient hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 transition-all duration-300 transform hover:scale-105"
-            >
-              <span v-if="loading">Signing in...</span>
-              <span v-else>Sign in</span>
-            </button>
-          </div>
-        </form>
+            <div>
+              <button
+                type="submit"
+                :disabled="loading"
+                class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-primary-gradient hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-primary disabled:opacity-50 transition-all duration-300 transform hover:scale-105"
+              >
+                <span v-if="loading">Authenticating...</span>
+                <span v-else>Authorize Access</span>
+              </button>
+            </div>
+          </form>
 
-        <p class="text-center text-xs text-text-muted tracking-wider">
-          &copy; 2025 Alfa Systems. All Rights Reserved.
-        </p>
+          <p class="text-center text-xs text-text-muted tracking-wider">
+            &copy; 2025 Alfa Systems. All Rights Reserved.
+          </p>
+        </div>
       </div>
     </transition>
   </div>
@@ -85,7 +77,8 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 import MdiIcon from '@/components/common/MdiIcon.vue';
-import { mdiHospital } from '@mdi/js';
+// Using a more "tech" icon like mdiSecurity can enhance the futuristic theme
+import { mdiSecurity } from '@mdi/js';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -113,9 +106,14 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-.bg-grid-pattern {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 2rem 2rem;
+/* A more complex, tech-like background pattern */
+.bg-tech-pattern {
+  background-image:
+    linear-gradient(rgba(148, 0, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 0, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(148, 0, 255, 0.03) .5px, transparent .5px),
+    linear-gradient(90deg, rgba(148, 0, 255, 0.03) .5px, transparent .5px);
+  background-size: 75px 75px, 75px 75px, 15px 15px, 15px 15px;
 }
 
 .bg-primary-gradient {
@@ -123,10 +121,34 @@ const handleLogin = async () => {
 }
 
 .text-glow {
-  text-shadow: 0 0 8px rgba(79, 70, 229, 0.5);
+  text-shadow: 0 0 8px rgba(192, 38, 211, 0.5), 0 0 20px rgba(79, 70, 229, 0.5);
 }
 
-/* Animations */
+.icon-glow {
+ filter: drop-shadow(0 0 8px rgba(79, 70, 229, 0.8));
+}
+
+/* Animated Gradient for the border */
+.animated-gradient {
+  background-size: 200% 200%;
+  animation: gradient-animation 4s ease infinite;
+}
+
+@keyframes gradient-animation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+
+/* Form Element Focus Animation */
+input:focus {
+  box-shadow: 0 0 15px rgba(79, 70, 229, 0.5);
+  border-color: rgba(99, 102, 241, 0.8);
+}
+
+
+/* Component Enter/Leave Animations */
 .fade-scale-enter-active,
 .fade-scale-leave-active {
   transition: opacity 0.5s ease, transform 0.5s ease;
@@ -135,10 +157,6 @@ const handleLogin = async () => {
 .fade-scale-enter-from,
 .fade-scale-leave-to {
   opacity: 0;
-  transform: scale(0.95);
-}
-
-input:focus {
-  box-shadow: 0 0 15px rgba(79, 70, 229, 0.5);
+  transform: scale(0.95) translateY(20px);
 }
 </style>
