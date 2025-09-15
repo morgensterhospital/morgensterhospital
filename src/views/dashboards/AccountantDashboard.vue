@@ -32,6 +32,39 @@
       </div>
     </div>
 
+    <!-- Patient Search -->
+    <div class="p-6 bg-surface-dark rounded-lg mt-6">
+        <h2 class="text-lg font-semibold mb-4">Find a Patient's Financial Record</h2>
+        <div class="relative">
+          <MdiIcon :path="mdiMagnify" size="20" class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search by name or hospital number..."
+            class="w-full pl-10 pr-4 py-2 bg-background-dark border border-gray-600 rounded-lg focus:ring-primary focus:border-primary"
+            @input="handleSearch"
+          />
+          <div
+            v-if="searchResults.length > 0"
+            class="absolute top-full mt-2 w-full bg-background-dark border border-gray-600 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto"
+          >
+            <ul>
+              <li
+                v-for="patient in searchResults"
+                :key="patient.id"
+                class="px-4 py-3 hover:bg-primary/10 cursor-pointer"
+                @click="selectPatient(patient)"
+              >
+                <p class="font-semibold">{{ patient.name }} {{ patient.surname }}</p>
+                <p class="text-sm text-text-muted">
+                  ID: {{ patient.hospitalNumber }} &bull; Age: {{ patient.age }}
+                </p>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
     <!-- Financial Stats Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="p-6 bg-surface-dark rounded-lg">
@@ -98,38 +131,6 @@
       </div>
     </div>
 
-    <!-- Patient Search -->
-    <div class="p-6 bg-surface-dark rounded-lg mt-6">
-        <h2 class="text-lg font-semibold mb-4">Find a Patient's Financial Record</h2>
-        <div class="relative">
-          <MdiIcon :path="mdiMagnify" size="20" class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Search by name or hospital number..."
-            class="w-full pl-10 pr-4 py-2 bg-background-dark border border-gray-600 rounded-lg focus:ring-primary focus:border-primary"
-            @input="handleSearch"
-          />
-          <div
-            v-if="searchResults.length > 0"
-            class="absolute top-full mt-2 w-full bg-background-dark border border-gray-600 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto"
-          >
-            <ul>
-              <li
-                v-for="patient in searchResults"
-                :key="patient.id"
-                class="px-4 py-3 hover:bg-primary/10 cursor-pointer"
-                @click="selectPatient(patient)"
-              >
-                <p class="font-semibold">{{ patient.name }} {{ patient.surname }}</p>
-                <p class="text-sm text-text-muted">
-                  ID: {{ patient.hospitalNumber }} &bull; Age: {{ patient.age }}
-                </p>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
   </div>
 </template>
 
