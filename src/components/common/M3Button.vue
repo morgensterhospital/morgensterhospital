@@ -143,62 +143,62 @@ const handleClick = (event) => {
 
 /* Variants */
 .m3-button--filled {
-  background-color: #0066B2;
-  color: white;
+  background-color: var(--primary-color, #0066B2);
+  color: var(--on-primary-color, white);
 }
 
 .m3-button--outlined {
   background-color: transparent;
-  color: #0066B2;
-  border: 1px solid #0066B2;
+  color: var(--primary-color, #0066B2);
+  border: 1px solid var(--primary-color, #0066B2);
 }
 
 .m3-button--text {
   background-color: transparent;
-  color: #0066B2;
+  color: var(--primary-color, #0066B2);
 }
 
 /* Color variations */
 .m3-button--secondary.m3-button--filled {
-  background-color: #14B8A6;
-  color: white;
+  background-color: var(--secondary-color, #14B8A6);
+  color: var(--on-secondary-color, white);
 }
 
 .m3-button--secondary.m3-button--outlined {
-  border-color: #14B8A6;
-  color: #14B8A6;
+  border-color: var(--secondary-color, #14B8A6);
+  color: var(--secondary-color, #14B8A6);
 }
 
 .m3-button--secondary.m3-button--text {
-  color: #14B8A6;
+  color: var(--secondary-color, #14B8A6);
 }
 
 .m3-button--error.m3-button--filled {
-  background-color: #DC2626;
-  color: white;
+  background-color: var(--error-color, #DC2626);
+  color: var(--on-error-color, white);
 }
 
 .m3-button--error.m3-button--outlined {
-  border-color: #DC2626;
-  color: #DC2626;
+  border-color: var(--error-color, #DC2626);
+  color: var(--error-color, #DC2626);
 }
 
 .m3-button--error.m3-button--text {
-  color: #DC2626;
+  color: var(--error-color, #DC2626);
 }
 
 .m3-button--success.m3-button--filled {
-  background-color: #16A34A;
-  color: white;
+  background-color: var(--success-color, #16A34A);
+  color: var(--on-success-color, white);
 }
 
 .m3-button--success.m3-button--outlined {
-  border-color: #16A34A;
-  color: #16A34A;
+  border-color: var(--success-color, #16A34A);
+  color: var(--success-color, #16A34A);
 }
 
 .m3-button--success.m3-button--text {
-  color: #16A34A;
+  color: var(--success-color, #16A34A);
 }
 
 /* Full width */
