@@ -89,7 +89,7 @@
             @click="seedDatabase"
             class="flex items-center p-4 bg-green-500/10 hover:bg-green-500/20 rounded-lg transition-colors"
           >
-            <MdiIcon :path="mdiDatabaseSeed" size="24" class="mr-3 text-green-400" />
+            <MdiIcon :path="mdiSprout" size="24" class="mr-3 text-green-400" />
             <span class="font-medium">Seed Database</span>
           </button>
         </div>
@@ -144,7 +144,7 @@ import {
   mdiMagnify,
   mdiCog,
   mdiHospitalBuilding,
-  mdiDatabaseSeed,
+  mdiSprout,
 } from '@mdi/js';
 import api from '@/services/api';
 

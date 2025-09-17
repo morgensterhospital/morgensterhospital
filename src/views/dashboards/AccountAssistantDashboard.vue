@@ -24,12 +24,11 @@
     <div class="p-6 bg-surface-dark rounded-lg mt-6">
         <h2 class="text-lg font-semibold mb-4">Find a Patient's Financial Record</h2>
         <div class="relative">
-          <MdiIcon :path="mdiMagnify" size="20" class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-          <input
+          <m3-text-field
             v-model="searchQuery"
-            type="text"
             placeholder="Search by name or hospital number..."
-            class="w-full pl-10 pr-4 py-2 bg-background-dark border border-gray-600 rounded-lg focus:ring-primary focus:border-primary"
+            :icon-leading="mdiMagnify"
+            variant="outlined"
             @input="handleSearch"
           />
           <div
@@ -91,18 +90,18 @@
       <div class="p-6 bg-surface-dark rounded-lg">
         <h2 class="text-lg font-semibold mb-4">Core Functions</h2>
         <div class="space-y-4">
-          <button @click="navigateTo('/reports')" class="w-full flex items-center p-4 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
-            <MdiIcon :path="mdiChartLine" size="24" class="mr-3 text-primary" />
-            <span class="font-medium">Reports & Analytics</span>
-          </button>
-          <button @click="printCashSales" class="w-full flex items-center p-4 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
-            <MdiIcon :path="mdiPrinter" size="24" class="mr-3 text-primary" />
-            <span class="font-medium">Print Cash Sales</span>
-          </button>
-          <button @click="navigateTo('/approvals')" class="w-full flex items-center p-4 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
-            <MdiIcon :path="mdiCheckDecagram" size="24" class="mr-3 text-primary" />
-            <span class="font-medium">Approve Balances</span>
-          </button>
+          <m3-button @click="navigateTo('/reports')" variant="filled" full-width>
+            <MdiIcon :path="mdiChartLine" size="24" class="mr-3" />
+            Reports & Analytics
+          </m3-button>
+          <m3-button @click="printCashSales" variant="filled" full-width>
+            <MdiIcon :path="mdiPrinter" size="24" class="mr-3" />
+            Print Cash Sales
+          </m3-button>
+          <m3-button @click="navigateTo('/approvals')" variant="filled" full-width>
+            <MdiIcon :path="mdiCheckDecagram" size="24" class="mr-3" />
+            Approve Balances
+          </m3-button>
         </div>
       </div>
     </div>
@@ -115,6 +114,9 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { usePatientStore } from '@/stores/patientStore'
 import MdiIcon from '@/components/common/MdiIcon.vue'
+import MdiIcon from '@/components/common/MdiIcon.vue'
+import M3Button from '@/components/common/M3Button.vue'
+import M3TextField from '@/components/common/M3TextField.vue'
 import {
   mdiChartLine,
   mdiMagnify,
