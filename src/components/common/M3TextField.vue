@@ -167,7 +167,7 @@ const handleBlur = (event) => {
   outline: none;
   background: transparent;
   font-size: 16px;
-  color: #1F2937;
+  color: var(--text-light, #1F2937);
   z-index: 1;
 }
 
@@ -179,24 +179,24 @@ const handleBlur = (event) => {
 .m3-text-field__label {
   position: absolute;
   left: 16px;
-  color: #6B7280;
+  color: var(--text-muted, #6B7280);
   font-size: 16px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
   z-index: 2;
-  background: white;
+  background: var(--background-dark, white);
   padding: 0 4px;
 }
 
 .m3-text-field__required {
-  color: #DC2626;
+  color: var(--error-color, #DC2626);
 }
 
 /* Outlined variant */
 .m3-text-field--outlined .m3-text-field__input {
   padding: 16px;
   border-radius: 4px;
-  border: 1px solid #D1D5DB;
+  border: 1px solid var(--text-muted, #D1D5DB);
   transition: border-color 0.2s ease;
 }
 
@@ -217,8 +217,8 @@ const handleBlur = (event) => {
 .m3-text-field--filled .m3-text-field__input {
   padding: 20px 16px 8px;
   border-radius: 4px 4px 0 0;
-  background: #F3F4F6;
-  border-bottom: 2px solid #D1D5DB;
+  background: var(--surface-dark, #F3F4F6);
+  border-bottom: 2px solid var(--text-muted, #D1D5DB);
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
@@ -261,30 +261,30 @@ const handleBlur = (event) => {
 
 /* Focus states */
 .m3-text-field--focused .m3-text-field__input {
-  border-color: #0066B2;
+  border-color: var(--primary-color, #0066B2);
 }
 
 .m3-text-field--focused .m3-text-field__label {
-  color: #0066B2;
+  color: var(--primary-color, #0066B2);
 }
 
 .m3-text-field--filled.m3-text-field--focused .m3-text-field__input {
-  background: #EBF8FF;
-  border-bottom-color: #0066B2;
+  background: var(--primary-hover, #EBF8FF);
+  border-bottom-color: var(--primary-color, #0066B2);
 }
 
 /* Error states */
 .m3-text-field--error .m3-text-field__input {
-  border-color: #DC2626;
+  border-color: var(--error-color, #DC2626);
 }
 
 .m3-text-field--error .m3-text-field__label {
-  color: #DC2626;
+  color: var(--error-color, #DC2626);
 }
 
 .m3-text-field--filled.m3-text-field--error .m3-text-field__input {
-  background: #FEF2F2;
-  border-bottom-color: #DC2626;
+  background: var(--error-container, #FEF2F2);
+  border-bottom-color: var(--error-color, #DC2626);
 }
 
 /* Disabled state */
@@ -294,8 +294,8 @@ const handleBlur = (event) => {
 }
 
 .m3-text-field--disabled .m3-text-field__input {
-  background: #F9FAFB;
-  color: #9CA3AF;
+  background: var(--surface-dark, #F9FAFB);
+  color: var(--text-muted, #9CA3AF);
 }
 
 /* Supporting text */
@@ -307,10 +307,10 @@ const handleBlur = (event) => {
 }
 
 .m3-text-field__error {
-  color: #DC2626;
+  color: var(--error-color, #DC2626);
 }
 
 .m3-text-field__helper {
-  color: #6B7280;
+  color: var(--text-muted, #6B7280);
 }
 </style>
