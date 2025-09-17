@@ -58,7 +58,7 @@
         <h2 class="text-lg font-semibold mb-4">Quick Actions</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <button
-            @click="navigateTo('/users')"
+            @click="navigateTo('/admin/user-management')"
             class="flex items-center p-4 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
           >
             <MdiIcon :path="mdiAccountGroup" size="24" class="mr-3 text-primary" />
@@ -84,6 +84,13 @@
           >
             <MdiIcon :path="mdiCog" size="24" class="mr-3 text-primary" />
             <span class="font-medium">Settings</span>
+          </button>
+          <button
+            @click="seedDatabase"
+            class="flex items-center p-4 bg-green-500/10 hover:bg-green-500/20 rounded-lg transition-colors"
+          >
+            <MdiIcon :path="mdiDatabaseSeed" size="24" class="mr-3 text-green-400" />
+            <span class="font-medium">Seed Database</span>
           </button>
         </div>
       </div>
@@ -137,7 +144,9 @@ import {
   mdiMagnify,
   mdiCog,
   mdiHospitalBuilding,
+  mdiDatabaseSeed,
 } from '@mdi/js';
+import api from '@/services/api';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -190,6 +199,16 @@ const selectPatient = (patient) => {
 
 const navigateTo = (path) => {
   router.push(path);
+};
+
+const seedDatabase = async () => {
+  try {
+    const response = await api.post('/seed-departments-and-users');
+    alert(response.data.message);
+  } catch (error) {
+    console.error('Failed to seed database:', error);
+    alert('Failed to seed database. See console for details.');
+  }
 };
 
 onMounted(() => {
