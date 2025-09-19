@@ -1,5 +1,4 @@
-import { db } from './lib/firebase-admin.js';
-import admin from 'firebase-admin';
+import { admin, db } from './lib/firebase-admin.js';
 
 const auth = admin.auth();
 
