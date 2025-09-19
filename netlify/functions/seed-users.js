@@ -25,193 +25,208 @@ const userRoles = [
   { role: 'Rehabilitation Technician', department: 'Rehabilitation', count: 3 }
 ];
 
-const createUser = async (email, password, role, department, wardType = null) => {
+// =================================================================
+// NEW HELPER FUNCTIONS FOR DELETION
+// =================================================================
+
+/**
+ * Deletes all users from Firebase Authentication.
+ * Handles pagination to ensure all users are removed.
+ */
+const deleteAllAuthUsers = async (nextPageToken) => {
   try {
-    // Create user in Firebase Auth
-    const userRecord = await auth.createUser({
-      email,
-      password,
-      displayName: `${role} User`,
-      emailVerified: true
-    });
+    const listUsersResult = await auth.listUsers(1000, nextPageToken);
+    const uids = listUsersResult.users.map(userRecord => userRecord.uid);
 
-    // Set custom claims for role-based access
-    await auth.setCustomUserClaims(userRecord.uid, {
-      role,
-      department,
-      wardType,
-      isActive: true
-    });
+    if (uids.length > 0) {
+      await auth.deleteUsers(uids);
+      console.log(`- Deleted ${uids.length} auth users.`);
+    }
 
-    // Create user document in Firestore
-    await db.collection('users').doc(userRecord.uid).set({
-      uid: userRecord.uid,
-      email,
-      fullName: `${role} User`,
-      role,
-      department,
-      wardType: wardType || null,
-      isActive: true,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      lastLogin: null
-    });
-
-    console.log(`✅ Created user: ${email} (${role})`);
-    return userRecord;
+    if (listUsersResult.pageToken) {
+      await deleteAllAuthUsers(listUsersResult.pageToken);
+    }
   } catch (error) {
-    console.error(`❌ Failed to create user ${email}:`, error.message);
-    throw error;
+    console.error('Error deleting auth users:', error);
   }
 };
 
-const seedBillableItems = async () => {
-    // Seed billable items
-    console.log('\n📦 Seeding billable items...');
-    const billableItems = [
-      { name: 'Levofloxacin 500mg IV', quantity: 150, description: 'Fluoroquinolone antibiotic for severe bacterial infections.', price: 8.25 },
-      { name: 'Heparin 5000 units/mL', quantity: 200, description: 'Anticoagulant to prevent blood clots.', price: 1.50 },
-      { name: 'Dextrose 5% Solution', quantity: 1000, description: 'Intravenous fluid for hydration and providing calories.', price: 0.75 },
-      { name: 'Lidocaine 2%', quantity: 500, description: 'Local anesthetic for minor procedures and pain relief.', price: 0.90 },
-      { name: 'Insulin Aspart (Novolog)', quantity: 50, description: 'Rapid-acting insulin for managing blood sugar levels.', price: 25.00 },
-      { name: 'Cefepime 1g IV', quantity: 125, description: 'Fourth-generation cephalosporin antibiotic.', price: 12.00 },
-      { name: 'Lorazepam 2mg tablets', quantity: 1000, description: 'Benzodiazepine used to treat anxiety and seizures.', price: 0.50 },
-      { name: 'Pantoprazole 40mg IV', quantity: 100, description: 'Proton pump inhibitor for severe acid reflux and ulcers.', price: 4.75 },
-      { name: 'Ondansetron 4mg IV', quantity: 300, description: 'Anti-emetic used to prevent nausea and vomiting.', price: 3.50 },
-      { name: 'Epinephrine 1mg/mL', quantity: 250, description: 'Adrenergic agonist for anaphylaxis and cardiac arrest.', price: 1.80 },
-    ];
+/**
+ * Deletes all documents within a Firestore collection in batches.
+ * @param {string} collectionPath - The path to the collection to delete.
+ */
+const deleteCollection = async (collectionPath) => {
+  const collectionRef = db.collection(collectionPath);
+  const query = collectionRef.limit(200); // Batches of 200
 
-    const batch = db.batch();
-    billableItems.forEach((item, index) => {
-      const id = `item-${String(index + 1).padStart(3, '0')}`;
-      const docRef = db.collection('billable_items').doc(id);
-      batch.set(docRef, { ...item, id });
-    });
-    await batch.commit();
-    console.log(`✅ Seeded ${billableItems.length} billable items.`);
+  return new Promise((resolve, reject) => {
+    deleteQueryBatch(query, resolve, reject);
+  });
+
+  async function deleteQueryBatch(query, resolve, reject) {
+    try {
+      const snapshot = await query.get();
+      if (snapshot.size === 0) {
+        return resolve();
+      }
+
+      const batch = db.batch();
+      snapshot.docs.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
+
+      console.log(`- Deleted a batch of ${snapshot.size} documents from ${collectionPath}.`);
+      
+      // Recurse on the same process to delete the next batch
+      process.nextTick(() => deleteQueryBatch(query, resolve, reject));
+    } catch (error) {
+      console.error(`Error deleting collection ${collectionPath}:`, error);
+      reject(error);
+    }
+  }
+};
+
+// =================================================================
+// EXISTING SEEDING FUNCTIONS (Unchanged)
+// =================================================================
+
+const seedDepartments = async () => {
+  console.log('\n🏢 Seeding departments...');
+  const departmentNames = [...new Set(userRoles.map(role => role.department))];
+  const batch = db.batch();
+  departmentNames.forEach(name => {
+    const departmentId = name.toLowerCase().replace(/\s+/g, '-');
+    const docRef = db.collection('departments').doc(departmentId);
+    batch.set(docRef, { id: departmentId, name, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+  });
+  await batch.commit();
+  console.log(`✅ Seeded ${departmentNames.length} departments.`);
+};
+
+const createUser = async (email, password, role, department, wardType = null) => {
+  const userRecord = await auth.createUser({ email, password, displayName: role, emailVerified: true });
+  await auth.setCustomUserClaims(userRecord.uid, { role, department, wardType, isActive: true });
+  await db.collection('users').doc(userRecord.uid).set({
+    uid: userRecord.uid, email, fullName: role, role, department,
+    wardType: wardType || null, isActive: true,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(), lastLogin: null
+  });
+  console.log(`   - Created: ${email} (${role})`);
 };
 
 const seedUsers = async () => {
-  console.log('🚀 Starting user seeding process...');
-  console.log('📊 Total users to create:', userRoles.reduce((sum, r) => sum + r.count, 0));
-
-  let totalCreated = 0;
+  console.log('\n🚀 Seeding users...');
   const defaultPassword = 'mhs2025';
 
-  try {
-    for (const roleConfig of userRoles) {
-      const { role, department, count, wardType } = roleConfig;
-      
-      console.log(`\n📝 Creating ${count} ${role}(s) in ${department}...`);
-      
-      for (let i = 1; i <= count; i++) {
-        const emailPrefix = role.toLowerCase().replace(/\s+/g, '').replace(/'/g, '');
-        let email;
-        
-        if (count === 1) {
-          email = `${emailPrefix}@mhs.com`;
+  for (const roleConfig of userRoles) {
+    const { role, department, count, wardType } = roleConfig;
+    for (let i = 1; i <= count; i++) {
+      const emailPrefix = role.toLowerCase().replace(/\s+/g, '').replace(/'/g, '');
+      const email = (count === 1) ? `${emailPrefix}@mhs.com` : `${emailPrefix}${i}@mhs.com`;
+      try {
+        await createUser(email, defaultPassword, role, department, wardType);
+      } catch (error) {
+        if (error.code === 'auth/email-already-exists') {
+          console.log(`   ⚠️  Skipping ${email}, user already exists.`);
         } else {
-          email = `${emailPrefix}${i}@mhs.com`;
-        }
-
-        try {
-          await createUser(email, defaultPassword, role, department, wardType);
-          totalCreated++;
-        } catch (error) {
-          if (error.code === 'auth/email-already-exists') {
-            console.log(`⚠️  User ${email} already exists, skipping...`);
-          } else {
-            console.error(`❌ Failed to create ${email}:`, error.message);
-          }
+          console.error(`   ❌ Failed to create ${email}:`, error.message);
         }
       }
     }
+  }
+  console.log('✅ User seeding complete.');
+};
 
-    console.log('\n🎉 User seeding completed successfully!');
-    console.log(`📈 Total users created: ${totalCreated}`);
-    console.log('\n📋 Summary by role:');
-    
-    userRoles.forEach(roleConfig => {
-      const { role, department, count, wardType } = roleConfig;
-      const dept = wardType ? `${department} (${wardType})` : department;
-      console.log(`   ${role}: ${count} users in ${dept}`);
+const seedBillableItems = async () => {
+  console.log('\n📦 Seeding billable items...');
+ const billableItems = [
+    { name: 'Levofloxacin 500mg IV', quantity: 150, description: 'Antibiotic.', price: 8.25 },
+    { name: 'Heparin 5000 units/mL', quantity: 200, description: 'Anticoagulant.', price: 1.50 },
+    { name: 'Dextrose 5% Solution', quantity: 1000, description: 'IV fluid.', price: 0.75 },
+    { name: 'Morphine Sulfate 10mg/mL', quantity: 50, description: 'Pain management.', price: 12.00 },
+    { name: 'Ondansetron 4mg IV', quantity: 75, description: 'Antiemetic.', price: 5.50 },
+    { name: 'Furosemide 20mg Tablet', quantity: 300, description: 'Diuretic.', price: 0.90 },
+    { name: 'Lidocaine 2% Topical', quantity: 20, description: 'Local anesthetic.', price: 4.25 },
+    { name: 'Amoxicillin 250mg Capsule', quantity: 500, description: 'Antibiotic.', price: 0.60 },
+    { name: 'Insulin Glargine 100 units/mL', quantity: 10, description: 'Diabetes management.', price: 25.00 },
+    { name: 'Albuterol Sulfate Inhaler', quantity: 5, description: 'Asthma medication.', price: 18.75 },
+    { name: 'Gabapentin 300mg Capsule', quantity: 150, description: 'Nerve pain medication.', price: 1.10 },
+    { name: 'Prednisone 5mg Tablet', quantity: 250, description: 'Corticosteroid.', price: 0.45 },
+    { name: 'Lisinopril 10mg Tablet', quantity: 400, description: 'Blood pressure medication.', price: 0.70 }
+];
+  const batch = db.batch();
+  billableItems.forEach((item, index) => {
+    const id = `item-${String(index + 1).padStart(3, '0')}`;
+    const docRef = db.collection('billable_items').doc(id);
+    batch.set(docRef, { ...item, id });
+  });
+  await batch.commit();
+  console.log(`✅ Seeded ${billableItems.length} billable items.`);
+};
+
+// =================================================================
+// MODIFIED HANDLER WITH FIRST-RUN-ONLY LOGIC
+// =================================================================
+
+export const handler = async (event, context) => {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS'
+  };
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: corsHeaders, body: '' };
+  if (event.httpMethod !== 'POST') return { statusCode: 405, headers: corsHeaders, body: JSON.stringify({ error: 'Method Not Allowed' }) };
+
+  // This document acts as a flag to see if we've run the seeder before.
+  const seederStatusRef = db.collection('_internal').doc('seeder_status');
+
+  try {
+    const seederStatusDoc = await seederStatusRef.get();
+
+    // If the flag exists, it means we've run this before. Stop immediately.
+    if (seederStatusDoc.exists) {
+      const message = 'Database has already been seeded. To re-run, delete the `_internal/seeder_status` document in Firestore.';
+      console.log(`⚠️  ${message}`);
+      return {
+        statusCode: 200, headers: corsHeaders,
+        body: JSON.stringify({ message })
+      };
+    }
+
+    // --- IF FLAG DOES NOT EXIST, THIS IS THE FIRST RUN ---
+    console.log('🚀 First-time seed detected. Wiping existing data and seeding...');
+
+    // 1. Delete all existing data to ensure a clean slate
+    console.log('\n🔥 Cleaning existing data...');
+    await deleteAllAuthUsers();
+    await Promise.all([
+      deleteCollection('users'),
+      deleteCollection('departments'),
+      deleteCollection('billable_items')
+    ]);
+    console.log('✅ Data cleaning complete.');
+
+    // 2. Seed all the new data
+    await seedDepartments();
+    await seedUsers();
+    await seedBillableItems();
+
+    // 3. Create the flag document to prevent this from running again
+    await seederStatusRef.set({
+      completed: true,
+      seededAt: admin.firestore.FieldValue.serverTimestamp()
     });
+    console.log('\n🎉 Seeding process completed successfully!');
+    console.log('✅ Status flag set. Seeder will not run again.');
 
-    console.log('\n🔐 Login credentials:');
-    console.log('   Default password for all users: mhs2025');
-    console.log('\n📧 Sample login emails:');
-    console.log('   Admin: admin@mhs.com');
-    console.log('   Doctor: doctor1@mhs.com - doctor5@mhs.com');
-    console.log('   Accounts Clerk: accountsclerk1@mhs.com - accountsclerk5@mhs.com');
-    console.log('   Nurse: nurse1@mhs.com - nurse10@mhs.com (OPD)');
-    console.log('   Lab Technician: laboratorytechnician1@mhs.com - laboratorytechnician4@mhs.com');
-    console.log('\n✨ System is ready for use!');
+    return {
+      statusCode: 200, headers: corsHeaders,
+      body: JSON.stringify({ message: 'Database was successfully wiped and seeded.' })
+    };
 
   } catch (error) {
     console.error('❌ Seeding process failed:', error);
-    process.exit(1);
-  }
-};
-
-export const handler = async (event, context) => {
-  // CORS headers
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
-  };
-
-  // Handle preflight requests
-  if (event.httpMethod === 'OPTIONS') {
     return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: ''
-    };
-  }
-
-  // Only allow POST requests
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: 'Method not allowed' })
-    };
-  }
-
-  try {
-    // Check if users already exist
-    const usersSnapshot = await db.collection('users').limit(1).get();
-    if (usersSnapshot.empty) {
-      await seedUsers();
-    } else {
-      console.log('Users collection already exists, skipping user seeding.');
-    }
-
-    // Check if billable items already exist
-    const itemsSnapshot = await db.collection('billable_items').limit(1).get();
-    if (itemsSnapshot.empty) {
-      await seedBillableItems();
-    } else {
-      console.log('Billable items collection already exists, skipping item seeding.');
-    }
-
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        message: 'Seeding process checked. Database appears to be populated.',
-      })
-    };
-
-  } catch (error) {
-    console.error('Seeding process failed:', error);
-    return {
-      statusCode: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({ 
-        error: 'Seeding process failed', 
-        details: error.message 
-      })
+      statusCode: 500, headers: corsHeaders,
+      body: JSON.stringify({ error: 'Seeding process failed', details: error.message })
     };
   }
 };
