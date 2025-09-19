@@ -58,7 +58,7 @@
         <h2 class="text-lg font-semibold mb-4">Quick Actions</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <button
-            @click="navigateTo('/users')"
+            @click="navigateTo('/user-management')"
             class="flex items-center p-4 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
           >
             <MdiIcon :path="mdiAccountGroup" size="24" class="mr-3 text-primary" />

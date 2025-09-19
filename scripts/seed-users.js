@@ -12,25 +12,25 @@ const db = admin.firestore()
 
 // User roles and their counts
 const userRoles = [
-  { role: 'Admin', department: 'Administration', count: 1 },
-  { role: 'Doctor', department: 'Clinical', count: 5 },
-  { role: 'Accountant', department: 'Accounting', count: 1 },
-  { role: 'Account Assistant', department: 'Accounting', count: 3 },
-  { role: 'Accounts Clerk', department: 'Accounting', count: 5 },
-  { role: 'Vitals Checker', department: 'Clinical', count: 4 },
-  { role: 'Nurse', department: 'OPD', count: 10, wardType: 'OPD' },
-  { role: 'Nurse', department: 'FCH Ward', count: 12, wardType: 'FCH' },
-  { role: 'Nurse', department: 'Maternity', count: 30, wardType: 'Maternity' },
-  { role: 'Nurse', department: 'Theatre Ward', count: 15, wardType: 'Theatre' },
-  { role: 'Nurse', department: 'Female Ward', count: 20, wardType: 'Female' },
-  { role: 'Nurse', department: 'Male Ward', count: 20, wardType: 'Male' },
-  { role: 'Nurse', department: 'Children Ward', count: 20, wardType: 'Children' },
-  { role: 'Laboratory Technician', department: 'Laboratory', count: 4 },
-  { role: 'Pharmacy Technician', department: 'Pharmacy', count: 2 },
-  { role: 'Dispensary Assistant', department: 'Pharmacy', count: 5 },
-  { role: 'Radiologist', department: 'Radiology', count: 2 },
-  { role: 'Rehabilitation Technician', department: 'Rehabilitation', count: 3 }
-]
+  { role: 'Admin', department: 'Admin', count: 1 },
+  { role: 'Doctor', department: 'Doctors Department', count: 5 },
+  { role: 'Accountant', department: 'Accounts Department', count: 1 },
+  { role: 'Account Assistant', department: 'Accounts Department', count: 3 },
+  { role: 'Accounts Clerk', department: 'Accounts Department', count: 5 },
+  { role: 'Vitals Checker', department: 'OPD Department', count: 4 },
+  { role: 'Nurse', department: 'OPD Department', count: 10 },
+  { role: 'Nurse', department: 'FCH Ward Department', count: 12 },
+  { role: 'Laboratory Technician', department: 'Laboratory Department', count: 4 },
+  { role: 'Pharmacy Technician', department: 'Pharmacy Department', count: 2 },
+  { role: 'Dispensary Assistant', department: 'Pharmacy Department', count: 5 },
+  { role: 'Radiologist', department: 'Radiology Department', count: 2 },
+  { role: 'Nurse', department: 'Maternity Ward Department', count: 30 },
+  { role: 'Nurse', department: 'Theatre Ward Department', count: 15 },
+  { role: 'Nurse', department: 'Female Ward Department', count: 20 },
+  { role: 'Nurse', department: 'Male Ward Department', count: 20 },
+  { role: 'Nurse', department: 'Children’s Ward Department', count: 20 },
+  { role: 'Rehabilitation Technician', department: 'Rehabilitation ward Department', count: 3 },
+];
 
 const createUser = async (email, password, role, department, wardType = null) => {
   try {

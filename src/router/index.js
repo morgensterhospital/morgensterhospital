@@ -152,6 +152,12 @@ const routes = [
         name: 'Settings',
         component: () => import('@/views/Settings.vue'),
       },
+      {
+        path: 'user-management',
+        name: 'UserManagement',
+        component: () => import('@/views/UserManagement.vue'),
+        meta: { roles: ['Admin'] },
+      },
     ],
   },
 ];
