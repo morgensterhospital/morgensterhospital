@@ -1,6 +1,7 @@
-import { admin, db } from './lib/firebase-admin.js';
+import { db } from './lib/firebase-admin.js';
+import admin from 'firebase-admin';
 
-const auth = admin.auth();
+const auth = db.app.auth();
 
 // User roles and their counts
 const userRoles = [
@@ -81,11 +82,13 @@ const createUser = async (email, password, role, department, wardType = null) =>
   await batch.commit();
 
   console.log(`   - Created: ${email} (${role}) and added to '${department}' department's user list.`);
+  return userRecord;
 };
 
 const seedUsers = async () => {
   console.log('\n🚀 Seeding users...');
   const defaultPassword = 'mhs2025';
+  const createdUsers = [];
 
   for (const roleConfig of userRoles) {
     const { role, department, count, wardType } = roleConfig;
@@ -93,18 +96,21 @@ const seedUsers = async () => {
       const emailPrefix = role.toLowerCase().replace(/\s+/g, '').replace(/'/g, '');
       const email = (count === 1) ? `${emailPrefix}@mhs.com` : `${emailPrefix}${i}@mhs.com`;
       try {
-        await createUser(email, defaultPassword, role, department, wardType);
+        const userRecord = await createUser(email, defaultPassword, role, department, wardType);
+        createdUsers.push({ email: userRecord.email, uid: userRecord.uid });
       } catch (error) {
         // Safely skip users that already exist in Firebase Auth
         if (error.code === 'auth/email-already-exists') {
           console.log(`   ⚠️  Skipping ${email}, user already exists in Auth.`);
         } else {
-          console.error(`   ❌ Failed to create ${email}:`, error.message);
+          // Re-throw the error to be caught by the main handler
+          throw new Error(`Failed to create user ${email}: ${error.message}`);
         }
       }
     }
   }
   console.log('✅ User seeding complete.');
+  return createdUsers;
 };
 
 const seedBillableItems = async () => {
@@ -155,14 +161,17 @@ export const handler = async (event, context) => {
 
     // Sequentially seed data
     await seedDepartments();
-    await seedUsers();
+    const createdUsers = await seedUsers();
     await seedBillableItems();
 
     console.log('\n🎉 Seeding process completed successfully!');
     return {
       statusCode: 200,
       headers: corsHeaders,
-      body: JSON.stringify({ message: 'Database was successfully seeded.' })
+      body: JSON.stringify({
+        message: 'Database was successfully seeded.',
+        created_users: createdUsers
+      })
     };
 
   } catch (error) {
