@@ -1,7 +1,7 @@
 import { db } from './lib/firebase-admin.js';
 import admin from 'firebase-admin';
 
-const auth = db.app.auth();
+const auth = admin.auth();
 
 // User roles and their counts
 const userRoles = [
