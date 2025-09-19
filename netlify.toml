@@ -1,3 +1,7 @@
+
+
+# netlify.toml (Updated with function timeout)
+
 [build]
   command = "npm run build"
   publish = "dist"
@@ -31,3 +35,12 @@
     Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+# =================================================================
+# ADD THIS BLOCK TO INCREASE THE TIMEOUT
+# =================================================================
+# This targets your specific "seed-users" function.
+[functions."seed-users"]
+  # Increase the timeout from the default 10 seconds to the max of 26 seconds.
+  timeout = 26
+# =================================================================
