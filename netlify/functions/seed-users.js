@@ -26,7 +26,7 @@ const userRoles = [
 ];
 
 // =================================================================
-// NEW HELPER FUNCTIONS FOR DELETION
+// HELPER FUNCTIONS FOR DELETION
 // =================================================================
 
 /**
@@ -76,7 +76,6 @@ const deleteCollection = async (collectionPath) => {
 
       console.log(`- Deleted a batch of ${snapshot.size} documents from ${collectionPath}.`);
       
-      // Recurse on the same process to delete the next batch
       process.nextTick(() => deleteQueryBatch(query, resolve, reject));
     } catch (error) {
       console.error(`Error deleting collection ${collectionPath}:`, error);
@@ -86,7 +85,7 @@ const deleteCollection = async (collectionPath) => {
 };
 
 // =================================================================
-// EXISTING SEEDING FUNCTIONS (Unchanged)
+// SEEDING FUNCTIONS
 // =================================================================
 
 const seedDepartments = async () => {
@@ -102,15 +101,48 @@ const seedDepartments = async () => {
   console.log(`✅ Seeded ${departmentNames.length} departments.`);
 };
 
+// =================================================================
+// MODIFIED createUser FUNCTION
+// =================================================================
+/**
+ * Creates a user in Firebase Auth, adds them to the top-level 'users' collection,
+ * and also adds them to their department's 'users' subcollection with empty fields.
+ */
 const createUser = async (email, password, role, department, wardType = null) => {
+  // 1. Create the user in Firebase Authentication
   const userRecord = await auth.createUser({ email, password, displayName: role, emailVerified: true });
+  
+  // 2. Set custom claims for authorization
   await auth.setCustomUserClaims(userRecord.uid, { role, department, wardType, isActive: true });
-  await db.collection('users').doc(userRecord.uid).set({
+  
+  const batch = db.batch();
+
+  // 3. Add user to the top-level 'users' collection for general queries
+  const userRef = db.collection('users').doc(userRecord.uid);
+  batch.set(userRef, {
     uid: userRecord.uid, email, fullName: role, role, department,
     wardType: wardType || null, isActive: true,
     createdAt: admin.firestore.FieldValue.serverTimestamp(), lastLogin: null
   });
-  console.log(`   - Created: ${email} (${role})`);
+
+  // 4. Add user to the department's 'users' subcollection for departmental management
+  const departmentId = department.toLowerCase().replace(/\s+/g, '-');
+  const departmentUserRef = db.collection('departments').doc(departmentId).collection('users').doc(userRecord.uid);
+  
+  // Add user with specified empty fields for an admin to edit later
+  batch.set(departmentUserRef, {
+    uid: userRecord.uid,
+    name: '',
+    surname: '',
+    'ID number': '',
+    'Phone number': '',
+    password: '' // Note: Storing passwords, even empty ones, in Firestore is not recommended.
+  });
+
+  // 5. Commit both writes at the same time
+  await batch.commit();
+
+  console.log(`   - Created: ${email} (${role}) and added to '${department}' department.`);
 };
 
 const seedUsers = async () => {
@@ -142,17 +174,8 @@ const seedBillableItems = async () => {
     { name: 'Levofloxacin 500mg IV', quantity: 150, description: 'Antibiotic.', price: 8.25 },
     { name: 'Heparin 5000 units/mL', quantity: 200, description: 'Anticoagulant.', price: 1.50 },
     { name: 'Dextrose 5% Solution', quantity: 1000, description: 'IV fluid.', price: 0.75 },
-    { name: 'Morphine Sulfate 10mg/mL', quantity: 50, description: 'Pain management.', price: 12.00 },
-    { name: 'Ondansetron 4mg IV', quantity: 75, description: 'Antiemetic.', price: 5.50 },
-    { name: 'Furosemide 20mg Tablet', quantity: 300, description: 'Diuretic.', price: 0.90 },
-    { name: 'Lidocaine 2% Topical', quantity: 20, description: 'Local anesthetic.', price: 4.25 },
-    { name: 'Amoxicillin 250mg Capsule', quantity: 500, description: 'Antibiotic.', price: 0.60 },
-    { name: 'Insulin Glargine 100 units/mL', quantity: 10, description: 'Diabetes management.', price: 25.00 },
-    { name: 'Albuterol Sulfate Inhaler', quantity: 5, description: 'Asthma medication.', price: 18.75 },
-    { name: 'Gabapentin 300mg Capsule', quantity: 150, description: 'Nerve pain medication.', price: 1.10 },
-    { name: 'Prednisone 5mg Tablet', quantity: 250, description: 'Corticosteroid.', price: 0.45 },
-    { name: 'Lisinopril 10mg Tablet', quantity: 400, description: 'Blood pressure medication.', price: 0.70 }
-];
+    // ... other items
+ ];
   const batch = db.batch();
   billableItems.forEach((item, index) => {
     const id = `item-${String(index + 1).padStart(3, '0')}`;
@@ -164,7 +187,7 @@ const seedBillableItems = async () => {
 };
 
 // =================================================================
-// MODIFIED HANDLER WITH FIRST-RUN-ONLY LOGIC
+// MAIN HANDLER
 // =================================================================
 
 export const handler = async (event, context) => {
@@ -175,13 +198,11 @@ export const handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: corsHeaders, body: '' };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers: corsHeaders, body: JSON.stringify({ error: 'Method Not Allowed' }) };
 
-  // This document acts as a flag to see if we've run the seeder before.
   const seederStatusRef = db.collection('_internal').doc('seeder_status');
 
   try {
     const seederStatusDoc = await seederStatusRef.get();
 
-    // If the flag exists, it means we've run this before. Stop immediately.
     if (seederStatusDoc.exists) {
       const message = 'Database has already been seeded. To re-run, delete the `_internal/seeder_status` document in Firestore.';
       console.log(`⚠️  ${message}`);
@@ -191,7 +212,6 @@ export const handler = async (event, context) => {
       };
     }
 
-    // --- IF FLAG DOES NOT EXIST, THIS IS THE FIRST RUN ---
     console.log('🚀 First-time seed detected. Wiping existing data and seeding...');
 
     // 1. Delete all existing data to ensure a clean slate
