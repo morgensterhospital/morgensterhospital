@@ -73,48 +73,22 @@
         </div>
       </form>
     </div>
-    <div v-if="showSuccessModal" class="modal-overlay" @click="closeSuccessModal">
-      <div class="success-modal" @click.stop>
-        <div class="success-icon">
-          <MdiIcon :path="mdiCheckCircle" size="64" color="#16A34A" />
-        </div>
-        <h2>Patient Registered Successfully!</h2>
-        <p>
-          <strong>{{ registeredPatient.patient.name }} {{ registeredPatient.patient.surname }}</strong>
-          has been registered with hospital number:
-          <strong>{{ registeredPatient.patient.hospitalNumber }}</strong>
-        </p>
-        <div class="modal-actions">
-          <M3Button variant="outlined" @click="closeSuccessModal">
-            Register Another
-          </M3Button>
-          <M3Button variant="filled" @click="viewPatientProfile">
-            View Profile
-          </M3Button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { usePatientStore } from '@/stores/patientStore'
+import { useNotificationStore } from '@/stores/notificationStore'
 import MdiIcon from '@/components/common/MdiIcon.vue'
 import M3Button from '@/components/common/M3Button.vue'
 import M3TextField from '@/components/common/M3TextField.vue'
-import {
-  mdiCheckCircle,
-  mdiLoading
-} from '@mdi/js'
+import { mdiLoading, mdiAccountPlus, mdiBroom } from '@mdi/js'
 
-const router = useRouter()
 const patientStore = usePatientStore()
+const notificationStore = useNotificationStore()
 
 const loading = ref(false)
-const showSuccessModal = ref(false)
-const registeredPatient = ref({})
 
 // Form data
 const form = reactive({
@@ -160,7 +134,6 @@ const validateForm = () => {
 
   let isValid = true
 
-  // Required field validation
   const requiredFields = [
     'idNumber', 'name', 'surname', 'phone', 'address',
     'dob', 'gender', 'countryOfBirth', 'nokName',
@@ -174,7 +147,6 @@ const validateForm = () => {
     }
   })
 
-  // Phone validation
   if (form.phone && !/^\+?[\d\s\-\(\)]{10,}$/.test(form.phone)) {
     errors.phone = 'Please enter a valid phone number'
     isValid = false
@@ -185,7 +157,6 @@ const validateForm = () => {
     isValid = false
   }
 
-  // Age validation
   const age = parseInt(form.age)
   if (age < 0 || age > 150) {
     errors.dob = 'Please enter a valid date of birth'
@@ -195,16 +166,28 @@ const validateForm = () => {
   return isValid
 }
 
+// Reset form
+const resetForm = () => {
+  Object.keys(form).forEach(key => {
+    if (key === 'hospitalNumber') {
+      form[key] = 'Auto-generated'
+    } else {
+      form[key] = ''
+    }
+  })
+  Object.keys(errors).forEach(key => delete errors[key])
+}
+
 // Handle form submission
 const handleSubmit = async () => {
   if (!validateForm()) {
+    notificationStore.showNotification('Please fill in all required fields correctly.', 'error');
     return
   }
 
   try {
     loading.value = true
 
-    // Prepare patient data
     const patientData = {
       idNumber: form.idNumber.trim(),
       name: form.name.trim(),
@@ -221,93 +204,25 @@ const handleSubmit = async () => {
       nokAddress: form.nokAddress.trim()
     }
 
-    // Register patient
     const newPatient = await patientStore.registerPatient(patientData)
 
-    // Store registered patient info
-    registeredPatient.value = newPatient;
-
-    showSuccessModal.value = true
+    notificationStore.showNotification(`Patient ${newPatient.name} ${newPatient.surname} registered successfully!`, 'success');
+    resetForm();
 
   } catch (error) {
-    console.error('Registration error:', error)
-    alert('Failed to register patient. Please try again.')
+    console.error('Registration error:', error);
+    const errorMessage = error.response?.data?.error || error.message || 'An unknown error occurred.';
+    notificationStore.showNotification(`Error: ${errorMessage}`, 'error');
   } finally {
     loading.value = false
   }
 }
 
-// Reset form
-const resetForm = () => {
-  Object.keys(form).forEach(key => {
-    if (key === 'hospitalNumber') {
-      form[key] = 'Auto-generated'
-    } else {
-      form[key] = ''
-    }
-  })
-  Object.keys(errors).forEach(key => delete errors[key])
-}
-
-// Close success modal and reset form
-const closeSuccessModal = () => {
-  showSuccessModal.value = false
-  resetForm()
-}
-
-// Navigate to patient profile
-const viewPatientProfile = () => {
-  router.push(`/accountant?new_patient_id=${registeredPatient.value.patient.id}`);
-}
-
 onMounted(() => {
-  // Set default country
   form.countryOfBirth = 'Lesotho'
 })
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.success-modal {
-  background: #2d3748;
-  padding: 20px;
-  border-radius: 8px;
-  width: 400px;
-  text-align: center;
-}
-
-.success-icon {
-  margin-bottom: 20px;
-}
-
-.success-modal h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #16A34A;
-  margin: 0 0 16px 0;
-}
-
-.success-modal p {
-  color: #a0aec0;
-  margin: 0 0 32px 0;
-  line-height: 1.6;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-}
+/* Scoped styles can be kept if there are specific styles for this component, otherwise can be removed. */
 </style>

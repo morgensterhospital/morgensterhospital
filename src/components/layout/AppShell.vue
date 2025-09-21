@@ -67,6 +67,9 @@
 
     <!-- Bottom Navigation -->
     <BottomNavigation :navigation-items="filteredNavigationItems" />
+
+    <!-- Toast Notification -->
+    <ToastNotification />
   </div>
 </template>
 
@@ -76,6 +79,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 import MdiIcon from '@/components/common/MdiIcon.vue';
 import BottomNavigation from './BottomNavigation.vue';
+import ToastNotification from '@/components/common/ToastNotification.vue';
 import {
   mdiHospital,
   mdiAccount,
