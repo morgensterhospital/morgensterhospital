@@ -7,7 +7,14 @@
   >
     <mdi-icon v-if="icon" :path="icon" :size="iconSize" />
     <slot />
-    <span class="ripple" ref="ripple"></span>
+    <transition-group name="ripple" tag="span">
+      <span
+        v-for="ripple in ripples"
+        :key="ripple.key"
+        class="ripple"
+        :style="ripple.style"
+      ></span>
+    </transition-group>
   </button>
 </template>
 
@@ -16,7 +23,7 @@ import { computed, useSlots, ref } from 'vue'
 import MdiIcon from './MdiIcon.vue'
 
 const slots = useSlots()
-const ripple = ref(null)
+const ripples = ref([])
 
 const props = defineProps({
   variant: {
@@ -74,23 +81,26 @@ const iconSize = computed(() => {
 
 const handleClick = (event) => {
   if (!props.disabled) {
-    const button = event.currentTarget;
-    const circle = document.createElement("span");
-    const diameter = Math.max(button.clientWidth, button.clientHeight);
-    const radius = diameter / 2;
+    const button = event.currentTarget
+    const diameter = Math.max(button.clientWidth, button.clientHeight)
+    const radius = diameter / 2
 
-    circle.style.width = circle.style.height = `${diameter}px`;
-    circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
-    circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
-    circle.classList.add("ripple");
-
-    const ripple = button.getElementsByClassName("ripple")[0];
-
-    if (ripple) {
-      ripple.remove();
+    const newRipple = {
+      key: Date.now(),
+      style: {
+        width: `${diameter}px`,
+        height: `${diameter}px`,
+        left: `${event.clientX - button.getBoundingClientRect().left - radius}px`,
+        top: `${event.clientY - button.getBoundingClientRect().top - radius}px`,
+      },
     }
 
-    button.appendChild(circle);
+    ripples.value.push(newRipple)
+
+    setTimeout(() => {
+      ripples.value.shift()
+    }, 600) // Match animation duration
+
     emit('click', event)
   }
 }
@@ -138,12 +148,15 @@ const handleClick = (event) => {
   opacity: 0.16;
 }
 
+.ripple-enter-active {
+  animation: ripple 600ms linear;
+}
+
 .ripple {
   position: absolute;
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.7);
   transform: scale(0);
-  animation: ripple 600ms linear;
 }
 
 @keyframes ripple {
