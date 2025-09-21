@@ -57,7 +57,6 @@ const searchQuery = ref('');
 
 onMounted(async () => {
   try {
-    // This function doesn't exist yet, I will add it in a later step.
     allPatients.value = await patientStore.getAllPatients();
   } catch (error) {
     console.error('Error fetching patients:', error);
