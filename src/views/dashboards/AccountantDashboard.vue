@@ -103,6 +103,10 @@
       <div class="p-6 bg-surface-dark rounded-lg">
         <h2 class="text-lg font-semibold mb-4">Core Functions</h2>
         <div class="space-y-4">
+          <button @click="navigateTo('/accountant/patient/register')" class="w-full flex items-center p-4 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
+            <MdiIcon :path="mdiAccountPlus" size="24" class="mr-3 text-primary" />
+            <span class="font-medium">New Patient</span>
+          </button>
           <button @click="navigateTo('/users')" class="w-full flex items-center p-4 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
             <MdiIcon :path="mdiAccountGroup" size="24" class="mr-3 text-primary" />
             <span class="font-medium">User Management</span>
@@ -151,6 +155,7 @@ import {
   mdiTrendingUp,
   mdiAlertCircle,
   mdiFileDocument,
+  mdiAccountPlus,
 } from '@mdi/js';
 
 const router = useRouter();

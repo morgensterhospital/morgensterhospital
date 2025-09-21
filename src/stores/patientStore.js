@@ -110,6 +110,23 @@ export const usePatientStore = defineStore('patient', () => {
     }
   }
 
+  // Get all patients
+  const getAllPatients = async () => {
+    try {
+      loading.value = true;
+      const patientsRef = collection(db, 'patients');
+      const querySnapshot = await getDocs(query(patientsRef, orderBy('registrationDate', 'desc')));
+      const allPatients = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      patients.value = allPatients;
+      return allPatients;
+    } catch (err) {
+      error.value = err.message;
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   // Add vitals
   const addVitals = async (patientId, vitalsData) => {
     try {
@@ -227,6 +244,7 @@ export const usePatientStore = defineStore('patient', () => {
     registerPatient,
     searchPatients,
     getPatient,
+    getAllPatients,
     addVitals,
     addDoctorNote,
     addNurseNote,

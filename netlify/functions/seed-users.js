@@ -133,6 +133,23 @@ const seedBillableItems = async () => {
 };
 
 
+const seedPatientsCollection = async () => {
+  console.log('\nCollection `patients`...');
+  const patientsRef = db.collection('patients').doc('_placeholder');
+  const doc = await patientsRef.get();
+
+  if (!doc.exists) {
+    await patientsRef.set({
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      note: 'This document ensures the patients collection is created.'
+    });
+    console.log('✅ Collection `patients` created with a placeholder document.');
+  } else {
+    console.log('✅ Collection `patients` already exists.');
+  }
+};
+
+
 // =================================================================
 // SIMPLIFIED HANDLER - SEED ONLY
 // =================================================================
@@ -157,6 +174,7 @@ export const handler = async (event, context) => {
     await seedDepartments();
     await seedUsers();
     await seedBillableItems();
+    await seedPatientsCollection();
 
     console.log('\n🎉 Seeding process completed successfully!');
     return {

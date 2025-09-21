@@ -158,6 +158,12 @@ const routes = [
         component: () => import('@/views/UserManagement.vue'),
         meta: { roles: ['Admin'] },
       },
+      {
+        path: 'patients',
+        name: 'ViewPatients',
+        component: () => import('@/views/patient/ViewPatients.vue'),
+        meta: { roles: ['Admin'] },
+      },
     ],
   },
 ];
