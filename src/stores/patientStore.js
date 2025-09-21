@@ -24,14 +24,15 @@ export const usePatientStore = defineStore('patient', () => {
   const loading = ref(false)
   const error = ref(null)
 
-  // Register new patient
+  // Register new patient - FIXED: Removed registeredBy parameter
   const registerPatient = async (patientData) => {
     try {
       loading.value = true
       error.value = null
 
-      const authStore = useAuthStore()
-      const result = await apiService.createPatient(patientData, authStore.user.uid)
+      // BEFORE: const result = await apiService.createPatient(patientData, authStore.user.uid)
+      // AFTER: Just pass patientData
+      const result = await apiService.createPatient(patientData)
       
       return result.patient
     } catch (err) {
@@ -252,6 +253,8 @@ export const usePatientStore = defineStore('patient', () => {
     addLabRequest,
     addRadiologyRequest,
     processBilling,
-    updatePatientDischargeStatus
+    updatePatientDischargeStatus,
+    createDischargeNotification,
+    getDischargeNotifications
   }
 })
