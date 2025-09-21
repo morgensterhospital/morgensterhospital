@@ -1,6 +1,5 @@
-// file: functions/patientHandler.js
-import { db } from './lib/firebase-admin.js'
-import admin from 'firebase-admin'
+import { db } from './lib/firebase-admin.js';
+import admin from 'firebase-admin';
 
 // Generate unique hospital number
 const generateHospitalNumber = async () => {
@@ -9,13 +8,12 @@ const generateHospitalNumber = async () => {
   
   let isUnique = false
   let hospitalNumber = ''
-  let attempts = 0
   
-  while (!isUnique && attempts < 20) {
-    attempts++
+  while (!isUnique) {
     const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
     hospitalNumber = `${prefix}${year}${random}`
     
+    // Check if this number already exists
     const existingPatient = await db.collection('patients')
       .where('hospitalNumber', '==', hospitalNumber)
       .limit(1)
@@ -26,10 +24,6 @@ const generateHospitalNumber = async () => {
     }
   }
   
-  if (!isUnique) {
-    throw new Error('Could not generate unique hospital number after multiple attempts')
-  }
-  
   return hospitalNumber
 }
 
@@ -37,50 +31,55 @@ const generateHospitalNumber = async () => {
 const calculateAge = (dob) => {
   const today = new Date()
   const birthDate = new Date(dob)
-  if (isNaN(birthDate.getTime())) {
-    throw new Error('Invalid date of birth')
-  }
   let age = today.getFullYear() - birthDate.getFullYear()
   const monthDiff = today.getMonth() - birthDate.getMonth()
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
     age--
   }
+
   return age
 }
 
 export const handler = async (event, context) => {
+  // CORS headers
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
   }
 
+  // Handle preflight requests
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers: corsHeaders, body: '' }
+    return {
+      statusCode: 200,
+      headers: corsHeaders,
+      body: ''
+    }
   }
 
+  // Only allow POST requests
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers: corsHeaders, body: JSON.stringify({ error: 'Method not allowed' }) }
+    return {
+      statusCode: 405,
+      headers: corsHeaders,
+      body: JSON.stringify({ error: 'Method not allowed' })
+    }
   }
 
-  let step = 'initializing'
+  let step = 'initializing';
   try {
-    step = 'parsing_body'
-    if (!event.body) throw new Error('Missing request body')
+    step = 'parsing_body';
     const patientData = JSON.parse(event.body)
     const { registeredBy, ...patientInfo } = patientData
 
-    if (!registeredBy) throw new Error('Missing registeredBy field')
-    if (!patientInfo.dob) throw new Error('Missing date of birth (dob)')
-    if (isNaN(new Date(patientInfo.dob).getTime())) throw new Error('Invalid date of birth format')
-
-    step = 'generating_hospital_number'
+    step = 'generating_hospital_number';
     const hospitalNumber = await generateHospitalNumber()
     
-    step = 'calculating_age'
+    step = 'calculating_age';
     const age = calculateAge(patientInfo.dob)
 
-    step = 'preparing_patient_document'
+    step = 'preparing_patient_document';
     const newPatient = {
       ...patientInfo,
       hospitalNumber,
@@ -90,10 +89,10 @@ export const handler = async (event, context) => {
       registeredByRef: db.doc(`users/${registeredBy}`)
     }
 
-    step = 'adding_patient_to_db'
+    step = 'adding_patient_to_db';
     const patientRef = await db.collection('patients').add(newPatient)
     
-    step = 'creating_invoice'
+    step = 'creating_invoice';
     await db.collection(`patients/${patientRef.id}/invoices`).add({
       status: 'pending',
       creationDate: admin.firestore.FieldValue.serverTimestamp(),
@@ -102,29 +101,27 @@ export const handler = async (event, context) => {
       balance: 0
     })
 
-    step = 'creating_notification'
+    step = 'creating_notification';
     await db.collection('notifications').add({
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
       userId: registeredBy,
-      message: `New patient registered: ${patientInfo.name || ''} ${patientInfo.surname || ''} (${hospitalNumber})`,
+      message: `New patient registered: ${patientInfo.name} ${patientInfo.surname} (${hospitalNumber})`,
       triggeredBy: 'patient_registration'
     })
 
-    step = 'fetching_created_patient'
-    const createdPatientDoc = await patientRef.get()
-    const createdPatientData = createdPatientDoc.data()
+    step = 'fetching_created_patient';
+    const createdPatientDoc = await patientRef.get();
+    const createdPatientData = createdPatientDoc.data();
 
-    if (!createdPatientData) throw new Error('Patient document not found after creation')
-
-    step = 'serializing_response'
+    step = 'serializing_response';
     const serializablePatient = {
       ...createdPatientData,
       id: createdPatientDoc.id,
-      dob: createdPatientData.dob?.toDate().toISOString() || null,
-      registrationDate: createdPatientData.registrationDate?.toDate().toISOString() || null
-    }
+      dob: createdPatientData.dob.toDate().toISOString(),
+      registrationDate: createdPatientData.registrationDate.toDate().toISOString(),
+    };
 
-    step = 'returning_success'
+    step = 'returning_success';
     return {
       statusCode: 200,
       headers: corsHeaders,

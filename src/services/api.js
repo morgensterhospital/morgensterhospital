@@ -4,12 +4,15 @@ const API_BASE = '/.netlify/functions'
 class ApiService {
   async request(endpoint, options = {}) {
     const url = `${API_BASE}${endpoint}`
+
+    // Correctly merge headers and prevent silent overwrites
+    const { headers, ...restOfOptions } = options;
     const config = {
+      ...restOfOptions,
       headers: {
         'Content-Type': 'application/json',
-        ...options.headers
+        ...headers,
       },
-      ...options
     }
 
     try {
