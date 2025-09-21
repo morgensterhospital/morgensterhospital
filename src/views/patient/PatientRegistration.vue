@@ -341,14 +341,14 @@ const handleSubmit = async () => {
   try {
     loading.value = true
     
-    // Prepare patient data
+    // UPDATED: Prepare patient data with proper date format and no registeredBy
     const patientData = {
       idNumber: form.idNumber.trim(),
       name: form.name.trim(),
       surname: form.surname.trim(),
       phone: form.phone.trim(),
       address: form.address.trim(),
-      dob: new Date(form.dob),
+      dob: form.dob, // Send as string, not Date object
       gender: form.gender,
       countryOfBirth: form.countryOfBirth.trim(),
       maritalStatus: form.maritalStatus,
@@ -358,22 +358,24 @@ const handleSubmit = async () => {
       nokAddress: form.nokAddress.trim()
     }
 
-    // Register patient
-    const patientId = await patientStore.registerPatient(patientData)
+    // UPDATED: Register patient without registeredBy parameter
+    const result = await patientStore.registerPatient(patientData)
 
-    // Store registered patient info
+    // Store registered patient info from the API response
     registeredPatient.value = {
-      id: patientId,
-      name: form.name,
-      surname: form.surname,
-      hospitalNumber: 'MHS' + new Date().getFullYear().toString().slice(-2) + Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+      id: result.patient.id,
+      name: result.patient.name,
+      surname: result.patient.surname,
+      hospitalNumber: result.patient.hospitalNumber
     }
 
     showSuccessModal.value = true
 
   } catch (error) {
     console.error('Registration error:', error)
-    alert('Failed to register patient. Please try again.')
+    // Show more specific error message if available
+    const errorMessage = error.message || 'Failed to register patient. Please try again.'
+    alert(errorMessage)
   } finally {
     loading.value = false
   }
