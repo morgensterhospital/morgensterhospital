@@ -4,13 +4,14 @@ import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCUydtEd9HUtr6un-IMKmPkk1j9zuS8Dm0",
-  authDomain: "morgensterhospital-1088c.firebaseapp.com",
-  projectId: "morgensterhospital-1088c",
-  storageBucket: "morgensterhospital-1088c.firebasestorage.app",
-  messagingSenderId: "968326059369",
-  appId: "1:968326059369:web:19b365f169df66139219f8"
-}
+  apiKey: "AIzaSyBSZoJjgXex7vQIqNhMivImzuytstPGXMA",
+  authDomain: "morgensterhospital-system.firebaseapp.com",
+  databaseURL: "https://morgensterhospital-system-default-rtdb.firebaseio.com",
+  projectId: "morgensterhospital-system",
+  storageBucket: "morgensterhospital-system.firebasestorage.app",
+  messagingSenderId: "1049332341829",
+  appId: "1:1049332341829:web:dca5fa9e672f04e853972c"
+};
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig)
