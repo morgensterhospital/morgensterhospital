@@ -9,11 +9,14 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       <div v-for="(group, department) in groupedUsers" :key="department"
-        class="bg-surface-dark rounded-lg shadow-lg p-5 flex flex-col justify-between cursor-pointer hover:shadow-primary/50 transition-shadow"
+        class="bg-surface-dark rounded-lg shadow-lg p-5 flex flex-col justify-between cursor-pointer hover:shadow-primary/50 transition-shadow border border-transparent hover:border-primary"
         @click="openDepartmentModal(department, group)">
-        <div>
-          <h2 class="text-xl font-semibold text-primary mb-2">{{ department }}</h2>
-          <p class="text-text-muted">{{ group.length }} user(s)</p>
+        <div class="flex items-center mb-4">
+          <MdiIcon :path="departmentIcons[department] || mdiAccountGroup" size="32" class="text-primary mr-4" />
+          <div>
+            <h2 class="text-xl font-semibold text-primary mb-1">{{ department }}</h2>
+            <p class="text-text-muted">{{ group.length }} user(s)</p>
+          </div>
         </div>
       </div>
     </div>
@@ -40,6 +43,18 @@ import { ref, onMounted } from 'vue';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import UserDetailsModal from '@/components/common/UserDetailsModal.vue';
 import UserEditForm from '@/components/common/UserEditForm.vue';
+import MdiIcon from '@/components/common/MdiIcon.vue';
+import { mdiAccountGroup, mdiDoctor, mdiMedicalBag, mdiPill, mdiCashMultiple, mdiDna } from '@mdi/js';
+
+const departmentIcons = {
+  'Administration': mdiAccountGroup,
+  'Doctors': mdiDoctor,
+  'Nurses': mdiMedicalBag,
+  'Pharmacy': mdiPill,
+  'Accounts': mdiCashMultiple,
+  'Laboratory': mdiDna,
+  // Add other departments and their icons as needed
+};
 
 const users = ref([]);
 const groupedUsers = ref({});

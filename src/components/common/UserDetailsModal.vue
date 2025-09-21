@@ -5,7 +5,7 @@
         <h2 class="text-2xl font-semibold text-text-light">{{ department }}</h2>
         <button @click="close" class="text-text-muted hover:text-text-light">&times;</button>
       </div>
-      <div>
+      <div class="overflow-y-auto max-h-96">
         <ul>
           <li v-for="user in users" :key="user.uid" class="flex justify-between items-center py-2 border-b border-gray-700">
             <div>
