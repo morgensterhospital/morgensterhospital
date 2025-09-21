@@ -67,17 +67,19 @@ export const handler = async (event, context) => {
     }
   }
 
+  let step = 'initializing';
   try {
+    step = 'parsing_body';
     const patientData = JSON.parse(event.body)
     const { registeredBy, ...patientInfo } = patientData
 
-    // Generate unique hospital number
+    step = 'generating_hospital_number';
     const hospitalNumber = await generateHospitalNumber()
     
-    // Calculate age
+    step = 'calculating_age';
     const age = calculateAge(patientInfo.dob)
 
-    // Create patient document
+    step = 'preparing_patient_document';
     const newPatient = {
       ...patientInfo,
       hospitalNumber,
@@ -87,9 +89,10 @@ export const handler = async (event, context) => {
       registeredByRef: db.doc(`users/${registeredBy}`)
     }
 
+    step = 'adding_patient_to_db';
     const patientRef = await db.collection('patients').add(newPatient)
     
-    // Create initial invoice
+    step = 'creating_invoice';
     await db.collection(`patients/${patientRef.id}/invoices`).add({
       status: 'pending',
       creationDate: admin.firestore.FieldValue.serverTimestamp(),
@@ -98,7 +101,7 @@ export const handler = async (event, context) => {
       balance: 0
     })
 
-    // Create notification
+    step = 'creating_notification';
     await db.collection('notifications').add({
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
       userId: registeredBy,
@@ -106,10 +109,11 @@ export const handler = async (event, context) => {
       triggeredBy: 'patient_registration'
     })
 
+    step = 'fetching_created_patient';
     const createdPatientDoc = await patientRef.get();
     const createdPatientData = createdPatientDoc.data();
 
-    // Convert Firestore Timestamps to ISO strings for JSON serialization
+    step = 'serializing_response';
     const serializablePatient = {
       ...createdPatientData,
       id: createdPatientDoc.id,
@@ -117,6 +121,7 @@ export const handler = async (event, context) => {
       registrationDate: createdPatientData.registrationDate.toDate().toISOString(),
     };
 
+    step = 'returning_success';
     return {
       statusCode: 200,
       headers: corsHeaders,
@@ -128,13 +133,13 @@ export const handler = async (event, context) => {
     }
 
   } catch (error) {
-    console.error('Error creating patient:', error)
+    console.error(`Error creating patient at step: ${step}`, error)
     return {
       statusCode: 500,
       headers: corsHeaders,
       body: JSON.stringify({ 
         error: 'Failed to create patient', 
-        details: error.message 
+        details: `Failed at step: ${step}. Error: ${error.message}`
       })
     }
   }
