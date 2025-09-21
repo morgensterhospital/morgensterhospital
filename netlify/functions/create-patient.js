@@ -71,22 +71,57 @@ export const handler = async (event, context) => {
   try {
     step = 'parsing_body';
     const patientData = JSON.parse(event.body)
-    const { registeredBy, ...patientInfo } = patientData
+
+    // Validate required fields
+    const requiredFields = ['name', 'surname', 'dob', 'gender', 'phone', 'address', 'idNumber'];
+    const missingFields = requiredFields.filter(field => !patientData[field]);
+    
+    if (missingFields.length > 0) {
+      return {
+        statusCode: 400,
+        headers: corsHeaders,
+        body: JSON.stringify({ 
+          error: `Missing required fields: ${missingFields.join(', ')}` 
+        })
+      }
+    }
+
+    step = 'validating_date';
+    const dobDate = new Date(patientData.dob);
+    if (isNaN(dobDate.getTime())) {
+      return {
+        statusCode: 400,
+        headers: corsHeaders,
+        body: JSON.stringify({ 
+          error: 'Invalid date of birth format' 
+        })
+      }
+    }
 
     step = 'generating_hospital_number';
     const hospitalNumber = await generateHospitalNumber()
     
     step = 'calculating_age';
-    const age = calculateAge(patientInfo.dob)
+    const age = calculateAge(patientData.dob)
 
     step = 'preparing_patient_document';
     const newPatient = {
-      ...patientInfo,
-      hospitalNumber,
+      name: patientData.name,
+      surname: patientData.surname,
+      dob: admin.firestore.Timestamp.fromDate(new Date(patientData.dob)),
       age,
-      dob: admin.firestore.Timestamp.fromDate(new Date(patientInfo.dob)),
-      registrationDate: admin.firestore.FieldValue.serverTimestamp(),
-      registeredByRef: db.doc(`users/${registeredBy}`)
+      gender: patientData.gender,
+      phone: patientData.phone,
+      address: patientData.address,
+      idNumber: patientData.idNumber,
+      maritalStatus: patientData.maritalStatus || '',
+      countryOfBirth: patientData.countryOfBirth || '',
+      nokName: patientData.nokName || '',
+      nokSurname: patientData.nokSurname || '',
+      nokPhone: patientData.nokPhone || '',
+      nokAddress: patientData.nokAddress || '',
+      hospitalNumber,
+      registrationDate: admin.firestore.FieldValue.serverTimestamp()
     }
 
     step = 'adding_patient_to_db';
@@ -99,14 +134,6 @@ export const handler = async (event, context) => {
       totalAmount: 0,
       amountPaid: 0,
       balance: 0
-    })
-
-    step = 'creating_notification';
-    await db.collection('notifications').add({
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      userId: registeredBy,
-      message: `New patient registered: ${patientInfo.name} ${patientInfo.surname} (${hospitalNumber})`,
-      triggeredBy: 'patient_registration'
     })
 
     step = 'fetching_created_patient';
