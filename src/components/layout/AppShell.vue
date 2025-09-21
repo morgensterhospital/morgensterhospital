@@ -157,7 +157,7 @@ const allNavigationItems = [
     name: 'users',
     label: 'User Management',
     icon: mdiAccountGroup,
-    path: '/users',
+    path: '/user-management',
     roles: ['Admin', 'Accountant', 'Account Assistant'],
   },
   {

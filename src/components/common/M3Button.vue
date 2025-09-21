@@ -7,14 +7,16 @@
   >
     <mdi-icon v-if="icon" :path="icon" :size="iconSize" />
     <slot />
+    <span class="ripple" ref="ripple"></span>
   </button>
 </template>
 
 <script setup>
-import { computed, useSlots } from 'vue'
+import { computed, useSlots, ref } from 'vue'
 import MdiIcon from './MdiIcon.vue'
 
 const slots = useSlots()
+const ripple = ref(null)
 
 const props = defineProps({
   variant: {
@@ -72,6 +74,23 @@ const iconSize = computed(() => {
 
 const handleClick = (event) => {
   if (!props.disabled) {
+    const button = event.currentTarget;
+    const circle = document.createElement("span");
+    const diameter = Math.max(button.clientWidth, button.clientHeight);
+    const radius = diameter / 2;
+
+    circle.style.width = circle.style.height = `${diameter}px`;
+    circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
+    circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
+    circle.classList.add("ripple");
+
+    const ripple = button.getElementsByClassName("ripple")[0];
+
+    if (ripple) {
+      ripple.remove();
+    }
+
+    button.appendChild(circle);
     emit('click', event)
   }
 }
@@ -117,6 +136,21 @@ const handleClick = (event) => {
 
 .m3-button:active:before {
   opacity: 0.16;
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.7);
+  transform: scale(0);
+  animation: ripple 600ms linear;
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
 }
 
 /* Sizes */
