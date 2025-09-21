@@ -44,12 +44,12 @@ import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import UserDetailsModal from '@/components/common/UserDetailsModal.vue';
 import UserEditForm from '@/components/common/UserEditForm.vue';
 import MdiIcon from '@/components/common/MdiIcon.vue';
-import { mdiAccountGroup, mdiDoctor, mdiNurse, mdiPill, mdiCashMultiple, mdiDna } from '@mdi/js';
+import { mdiAccountGroup, mdiDoctor, mdiMedicalBag, mdiPill, mdiCashMultiple, mdiDna } from '@mdi/js';
 
 const departmentIcons = {
   'Administration': mdiAccountGroup,
   'Doctors': mdiDoctor,
-  'Nurses': mdiNurse,
+  'Nurses': mdiMedicalBag,
   'Pharmacy': mdiPill,
   'Accounts': mdiCashMultiple,
   'Laboratory': mdiDna,
