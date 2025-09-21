@@ -43,14 +43,11 @@ class ApiService {
     })
   }
 
-  // Create a new patient
-  async createPatient(patientData, registeredBy) {
+  // Create a new patient - UPDATED: removed registeredBy parameter
+  async createPatient(patientData) {
     return this.request('/create-patient', {
       method: 'POST',
-      body: JSON.stringify({
-        ...patientData,
-        registeredBy
-      })
+      body: JSON.stringify(patientData)
     })
   }
 
