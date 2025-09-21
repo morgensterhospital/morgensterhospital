@@ -106,14 +106,23 @@ export const handler = async (event, context) => {
       triggeredBy: 'patient_registration'
     })
 
-    const createdPatient = (await patientRef.get()).data();
+    const createdPatientDoc = await patientRef.get();
+    const createdPatientData = createdPatientDoc.data();
+
+    // Convert Firestore Timestamps to ISO strings for JSON serialization
+    const serializablePatient = {
+      ...createdPatientData,
+      id: createdPatientDoc.id,
+      dob: createdPatientData.dob.toDate().toISOString(),
+      registrationDate: createdPatientData.registrationDate.toDate().toISOString(),
+    };
 
     return {
       statusCode: 200,
       headers: corsHeaders,
       body: JSON.stringify({
         success: true,
-        patient: { id: patientRef.id, ...createdPatient },
+        patient: serializablePatient,
         message: 'Patient registered successfully'
       })
     }
