@@ -2,7 +2,7 @@
   <div v-if="show" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
     <div class="bg-surface-dark rounded-lg shadow-lg p-6 w-full max-w-2xl">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-semibold text-text-light">{{ department }}</h2>
+        <h2 class="text-2xl font-semibold text-text-light">Edit {{ department }}</h2>
         <button @click="close" class="text-text-muted hover:text-text-light">&times;</button>
       </div>
       <div class="overflow-y-auto max-h-96">
@@ -12,12 +12,12 @@
               <p class="text-text-light">{{ user.fullName }}</p>
               <p class="text-sm text-text-muted">{{ user.email }}</p>
             </div>
-            <button @click="editUser(user)" class="px-4 py-1 bg-primary text-white rounded-md hover:bg-primary-dark">Edit</button>
+            <button @click="deleteUser(user)" class="px-4 py-1 bg-red-600 text-white rounded-md hover:bg-red-700">Delete</button>
           </li>
         </ul>
       </div>
       <div class="mt-6 flex justify-end">
-        <button @click="editDepartment" class="px-4 py-2 bg-secondary text-white rounded-md hover:bg-secondary-dark">Edit Department</button>
+        <button @click="addUser" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark">Add User</button>
       </div>
     </div>
   </div>
@@ -32,18 +32,18 @@ const props = defineProps({
   users: Array,
 });
 
-const emit = defineEmits(['close', 'edit', 'edit-department']);
+const emit = defineEmits(['close', 'delete-user', 'add-user']);
 
 const close = () => {
   emit('close');
 };
 
-const editUser = (user) => {
-  emit('edit', user);
+const deleteUser = (user) => {
+  emit('delete-user', user);
 };
 
-const editDepartment = () => {
-  emit('edit-department');
+const addUser = () => {
+  emit('add-user');
 };
 </script>
 
