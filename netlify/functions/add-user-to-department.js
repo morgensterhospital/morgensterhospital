@@ -21,11 +21,23 @@ exports.handler = async function(event, context) {
       displayName: fullName,
     });
 
+    const nameParts = fullName.split(' ');
+    const name = nameParts.shift() || '';
+    const surname = nameParts.join(' ') || '';
+
     await db.collection('users').doc(userRecord.uid).set({
-      fullName,
+      uid: userRecord.uid,
+      name,
+      surname,
       email,
       department,
-      uid: userRecord.uid,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      idNumber: '', // Default value
+      isActive: true, // Default value
+      phoneNumber: '', // Default value
+      profileCompleted: false, // Default value
+      role: 'User', // Default value
+      wardType: '', // Default value
     });
 
     return {

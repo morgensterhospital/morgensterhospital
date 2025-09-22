@@ -1,4 +1,5 @@
 import { db } from './lib/firebase-admin';
+import admin from 'firebase-admin';
 
 exports.handler = async function(event, context) {
   if (event.httpMethod !== 'POST') {
@@ -15,12 +16,18 @@ exports.handler = async function(event, context) {
       };
     }
 
-    const departmentRef = db.collection('departments').doc(name);
-    await departmentRef.set({ name });
+    const id = name.toLowerCase().replace(/\s+/g, '-');
+    const departmentRef = db.collection('departments').doc(id);
+
+    await departmentRef.set({
+      id: id,
+      name: name,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: 'Department created successfully' }),
+      body: JSON.stringify({ message: 'Department created successfully', id: id }),
     };
   } catch (error) {
     console.error('Error creating department:', error);

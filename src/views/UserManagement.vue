@@ -64,7 +64,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
-import { useNotificationStore } from '@/stores/notificationStore';
+import { useNotification } from '@/stores/notificationStore';
 import UserDetailsModal from '@/components/common/UserDetailsModal.vue';
 import UserEditForm from '@/components/common/UserEditForm.vue';
 import AddDepartmentModal from '@/components/common/AddDepartmentModal.vue';
@@ -84,6 +84,7 @@ const departmentIcons = {
 };
 
 const users = ref([]);
+const departments = ref([]);
 const groupedUsers = ref({});
 const isModalVisible = ref(false);
 const selectedDepartment = ref('');
@@ -93,7 +94,7 @@ const editingUser = ref(null);
 const isAddDepartmentModalVisible = ref(false);
 const isEditDepartmentModalVisible = ref(false);
 const isAddUserModalVisible = ref(false);
-const notificationStore = useNotificationStore();
+const notificationStore = useNotification();
 
 const fetchUsers = async () => {
   const db = getFirestore();
@@ -103,8 +104,22 @@ const fetchUsers = async () => {
   groupUsersByDepartment();
 };
 
+const fetchDepartments = async () => {
+  const db = getFirestore();
+  const departmentsCollection = collection(db, 'departments');
+  const departmentsSnapshot = await getDocs(departmentsCollection);
+  departments.value = departmentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+};
+
 const groupUsersByDepartment = () => {
   const groups = {};
+
+  // Initialize groups with all departments
+  departments.value.forEach(dept => {
+    groups[dept.name] = [];
+  });
+
+  // Group users by department
   users.value.forEach(user => {
     const department = user.department || 'No Department';
     if (!groups[department]) {
@@ -112,6 +127,17 @@ const groupUsersByDepartment = () => {
     }
     groups[department].push(user);
   });
+
+  // Handle No Department case
+  if (!groups['No Department'] || groups['No Department'].length === 0) {
+    const usersWithNoDepartment = users.value.filter(u => !u.department);
+    if (usersWithNoDepartment.length > 0) {
+      groups['No Department'] = usersWithNoDepartment;
+    } else {
+      delete groups['No Department'];
+    }
+  }
+
   groupedUsers.value = groups;
 };
 
@@ -146,7 +172,7 @@ const closeAddDepartmentModal = () => {
 
 const handleCreateDepartment = async (departmentName) => {
   if (!departmentName) {
-    // TODO: Show some feedback to the user
+    notificationStore.showNotification('Department name is required', 'error');
     return;
   }
   try {
@@ -162,9 +188,12 @@ const handleCreateDepartment = async (departmentName) => {
       throw new Error('Failed to create department');
     }
 
+    notificationStore.showNotification('Department created successfully', 'success');
+    await fetchDepartments();
     await fetchUsers(); // This will also re-group the departments
   } catch (error) {
     console.error('Error creating department:', error);
+    notificationStore.showNotification('Failed to create department', 'error');
   } finally {
     closeAddDepartmentModal();
   }
@@ -194,8 +223,9 @@ const handleUpdateUser = async (updatedUser) => {
   }
 };
 
-onMounted(() => {
-  fetchUsers();
+onMounted(async () => {
+  await fetchDepartments();
+  await fetchUsers();
 });
 
 const openEditDepartmentModal = () => {
