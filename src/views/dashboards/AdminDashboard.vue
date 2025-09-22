@@ -163,6 +163,7 @@ const fetchSystemStats = async () => {
     }
     const stats = await response.json();
     systemStats.value.totalUsers = stats.totalUsers;
+    systemStats.value.totalPatients = stats.totalPatients;
     systemStats.value.activeDepartments = stats.activeDepartments;
   } catch (error) {
     console.error('Error fetching system stats:', error);
@@ -211,9 +212,6 @@ onMounted(() => {
   timeInterval = setInterval(updateDateTime, 1000);
   // Fetch initial stats
   fetchSystemStats();
-  patientStore.getPatients().then(patients => {
-    systemStats.value.totalPatients = patients.length;
-  });
 });
 
 onUnmounted(() => {
