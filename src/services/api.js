@@ -4,12 +4,15 @@ const API_BASE = '/.netlify/functions'
 class ApiService {
   async request(endpoint, options = {}) {
     const url = `${API_BASE}${endpoint}`
+
+    // Correctly merge headers and prevent silent overwrites
+    const { headers, ...restOfOptions } = options;
     const config = {
+      ...restOfOptions,
       headers: {
         'Content-Type': 'application/json',
-        ...options.headers
+        ...headers,
       },
-      ...options
     }
 
     try {
@@ -40,14 +43,11 @@ class ApiService {
     })
   }
 
-  // Create a new patient
-  async createPatient(patientData, registeredBy) {
+  // Create a new patient - UPDATED: removed registeredBy parameter
+  async createPatient(patientData) {
     return this.request('/create-patient', {
       method: 'POST',
-      body: JSON.stringify({
-        ...patientData,
-        registeredBy
-      })
+      body: JSON.stringify(patientData)
     })
   }
 

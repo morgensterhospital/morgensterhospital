@@ -65,11 +65,11 @@
             <span class="font-medium">User Management</span>
           </button>
           <button
-            @click="navigateTo('/patient/register')"
+            @click="navigateTo('/patients')"
             class="flex items-center p-4 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
           >
             <MdiIcon :path="mdiAccountPlus" size="24" class="mr-3 text-primary" />
-            <span class="font-medium">New Patient</span>
+            <span class="font-medium">View Patients</span>
           </button>
           <button
             @click="navigateTo('/reports')"

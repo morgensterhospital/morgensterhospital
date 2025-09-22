@@ -24,14 +24,15 @@ export const usePatientStore = defineStore('patient', () => {
   const loading = ref(false)
   const error = ref(null)
 
-  // Register new patient
+  // Register new patient - FIXED: Removed registeredBy parameter
   const registerPatient = async (patientData) => {
     try {
       loading.value = true
       error.value = null
 
-      const authStore = useAuthStore()
-      const result = await apiService.createPatient(patientData, authStore.user.uid)
+      // BEFORE: const result = await apiService.createPatient(patientData, authStore.user.uid)
+      // AFTER: Just pass patientData
+      const result = await apiService.createPatient(patientData)
       
       return result.patient
     } catch (err) {
@@ -109,6 +110,23 @@ export const usePatientStore = defineStore('patient', () => {
       loading.value = false
     }
   }
+
+  // Get all patients
+  const getAllPatients = async () => {
+    try {
+      loading.value = true;
+      const patientsRef = collection(db, 'patients');
+      const querySnapshot = await getDocs(query(patientsRef, orderBy('registrationDate', 'desc')));
+      const allPatients = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      patients.value = allPatients;
+      return allPatients;
+    } catch (err) {
+      error.value = err.message;
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
 
   // Add vitals
   const addVitals = async (patientId, vitalsData) => {
@@ -227,6 +245,7 @@ export const usePatientStore = defineStore('patient', () => {
     registerPatient,
     searchPatients,
     getPatient,
+    getAllPatients,
     addVitals,
     addDoctorNote,
     addNurseNote,
@@ -234,6 +253,8 @@ export const usePatientStore = defineStore('patient', () => {
     addLabRequest,
     addRadiologyRequest,
     processBilling,
-    updatePatientDischargeStatus
+    updatePatientDischargeStatus,
+    createDischargeNotification,
+    getDischargeNotifications
   }
 })
