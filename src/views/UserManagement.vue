@@ -64,7 +64,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
-import { useNotification } from '@/stores/notificationStore';
+import { useNotificationStore } from '@/stores/notificationStore';
 import UserDetailsModal from '@/components/common/UserDetailsModal.vue';
 import UserEditForm from '@/components/common/UserEditForm.vue';
 import AddDepartmentModal from '@/components/common/AddDepartmentModal.vue';
@@ -93,7 +93,7 @@ const editingUser = ref(null);
 const isAddDepartmentModalVisible = ref(false);
 const isEditDepartmentModalVisible = ref(false);
 const isAddUserModalVisible = ref(false);
-const notificationStore = useNotification();
+const notificationStore = useNotificationStore();
 
 const fetchUsers = async () => {
   const db = getFirestore();
