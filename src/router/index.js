@@ -164,6 +164,18 @@ const routes = [
         component: () => import('@/views/patient/ViewPatients.vue'),
         meta: { roles: ['Admin'] },
       },
+      {
+        path: 'doctor-notes/:patientId',
+        name: 'DoctorNotes',
+        component: () => import('@/views/notes/DoctorNotes.vue'),
+        meta: { roles: ['Doctor'] },
+      },
+      {
+        path: 'nurse-notes/:patientId',
+        name: 'NurseNotes',
+        component: () => import('@/views/notes/NurseNotes.vue'),
+        meta: { roles: ['Nurse'] },
+      },
     ],
   },
 ];
