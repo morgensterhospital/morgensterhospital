@@ -28,7 +28,9 @@ export const useAuthStore = defineStore('auth', () => {
     const rolePermissions = {
       'Admin': ['*'], // All permissions
       'Doctor': [
-        'patient:view', 'patient:create', 'doctors_notes:create', 'doctors_notes:edit',
+        'patient:view', 'patient:create',
+        'doctors_notes:view', 'doctors_notes:create', 'doctors_notes:edit',
+        'nurses_notes:view',
         'prescriptions:create', 'prescriptions:edit', 'lab_requests:create',
         'radiology_requests:create', 'admission_discharge:create', 'operations:create'
       ],
