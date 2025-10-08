@@ -1,7 +1,7 @@
 <template>
   <div class="p-4">
     <BillingModal v-if="isBillingModalOpen" :patient="patient" @close="closeModal" />
-    <InfoModal v-if="isInfoModalOpen" :title="modalTitle" :has-data="modalHasData" @close="closeModal" />
+    <NotesListModal v-if="isNotesListModalVisible" :patient="patient" @close="closeModal" />
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Left Column: Patient Details -->
@@ -55,6 +55,7 @@ import MdiIcon from '@/components/common/MdiIcon.vue';
 import M3Button from '@/components/common/M3Button.vue';
 import BillingModal from '@/components/common/BillingModal.vue';
 import InfoModal from '@/components/common/InfoModal.vue';
+import NotesListModal from '@/components/common/NotesListModal.vue';
 import {
   mdiCashMultiple,
   mdiDoctor,
@@ -103,29 +104,24 @@ const admissionStatusClass = computed(() => {
 });
 
 const isBillingModalOpen = ref(false);
-const isInfoModalOpen = ref(false);
-const modalTitle = ref('');
-const modalHasData = ref(false);
+const isNotesListModalVisible = ref(false);
 
 const openBillingModal = () => {
   isBillingModalOpen.value = true;
 };
 
-const openInfoModal = (title, hasData = false) => {
-  modalTitle.value = title;
-  modalHasData.value = hasData;
-  isInfoModalOpen.value = true;
+const openNotesListModal = () => {
+  isNotesListModalVisible.value = true;
 };
 
 const closeModal = () => {
   isBillingModalOpen.value = false;
-  isInfoModalOpen.value = false;
+  isNotesListModalVisible.value = false;
 };
 
 const actionCards = ref([
     { title: 'Billing and Invoices', icon: mdiCashMultiple, color: 'text-green-400', action: openBillingModal },
-    { title: "Doctor's Notes", icon: mdiDoctor, color: 'text-blue-400', action: () => openInfoModal("Doctor's Notes") },
-    { title: "Nurse's Notes", icon: mdiMotherNurse, color: 'text-purple-400', action: () => openInfoModal("Nurse's Notes") },
+    { title: 'Clinical Notes', icon: mdiDoctor, color: 'text-blue-400', action: openNotesListModal },
     { title: "Operations/Surgeries", icon: mdiNeedle, color: 'text-red-400', action: () => openInfoModal("Operations/Surgeries") },
     { title: 'Laboratory', icon: mdiTestTube, color: 'text-yellow-400', action: () => openInfoModal('Laboratory') },
     { title: 'Radiology', icon: mdiRadioactive, color: 'text-indigo-400', action: () => openInfoModal('Radiology') },

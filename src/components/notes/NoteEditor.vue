@@ -49,18 +49,16 @@
       </div>
     </div>
     <div class="flex justify-end mt-4">
-      <button
-        @click="onSave"
-        class="px-6 py-2 bg-primary text-white rounded-lg shadow hover:bg-primary-dark transition-colors"
-      >
+      <M3Button @click="onSave">
         Upload Notes
-      </button>
+      </M3Button>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, defineEmits } from 'vue';
+import M3Button from '@/components/common/M3Button.vue';
 
 const note = ref({
   general: '',

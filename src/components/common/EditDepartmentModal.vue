@@ -9,7 +9,7 @@
         <ul>
           <li v-for="user in users" :key="user.uid" class="flex justify-between items-center py-2 border-b border-gray-700">
             <div>
-              <p class="text-text-light">{{ user.fullName }}</p>
+              <p class="text-text-light">{{ user.name }} {{ user.surname }}</p>
               <p class="text-sm text-text-muted">{{ user.email }}</p>
             </div>
             <button @click="deleteUser(user)" class="px-4 py-1 bg-red-600 text-white rounded-md hover:bg-red-700">Delete</button>

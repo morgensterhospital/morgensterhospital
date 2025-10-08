@@ -380,9 +380,9 @@
     </div>
   </div>
 
-  <PatientNotesModal
+  <NotesListModal
     v-if="patient"
-    :show="isNotesModalVisible"
+    :show="isNotesListModalVisible"
     :patient="patient"
     @close="closeNotesModal"
   />
@@ -406,7 +406,8 @@ import {
   mdiHeart,
   mdiPill,
   mdiTestTube,
-  mdiRadioboxMarked, // FIX: Replaced mdiRadiobox with mdiRadioboxMarked
+  mdiRadioboxMarked,
+  mdiFileDocumentEdit,
   mdiKnife,
   mdiWheelchairAccessibility,
   mdiHospitalBuilding,
@@ -423,7 +424,7 @@ const patientStore = usePatientStore()
 const loading = ref(true)
 const error = ref('')
 const patient = ref(null)
-const isNotesModalVisible = ref(false)
+const isNotesListModalVisible = ref(false)
 
 const patientId = computed(() => route.params.id)
 
@@ -466,11 +467,11 @@ const formatDate = (date) => {
 
 // Notes Modal Handlers
 const openNotesModal = () => {
-  isNotesModalVisible.value = true;
+  isNotesListModalVisible.value = true;
 }
 
 const closeNotesModal = () => {
-  isNotesModalVisible.value = false;
+  isNotesListModalVisible.value = false;
 }
 
 const viewVitals = () => {
