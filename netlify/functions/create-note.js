@@ -6,9 +6,7 @@ exports.handler = async function(event, context) {
   }
 
   try {
-    // Assuming the user's identity is verified by a client-side token and passed in the body
-    // In a real app, you'd verify this token with `admin.auth().verifyIdToken(token)`
-    const { patientId, content, type, authorId, authorName, authorRole } = JSON.parse(event.body);
+    const { patientId, content, type, authorId, authorName, authorRole, isUpdate } = JSON.parse(event.body);
 
     if (!patientId || !content || !type || !authorId || !authorName || !authorRole) {
       return {
@@ -17,24 +15,35 @@ exports.handler = async function(event, context) {
       };
     }
 
+    // Validate that content is an object
+    if (typeof content !== 'object' || content === null) {
+        return {
+            statusCode: 400,
+            body: JSON.stringify({ error: 'Invalid note content format.' }),
+        };
+    }
+
     const noteRef = db.collection('notes').doc();
     const newNote = {
       id: noteRef.id,
       patientId,
-      content,
-      type, // 'doctor' or 'nurse'
+      content, // content is now an object
+      type,
       authorId,
       authorName,
       authorRole,
+      isUpdate: isUpdate || false,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      isEditable: false, // Explicitly making it non-editable as per user request
     };
 
     await noteRef.set(newNote);
 
+    // Return the full note object including the server-generated timestamp
+    const createdNote = { ...newNote, createdAt: new Date().toISOString() };
+
     return {
       statusCode: 201,
-      body: JSON.stringify({ message: 'Note created successfully', note: newNote }),
+      body: JSON.stringify({ message: 'Note created successfully', note: createdNote }),
     };
   } catch (error) {
     console.error('Error creating note:', error);

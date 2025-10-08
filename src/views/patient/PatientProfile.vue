@@ -130,60 +130,15 @@
           </div>
         </div>
 
-        <!-- Doctor's Notes Module -->
-        <div v-if="hasPermission('doctors_notes:view')" class="module-card doctors-notes">
+        <!-- Clinical Notes Module -->
+        <div v-if="hasPermission('doctors_notes:view') || hasPermission('nurses_notes:view')" class="module-card clinical-notes">
           <div class="module-header">
-            <mdi-icon :path="mdiDoctor" size="32" />
-            <h3>DOCTORS NOTES</h3>
+            <mdi-icon :path="mdiFileDocumentEdit" size="32" />
+            <h3>CLINICAL NOTES</h3>
           </div>
           <div class="module-actions">
-            <m3-button variant="filled" size="small" @click="viewDoctorNotes">
-              VIEW
-            </m3-button>
-            <m3-button
-              v-if="authStore.userRole !== 'Accountant' && hasPermission('doctors_notes:edit')"
-              variant="outlined"
-              size="small"
-              @click="editDoctorNotes"
-            >
-              EDIT
-            </m3-button>
-            <m3-button
-              v-if="authStore.userRole !== 'Accountant' && hasPermission('doctors_notes:create')"
-              variant="outlined"
-              size="small"
-              @click="addDoctorNote"
-            >
-              ADD
-            </m3-button>
-          </div>
-        </div>
-
-        <!-- Nurse's Notes Module -->
-        <div v-if="hasPermission('nurses_notes:view')" class="module-card nurses-notes">
-          <div class="module-header">
-            <mdi-icon :path="mdiMotherNurse" size="32" />
-            <h3>NURSES NOTES</h3>
-          </div>
-          <div class="module-actions">
-            <m3-button variant="filled" size="small" @click="viewNurseNotes">
-              VIEW
-            </m3-button>
-            <m3-button
-              v-if="authStore.userRole !== 'Accountant' && hasPermission('nurses_notes:edit')"
-              variant="outlined"
-              size="small"
-              @click="editNurseNotes"
-            >
-              EDIT
-            </m3-button>
-            <m3-button
-              v-if="authStore.userRole !== 'Accountant' && hasPermission('nurses_notes:create')"
-              variant="outlined"
-              size="small"
-              @click="addNurseNote"
-            >
-              ADD
+            <m3-button variant="filled" size="small" @click="openNotesModal">
+              VIEW / EDIT NOTES
             </m3-button>
           </div>
         </div>
@@ -424,6 +379,13 @@
       </div>
     </div>
   </div>
+
+  <PatientNotesModal
+    v-if="patient"
+    :show="isNotesModalVisible"
+    :patient="patient"
+    @close="closeNotesModal"
+  />
 </template>
 
 <script setup>
@@ -433,6 +395,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { usePatientStore } from '@/stores/patientStore'
 import MdiIcon from '@/components/common/MdiIcon.vue'
 import M3Button from '@/components/common/M3Button.vue'
+import PatientNotesModal from '@/components/common/PatientNotesModal.vue'
 import {
   mdiChevronRight,
   mdiPrinter,
@@ -448,6 +411,7 @@ import {
   mdiWheelchairAccessibility,
   mdiHospitalBuilding,
   mdiFileDocument,
+  mdiFileDocumentEdit,
   mdiHistory
 } from '@mdi/js'
 
@@ -459,6 +423,7 @@ const patientStore = usePatientStore()
 const loading = ref(true)
 const error = ref('')
 const patient = ref(null)
+const isNotesModalVisible = ref(false)
 
 const patientId = computed(() => route.params.id)
 
@@ -499,32 +464,13 @@ const formatDate = (date) => {
   })
 }
 
-// Module action handlers
-const viewDoctorNotes = () => {
-  console.log('View doctor notes')
-  // Implement modal or navigation to doctor notes
+// Notes Modal Handlers
+const openNotesModal = () => {
+  isNotesModalVisible.value = true;
 }
 
-const editDoctorNotes = () => {
-  console.log('Edit doctor notes')
-  // Implement edit functionality
-}
-
-const addDoctorNote = () => {
-  console.log('Add doctor note')
-  // Implement add functionality
-}
-
-const viewNurseNotes = () => {
-  console.log('View nurse notes')
-}
-
-const editNurseNotes = () => {
-  console.log('Edit nurse notes')
-}
-
-const addNurseNote = () => {
-  console.log('Add nurse note')
+const closeNotesModal = () => {
+  isNotesModalVisible.value = false;
 }
 
 const viewVitals = () => {
