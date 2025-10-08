@@ -395,7 +395,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { usePatientStore } from '@/stores/patientStore'
 import MdiIcon from '@/components/common/MdiIcon.vue'
 import M3Button from '@/components/common/M3Button.vue'
-import PatientNotesModal from '@/components/common/PatientNotesModal.vue'
+import NotesListModal from '@/components/common/NotesListModal.vue'
 import {
   mdiChevronRight,
   mdiPrinter,
@@ -412,7 +412,6 @@ import {
   mdiWheelchairAccessibility,
   mdiHospitalBuilding,
   mdiFileDocument,
-  mdiFileDocumentEdit,
   mdiHistory
 } from '@mdi/js'
 
