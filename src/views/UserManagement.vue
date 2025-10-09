@@ -10,7 +10,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       <div v-for="(group, department) in groupedUsers" :key="department"
         class="bg-surface-dark rounded-lg shadow-lg p-5 flex flex-col justify-between cursor-pointer hover:shadow-primary/50 transition-shadow border border-transparent hover:border-primary"
-        @click="openDepartmentModal(department, group)">
+        @click="openDepartmentModal(department)">
         <div class="flex items-center mb-4">
           <MdiIcon :path="departmentIcons[department] || mdiAccountGroup" size="32" class="text-primary mr-4" />
           <div>
@@ -27,14 +27,6 @@
       :users="selectedUsers"
       @close="closeModal"
       @edit="openEditUserForm"
-      @edit-department="openEditDepartmentModal"
-    />
-
-    <EditDepartmentModal
-      :show="isEditDepartmentModalVisible"
-      :department="selectedDepartment"
-      :users="selectedUsers"
-      @close="closeEditDepartmentModal"
       @delete-user="handleDeleteUser"
       @add-user="openAddUserModal"
     />
@@ -62,13 +54,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import UserDetailsModal from '@/components/common/UserDetailsModal.vue';
 import UserEditForm from '@/components/common/UserEditForm.vue';
 import AddDepartmentModal from '@/components/common/AddDepartmentModal.vue';
-import EditDepartmentModal from '@/components/common/EditDepartmentModal.vue';
 import AddUserToDepartmentModal from '@/components/common/AddUserToDepartmentModal.vue';
 import MdiIcon from '@/components/common/MdiIcon.vue';
 import { mdiAccountGroup, mdiDoctor, mdiMedicalBag, mdiPill, mdiCashMultiple, mdiDna } from '@mdi/js';
@@ -88,13 +79,13 @@ const departments = ref([]);
 const groupedUsers = ref({});
 const isModalVisible = ref(false);
 const selectedDepartment = ref('');
-const selectedUsers = ref([]);
 const isEditFormVisible = ref(false);
 const editingUser = ref(null);
 const isAddDepartmentModalVisible = ref(false);
-const isEditDepartmentModalVisible = ref(false);
 const isAddUserModalVisible = ref(false);
 const notificationStore = useNotificationStore();
+
+const selectedUsers = computed(() => groupedUsers.value[selectedDepartment.value] || []);
 
 const fetchUsers = async () => {
   const db = getFirestore();
@@ -141,9 +132,8 @@ const groupUsersByDepartment = () => {
   groupedUsers.value = groups;
 };
 
-const openDepartmentModal = (department, userList) => {
+const openDepartmentModal = (department) => {
   selectedDepartment.value = department;
-  selectedUsers.value = userList;
   isModalVisible.value = true;
 };
 
@@ -228,48 +218,39 @@ onMounted(async () => {
   await fetchUsers();
 });
 
-const openEditDepartmentModal = () => {
-  isModalVisible.value = false;
-  isEditDepartmentModalVisible.value = true;
+const openAddUserModal = () => {
+  isModalVisible.value = false; // Close the details modal
+  isAddUserModalVisible.value = true;
 };
 
-const closeEditDepartmentModal = () => {
-  isEditDepartmentModalVisible.value = false;
+const closeAddUserModal = () => {
+  isAddUserModalVisible.value = false;
+  isModalVisible.value = true; // Re-open the details modal
 };
 
 const handleDeleteUser = async (user) => {
   try {
+    // Use user.uid which is guaranteed from the document data, fallback to id
+    const userId = user.uid || user.id;
     const response = await fetch('/.netlify/functions/delete-user-from-department', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user.id }),
+      body: JSON.stringify({ userId }),
     });
     if (!response.ok) throw new Error('Failed to delete user');
 
     notificationStore.showNotification('User deleted successfully', 'success');
     await fetchUsers();
 
-    // Find the updated user list for the selected department
-    const updatedUserList = groupedUsers.value[selectedDepartment.value] || [];
-    if (updatedUserList.length === 0) {
-      closeEditDepartmentModal();
-    } else {
-      selectedUsers.value = updatedUserList;
+    // After re-fetching, the computed property will update.
+    // If the department becomes empty, close the modal.
+    if (selectedUsers.value.length === 0) {
+      closeModal();
     }
   } catch (error) {
     console.error('Error deleting user:', error);
     notificationStore.showNotification('Failed to delete user', 'error');
   }
-};
-
-const openAddUserModal = () => {
-  isEditDepartmentModalVisible.value = false;
-  isAddUserModalVisible.value = true;
-};
-
-const closeAddUserModal = () => {
-  isAddUserModalVisible.value = false;
-  isEditDepartmentModalVisible.value = true;
 };
 
 const handleCreateUser = async (userData) => {
@@ -282,14 +263,14 @@ const handleCreateUser = async (userData) => {
     if (!response.ok) throw new Error('Failed to create user');
 
     notificationStore.showNotification('User created successfully', 'success');
-    await fetchUsers();
-    selectedUsers.value = groupedUsers.value[selectedDepartment.value] || [];
+    await fetchUsers(); // Re-fetch users, computed property will update the list
   } catch (error) {
     console.error('Error creating user:', error);
     notificationStore.showNotification('Failed to create user', 'error');
   } finally {
+    // Correctly close the 'Add User' modal and re-open the 'User Details' modal
     isAddUserModalVisible.value = false;
-    isEditDepartmentModalVisible.value = true;
+    isModalVisible.value = true;
   }
 };
 </script>

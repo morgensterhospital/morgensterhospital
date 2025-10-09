@@ -15,7 +15,7 @@
         />
         <p v-if="notes.length === 0" class="text-text-muted text-center py-4">No notes found for this patient.</p>
 
-        <div v-if="isDoctor" class="mt-6">
+        <div v-if="canAddNote" class="mt-6">
           <M3Button
             v-if="!showEditor"
             @click="showEditor = true"
@@ -49,6 +49,7 @@ import { useNotificationStore } from '@/stores/notificationStore';
 const props = defineProps({
   show: Boolean,
   patient: Object,
+  noteType: String,
 });
 
 const emit = defineEmits(['close']);
@@ -60,16 +61,21 @@ const selectedNote = ref(null);
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
 
-const isDoctor = computed(() => authStore.userRole === 'Doctor');
+const canAddNote = computed(() => {
+  const role = authStore.userRole.toLowerCase();
+  return props.noteType && role === props.noteType;
+});
 
 const fetchNotes = async () => {
-  if (!props.patient?.id || !authStore.userRole) {
+  if (!props.patient?.id || !props.noteType) {
     return;
   }
   try {
-    const response = await fetch(`/.netlify/functions/get-notes?patientId=${props.patient.id}&userRole=${encodeURIComponent(authStore.userRole)}`);
+    const response = await fetch(`/.netlify/functions/get-notes?patientId=${props.patient.id}&noteType=${props.noteType}`);
     if (!response.ok) throw new Error('Failed to fetch notes');
-    notes.value = await response.json();
+    const allNotes = await response.json();
+    // Filter notes by the specific type for this modal instance
+    notes.value = allNotes.filter(note => note.type === props.noteType);
   } catch (error) {
     console.error('Error fetching notes:', error);
     notificationStore.showNotification("Error fetching patient's notes.", 'error');
@@ -92,7 +98,7 @@ const handleSaveNote = async (noteContent) => {
   const noteData = {
     patientId: props.patient.id,
     content: noteContent,
-    type: authStore.userRole.toLowerCase(),
+    type: props.noteType,
     authorId: authStore.user.uid,
     authorName: authStore.user.displayName,
     authorRole: authStore.userRole,

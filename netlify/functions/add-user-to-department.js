@@ -6,24 +6,20 @@ exports.handler = async function(event, context) {
   }
 
   try {
-    const { fullName, email, password, department } = JSON.parse(event.body);
+    const { name, surname, email, password, department, idNumber, phoneNumber, role } = JSON.parse(event.body);
 
-    if (!fullName || !email || !password || !department) {
+    if (!name || !surname || !email || !password || !department || !role) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Missing required fields' }),
+        body: JSON.stringify({ error: 'Missing required fields: name, surname, email, password, department, and role are required.' }),
       };
     }
 
     const userRecord = await admin.auth().createUser({
       email,
       password,
-      displayName: fullName,
+      displayName: `${name} ${surname}`,
     });
-
-    const nameParts = fullName.split(' ');
-    const name = nameParts.shift() || '';
-    const surname = nameParts.join(' ') || '';
 
     await db.collection('users').doc(userRecord.uid).set({
       uid: userRecord.uid,
@@ -31,14 +27,17 @@ exports.handler = async function(event, context) {
       surname,
       email,
       department,
+      idNumber: idNumber || '',
+      phoneNumber: phoneNumber || '',
+      role,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      idNumber: '', // Default value
-      isActive: true, // Default value
-      phoneNumber: '', // Default value
-      profileCompleted: false, // Default value
-      role: 'User', // Default value
-      wardType: '', // Default value
+      isActive: true,
+      profileCompleted: false,
+      wardType: '', // This can be populated later if needed
     });
+
+    // Optionally set custom claims
+    await admin.auth().setCustomUserClaims(userRecord.uid, { role, department });
 
     return {
       statusCode: 200,
@@ -48,7 +47,7 @@ exports.handler = async function(event, context) {
     console.error('Error creating user:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to create user' }),
+      body: JSON.stringify({ error: 'Failed to create user.' }),
     };
   }
 };

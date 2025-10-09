@@ -121,13 +121,7 @@ const routes = [
         path: 'patient/register',
         name: 'PatientRegistration',
         component: () => import('@/views/patient/PatientRegistration.vue'),
-        meta: { permissions: ['patient:create'], roles: ['Accounts Clerk', 'Doctor', 'Nurse'] },
-      },
-      {
-        path: 'accountant/patient/register',
-        name: 'AccountantPatientRegistration',
-        component: () => import('@/views/patient/AccountantPatientRegistration.vue'),
-        meta: { permissions: ['patient:create'], roles: ['Accountant'] },
+        meta: { permissions: ['patient:create'], roles: ['Accounts Clerk', 'Doctor', 'Nurse', 'Accountant'] },
       },
       {
         path: 'patient/:id',

@@ -6,39 +6,20 @@ exports.handler = async function(event, context) {
   }
 
   try {
-    const { patientId, userRole } = event.queryStringParameters;
+    const { patientId, noteType } = event.queryStringParameters;
 
-    if (!patientId || !userRole) {
+    if (!patientId || !noteType) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Missing patientId or userRole parameter.' }),
+        body: JSON.stringify({ error: 'Missing patientId or noteType parameter.' }),
       };
     }
 
-    // Define which roles can view which note types
-    const rolePermissions = {
-      Doctor: ['doctor', 'nurse'],
-      Nurse: ['doctor', 'nurse'],
-      'Laboratory Technician': ['doctor', 'nurse'],
-      'X-Ray Operator': ['doctor', 'nurse'],
-      Accountant: ['doctor', 'nurse'],
-      'Pharmacy Technician': ['doctor', 'nurse'],
-      'Rehabilitation Technician': ['doctor', 'nurse'],
-      // Add other roles as needed
-    };
-
-    const allowedNoteTypes = rolePermissions[userRole];
-
-    if (!allowedNoteTypes) {
-      return {
-        statusCode: 403,
-        body: JSON.stringify({ error: 'You are not authorized to view these notes.' }),
-      };
-    }
-
+    // The permission to view these notes is already handled by the frontend UI.
+    // This function simply fetches the requested note type for the given patient.
     const notesSnapshot = await db.collection('notes')
       .where('patientId', '==', patientId)
-      .where('type', 'in', allowedNoteTypes)
+      .where('type', '==', noteType)
       .orderBy('createdAt', 'desc')
       .get();
 
