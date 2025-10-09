@@ -27,18 +27,80 @@ export const useAuthStore = defineStore('auth', () => {
 
     const rolePermissions = {
       'Admin': ['*'], // All permissions
+
       'Doctor': [
         'patient:view', 'patient:create',
-        'doctors_notes:view', 'doctors_notes:create', 'doctors_notes:edit',
+        'doctors_notes:view', 'doctors_notes:edit',
         'nurses_notes:view',
-        'prescriptions:create', 'prescriptions:edit', 'lab_requests:create',
-        'radiology_requests:create', 'admission_discharge:create', 'operations:create'
+        'operations:view', 'operations:edit', 'operations:create',
+        'prescriptions:view', 'prescriptions:edit', 'prescriptions:create',
+        'consent_forms:view', 'consent_forms:edit',
+        'admission_discharge:view', 'admission_discharge:edit', 'admission_discharge:create',
+        'radiology:view', 'radiology_requests:create',
+        'laboratory:view', 'lab_requests:create',
       ],
       'Nurse': [
-        'patient:view', 'patient:create', 'nurses_notes:create', 'nurses_notes:edit',
-        'vitals:create', 'vitals:edit', 'prescriptions:create', 'lab_requests:create',
+        'patient:view', 'patient:create',
+        'doctors_notes:view',
+        'nurses_notes:view', 'nurses_notes:create', 'nurses_notes:edit', 'nurses_notes:use_stationery',
+        'operations:view', 'operations:create',
+        'prescriptions:view', 'prescriptions:create',
+        'consent_forms:view', 'consent_forms:create',
+        'admission_discharge:view', 'admission_discharge:create',
+        'vitals:create', 'vitals:edit',
+        'lab_requests:create',
         'radiology_requests:create'
       ],
+      'Accountant': [
+        'patient:view',
+        'billing:view', 'billing:edit',
+        'doctors_notes:view',
+        'nurses_notes:view',
+        'laboratory:view',
+        'radiology:view',
+        'prescriptions:view',
+        'consent_forms:view',
+        'admission_discharge:view', 'admission_discharge:approve',
+        'invoices:view', 'invoices:approve',
+        'reports:view', 'reports:export',
+        'price_list:edit',
+      ],
+      'Pharmacy Technician': [ // Mapped from 'pharmacists'
+        'patient:view',
+        'doctors_notes:view',
+        'nurses_notes:view',
+        'operations:view',
+        'prescriptions:view', 'prescriptions:edit', 'prescriptions:print', 'prescriptions:dispense',
+        'consent_forms:view', 'consent_forms:edit', 'consent_forms:print',
+        'inventory:view', 'inventory:edit'
+      ],
+      'Laboratory Technician': [ // Mapped from 'lab technicians'
+        'patient:view',
+        'doctors_notes:view',
+        'nurses_notes:view',
+        'operations:view',
+        'radiology:view',
+        'laboratory:view', 'lab_requests:view', 'lab_requests:update', 'lab_results:create', 'lab_results:edit',
+      ],
+      'Radiologist': [ // Mapped from 'xray'
+        'patient:view',
+        'doctors_notes:view',
+        'nurses_notes:view',
+        'operations:view',
+        'radiology:view', 'radiology_requests:view', 'radiology_requests:update', 'radiology_results:create', 'radiology_results:edit',
+        'laboratory:view',
+      ],
+      'Rehabilitation Technician': [ // Mapped from 'rehab tech'
+        'patient:view',
+        'doctors_notes:view',
+        'nurses_notes:view',
+        'operations:view',
+        'radiology:view',
+        'laboratory:view',
+        'rehabilitation_notes:view', 'rehabilitation_notes:edit', 'rehabilitation_notes:create'
+      ],
+
+      // Other existing roles
       'Accounts Clerk': [
         'patient:view', 'patient:create', 'invoices:create', 'invoices:edit',
         'billing:create', 'billing:edit', 'reports:view'
@@ -47,29 +109,10 @@ export const useAuthStore = defineStore('auth', () => {
         'patient:view', 'invoices:view', 'reports:view', 'reports:export',
         'billing:approve', 'cash_sales:print'
       ],
-      'Accountant': [
-        'patient:view', 'invoices:view', 'invoices:approve', 'reports:view',
-        'reports:export', 'price_list:edit', 'admission_discharge:approve'
-      ],
-      'Laboratory Technician': [
-        'patient:view', 'lab_requests:view', 'lab_requests:update',
-        'lab_results:create', 'lab_results:edit'
-      ],
-      'Pharmacy Technician': [
-        'patient:view', 'prescriptions:view', 'prescriptions:dispense',
-        'inventory:view', 'inventory:edit'
-      ],
       'Dispensary Assistant': [
         'patient:view', 'prescriptions:view', 'prescriptions:dispense',
         'inventory:view'
       ],
-      'Radiologist': [
-        'patient:view', 'radiology_requests:view', 'radiology_requests:update',
-        'radiology_results:create', 'radiology_results:edit'
-      ],
-      'Rehabilitation Technician': [
-        'patient:view', 'rehabilitation_notes:create', 'rehabilitation_notes:edit'
-      ]
     }
 
     return rolePermissions[role] || []
