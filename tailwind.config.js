@@ -1,19 +1,23 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class', // Enable dark mode via class
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx,vue}'],
   theme: {
     extend: {
       colors: {
-        'background-dark': '#0f172a',
-        'surface-dark': '#1e293b',
-        'primary': '#2dd4bf',
-        'primary-hover': '#5eead4',
-        'accent': '#38bdf8',
-        'text-light': '#e2e8f0',
-        'text-muted': '#94a3b8',
+        background: '#000000',
+        card: '#1E1E1E',
+        'text-main': '#E0E0E0',
+        accent: '#00FFFF',
+        'glow-start': 'rgba(0, 255, 255, 0)',
+        'glow-end': 'rgba(0, 255, 255, 0.5)',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Inter', 'Poppins', 'Nunito Sans', 'sans-serif'],
+      },
+      boxShadow: {
+        'aqua-glow': '0 0 15px 5px rgba(0, 255, 255, 0.2)',
+        'aqua-glow-strong': '0 0 25px 10px rgba(0, 255, 255, 0.3)',
       },
     },
   },
