@@ -178,7 +178,7 @@ const handleSearch = async () => {
 };
 
 const selectPatient = (patient) => {
-  openDischargeModal(patient);
+  router.push(`/patient/${patient.id}`);
   searchQuery.value = '';
   searchResults.value = [];
 };

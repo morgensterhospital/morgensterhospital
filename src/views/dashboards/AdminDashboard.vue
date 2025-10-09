@@ -148,12 +148,27 @@ const searchResults = ref([]);
 const currentDate = ref('');
 const currentTime = ref('');
 const systemStats = ref({
-  totalUsers: 147,
+  totalUsers: 0,
   totalPatients: 0,
-  activeDepartments: 8,
+  activeDepartments: 0,
 });
 
 let timeInterval = null;
+
+const fetchSystemStats = async () => {
+  try {
+    const response = await fetch('/.netlify/functions/get-system-stats');
+    if (!response.ok) {
+      throw new Error('Failed to fetch system stats');
+    }
+    const stats = await response.json();
+    systemStats.value.totalUsers = stats.totalUsers;
+    systemStats.value.totalPatients = stats.totalPatients;
+    systemStats.value.activeDepartments = stats.activeDepartments;
+  } catch (error) {
+    console.error('Error fetching system stats:', error);
+  }
+};
 
 const updateDateTime = () => {
   const now = new Date();
@@ -196,9 +211,7 @@ onMounted(() => {
   updateDateTime();
   timeInterval = setInterval(updateDateTime, 1000);
   // Fetch initial stats
-  patientStore.getPatients().then(patients => {
-    systemStats.value.totalPatients = patients.length;
-  });
+  fetchSystemStats();
 });
 
 onUnmounted(() => {
