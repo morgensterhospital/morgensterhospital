@@ -8,18 +8,27 @@
         </button>
       </header>
       <div class="overflow-y-auto flex-grow">
-        <AccountantPatientProfile v-if="patient" :patient="patient" />
+        <PatientProfileDetails v-if="patient" :patient="patient" @open-notes-modal="openNotesModal" />
         <div v-else class="p-8 text-center text-text-muted">Loading patient data...</div>
       </div>
     </div>
   </div>
+
+  <NotesListModal
+    v-if="patient"
+    :show="isNotesListModalVisible"
+    :patient="patient"
+    :note-type="noteTypeForModal"
+    @close="closeNotesModal"
+  />
 </template>
 
 <script setup>
 import { defineProps, ref, onMounted, watch } from 'vue';
 import { usePatientStore } from '@/stores/patientStore';
 import MdiIcon from '@/components/common/MdiIcon.vue';
-import AccountantPatientProfile from '@/views/patient/AccountantPatientProfile.vue';
+import PatientProfileDetails from '@/components/patient/PatientProfileDetails.vue';
+import NotesListModal from '@/components/common/NotesListModal.vue';
 import { mdiClose } from '@mdi/js';
 
 const props = defineProps({
@@ -31,11 +40,23 @@ const props = defineProps({
 
 const patientStore = usePatientStore();
 const patient = ref(null);
+const isNotesListModalVisible = ref(false);
+const noteTypeForModal = ref('');
 
 const fetchPatient = async (id) => {
   if (id) {
     patient.value = await patientStore.getPatient(id);
   }
+};
+
+const openNotesModal = (noteType) => {
+  noteTypeForModal.value = noteType;
+  isNotesListModalVisible.value = true;
+};
+
+const closeNotesModal = () => {
+  isNotesListModalVisible.value = false;
+  noteTypeForModal.value = '';
 };
 
 onMounted(() => {

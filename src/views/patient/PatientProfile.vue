@@ -34,93 +34,7 @@
       </m3-button>
     </div>
 
-    <!-- Patient Profile Content -->
-    <div v-else-if="patient" class="profile-content">
-      <!-- Demographics Card -->
-      <div class="demographics-card">
-        <div class="card-header">
-          <h2>Patient Demographics</h2>
-          <div class="patient-id">{{ patient.hospitalNumber }}</div>
-        </div>
-        <div class="demographics-grid">
-          <div class="demo-item"><label>Full Name</label><span>{{ patient.name }} {{ patient.surname }}</span></div>
-          <div class="demo-item"><label>ID Number</label><span>{{ patient.idNumber }}</span></div>
-          <div class="demo-item"><label>Phone Number</label><span>{{ patient.phone }}</span></div>
-          <div class="demo-item"><label>Date of Birth</label><span>{{ formatDate(patient.dob) }}</span></div>
-          <div class="demo-item"><label>Age</label><span>{{ patient.age }} years</span></div>
-          <div class="demo-item"><label>Gender</label><span>{{ patient.gender }}</span></div>
-          <div class="demo-item"><label>Country of Birth</label><span>{{ patient.countryOfBirth }}</span></div>
-          <div class="demo-item"><label>Marital Status</label><span>{{ patient.maritalStatus || 'Not specified' }}</span></div>
-          <div class="demo-item full-width"><label>Address</label><span>{{ patient.address }}</span></div>
-        </div>
-        <div class="nok-section">
-          <h3>Next of Kin Information</h3>
-          <div class="demographics-grid">
-            <div class="demo-item"><label>N.O.K Name</label><span>{{ patient.nokName }} {{ patient.nokSurname }}</span></div>
-            <div class="demo-item"><label>N.O.K Phone</label><span>{{ patient.nokPhone }}</span></div>
-            <div class="demo-item full-width"><label>N.O.K Address</label><span>{{ patient.nokAddress }}</span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Medical Modules Grid -->
-      <div class="modules-grid">
-        <!-- Billing -->
-        <div v-if="hasPermission('billing:view')" class="module-card billing">
-          <div class="module-header"><mdi-icon :path="mdiCashMultiple" size="32" /><h3>BILLING AND INVOICES</h3></div>
-          <div class="module-actions">
-            <m3-button variant="filled" size="small" @click="navigateTo(`/patient/${patient.id}/billing`)">VIEW</m3-button>
-            <m3-button v-if="authStore.userRole === 'Accountant'" variant="outlined" size="small" @click="navigateTo(`/patient/${patient.id}/billing?mode=edit`)">EDIT</m3-button>
-          </div>
-        </div>
-        <!-- Doctor's Notes -->
-        <div v-if="hasPermission('doctors_notes:view')" class="module-card doctors-notes">
-          <div class="module-header"><mdi-icon :path="mdiDoctor" size="32" /><h3>DOCTOR'S NOTES</h3></div>
-          <div class="module-actions">
-            <m3-button variant="filled" size="small" @click="openNotesModal('doctor')">VIEW</m3-button>
-            <m3-button v-if="hasPermission('doctors_notes:create')" variant="outlined" size="small" @click="openNotesModal('doctor')">ADD / EDIT</m3-button>
-          </div>
-        </div>
-        <!-- Nurse's Notes -->
-        <div v-if="hasPermission('nurses_notes:view')" class="module-card nurses-notes">
-          <div class="module-header"><mdi-icon :path="mdiMotherNurse" size="32" /><h3>NURSE'S NOTES</h3></div>
-          <div class="module-actions">
-            <m3-button variant="filled" size="small" @click="openNotesModal('nurse')">VIEW</m3-button>
-            <m3-button v-if="hasPermission('nurses_notes:create')" variant="outlined" size="small" @click="openNotesModal('nurse')">ADD / EDIT</m3-button>
-          </div>
-        </div>
-        <!-- Vitals -->
-        <div v-if="hasPermission('vitals:view')" class="module-card vitals">
-          <div class="module-header"><mdi-icon :path="mdiHeart" size="32" /><h3>VITALS</h3></div>
-          <div class="module-actions">
-            <m3-button variant="filled" size="small" @click="navigateTo(`/patient/${patient.id}/vitals`)">VIEW</m3-button>
-            <m3-button v-if="hasPermission('vitals:create')" variant="outlined" size="small" @click="navigateTo(`/patient/${patient.id}/vitals`)">ADD</m3-button>
-          </div>
-        </div>
-        <!-- Prescriptions -->
-        <div v-if="hasPermission('prescriptions:view')" class="module-card prescriptions">
-          <div class="module-header"><mdi-icon :path="mdiPill" size="32" /><h3>PRESCRIPTIONS</h3></div>
-          <div class="module-actions">
-            <m3-button variant="filled" size="small" @click="navigateTo(`/patient/${patient.id}/prescriptions`)">VIEW</m3-button>
-            <m3-button v-if="hasPermission('prescriptions:edit')" variant="outlined" size="small" @click="navigateTo(`/patient/${patient.id}/prescriptions`)">EDIT</m3-button>
-          </div>
-        </div>
-        <!-- Laboratory -->
-        <div v-if="hasPermission('lab_requests:view')" class="module-card laboratory">
-          <div class="module-header"><mdi-icon :path="mdiTestTube" size="32" /><h3>LABORATORY</h3></div>
-          <div class="module-actions">
-            <m3-button variant="filled" size="small" @click="navigateTo(`/patient/${patient.id}/laboratory`)">VIEW</m3-button>
-            <m3-button v-if="hasPermission('lab_requests:create')" variant="outlined" size="small" @click="navigateTo(`/patient/${patient.id}/laboratory`)">REQUEST</m3-button>
-          </div>
-        </div>
-        <!-- Other modules... -->
-      </div>
-
-      <div class="patient-history-section">
-        <m3-button variant="filled" size="large" :icon="mdiHistory" @click="navigateTo(`/patient/${patient.id}/history`)">PATIENT HISTORY</m3-button>
-      </div>
-      <div class="print-notice"><p>ALL SECTIONS CAN BE PRINTED SEPARATELY</p></div>
-    </div>
+    <PatientProfileDetails v-else-if="patient" :patient="patient" @open-notes-modal="openNotesModal" />
   </div>
 
   <NotesListModal
@@ -134,21 +48,17 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
+import { useRoute } from 'vue-router'
 import { usePatientStore } from '@/stores/patientStore'
 import MdiIcon from '@/components/common/MdiIcon.vue'
 import M3Button from '@/components/common/M3Button.vue'
 import NotesListModal from '@/components/common/NotesListModal.vue'
+import PatientProfileDetails from '@/components/patient/PatientProfileDetails.vue'
 import {
-  mdiChevronRight, mdiPrinter, mdiAlertCircle, mdiCashMultiple, mdiDoctor,
-  mdiMotherNurse, mdiHeart, mdiPill, mdiTestTube, mdiRadioboxMarked, mdiScalpel,
-  mdiPhysicalTherapy, mdiHospitalBuilding, mdiFileDocument, mdiHistory
+  mdiChevronRight, mdiPrinter, mdiAlertCircle
 } from '@mdi/js'
 
 const route = useRoute()
-const router = useRouter()
-const authStore = useAuthStore()
 const patientStore = usePatientStore()
 
 const loading = ref(true)
@@ -169,15 +79,6 @@ const loadPatient = async () => {
   } finally {
     loading.value = false
   }
-}
-
-const hasPermission = (permission) => authStore.hasPermission(permission)
-const navigateTo = (path) => router.push(path)
-
-const formatDate = (date) => {
-  if (!date) return 'Not specified'
-  const dateObj = date.toDate ? date.toDate() : new Date(date)
-  return dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 const openNotesModal = (noteType) => {
