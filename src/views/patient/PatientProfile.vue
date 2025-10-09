@@ -427,7 +427,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { usePatientStore } from '@/stores/patientStore'
@@ -443,9 +443,9 @@ import {
   mdiHeart,
   mdiPill,
   mdiTestTube,
-  mdiRadioboxMarked, // FIX: Replaced mdiRadiobox with mdiRadioboxMarked
-  mdiKnife,
-  mdiWheelchairAccessibility,
+  mdiRadioboxMarked,
+  mdiScalpel,
+  mdiPhysicalTherapy,
   mdiHospitalBuilding,
   mdiFileDocument,
   mdiHistory
@@ -456,25 +456,28 @@ const router = useRouter()
 const authStore = useAuthStore()
 const patientStore = usePatientStore()
 
-const loading = ref(true)
-const error = ref('')
-const patient = ref(null)
+const loading = computed(() => patientStore.loading)
+const error = computed(() => patientStore.error)
+const patient = computed(() => patientStore.currentPatient)
 
-const patientId = computed(() => route.params.id)
-
-// Load patient data
+// Load patient data based on user role and route
 const loadPatient = async () => {
   try {
-    loading.value = true
-    error.value = ''
-
-    const patientData = await patientStore.getPatient(patientId.value)
-    patient.value = patientData
+    if (authStore.isPatient) {
+      // Patient is viewing their own profile
+      await patientStore.getAccountPatientProfile()
+    } else {
+      // Staff is viewing a patient's profile
+      const patientId = route.params.id
+      if (patientId) {
+        await patientStore.getPatient(patientId)
+      } else {
+        throw new Error('Patient ID is missing from the URL.')
+      }
+    }
   } catch (err) {
-    error.value = err.message || 'Failed to load patient information'
-    console.error('Error loading patient:', err)
-  } finally {
-    loading.value = false
+    console.error('Error loading patient profile:', err)
+    // The error is already set in the store, so no need to set it here
   }
 }
 

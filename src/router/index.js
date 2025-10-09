@@ -40,10 +40,17 @@ const routes = [
             'Dispensary Assistant': '/dispensary',
             Radiologist: '/radiology',
             'Rehabilitation Technician': '/rehab',
+            Patient: '/my-profile',
           };
 
           return roleRoutes[role] || '/auth/login';
         },
+      },
+      {
+        path: 'my-profile',
+        name: 'MyProfile',
+        component: () => import('@/views/patient/PatientProfile.vue'),
+        meta: { permissions: ['patient:view:own'], roles: ['Patient'] },
       },
       {
         path: 'admin',

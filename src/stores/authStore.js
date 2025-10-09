@@ -19,6 +19,7 @@ export const useAuthStore = defineStore('auth', () => {
   const userRole = computed(() => userClaims.value?.role || null)
   const userDepartment = computed(() => userClaims.value?.department || null)
   const isAdmin = computed(() => userRole.value === 'Admin')
+  const isPatient = computed(() => userRole.value === 'Patient')
 
   // Role permissions mapping
   const permissions = computed(() => {
@@ -67,6 +68,9 @@ export const useAuthStore = defineStore('auth', () => {
       ],
       'Rehabilitation Technician': [
         'patient:view', 'rehabilitation_notes:create', 'rehabilitation_notes:edit'
+      ],
+      'Patient': [
+        'patient:view:own'
       ]
     }
 
@@ -141,6 +145,7 @@ export const useAuthStore = defineStore('auth', () => {
     userRole,
     userDepartment,
     isAdmin,
+    isPatient,
     permissions,
     login,
     logout,

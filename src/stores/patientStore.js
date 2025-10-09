@@ -12,7 +12,8 @@ import {
   orderBy, 
   limit,
   onSnapshot,
-  serverTimestamp 
+  serverTimestamp,
+  setDoc
 } from 'firebase/firestore'
 import { db } from '@/services/firebase'
 import { useAuthStore } from './authStore'
@@ -237,6 +238,43 @@ export const usePatientStore = defineStore('patient', () => {
     }
   }
 
+  // Get patient profile for the logged-in user
+  const getAccountPatientProfile = async () => {
+    try {
+      loading.value = true
+      const authStore = useAuthStore()
+
+      if (!authStore.user) {
+        throw new Error('User is not authenticated.')
+      }
+
+      const patientId = authStore.user.uid // Assuming patient doc ID is user UID
+
+      const docRef = doc(db, 'patients', patientId)
+      const docSnap = await getDoc(docRef)
+
+      if (docSnap.exists()) {
+        currentPatient.value = { id: docSnap.id, ...docSnap.data() }
+        return currentPatient.value
+      } else {
+        // If patient profile doesn't exist, create one
+        const newPatientData = {
+          name: authStore.user.displayName || 'New Patient',
+          email: authStore.user.email,
+          createdAt: serverTimestamp()
+        }
+        await setDoc(docRef, newPatientData)
+        currentPatient.value = { id: patientId, ...newPatientData }
+        return currentPatient.value
+      }
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     patients: computed(() => patients.value),
     currentPatient: computed(() => currentPatient.value),
@@ -255,6 +293,7 @@ export const usePatientStore = defineStore('patient', () => {
     processBilling,
     updatePatientDischargeStatus,
     createDischargeNotification,
-    getDischargeNotifications
+    getDischargeNotifications,
+    getAccountPatientProfile
   }
 })

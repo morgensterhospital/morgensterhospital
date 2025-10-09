@@ -109,6 +109,13 @@ const allNavigationItems = [
     roles: ['Admin', 'Accountant', 'Account Assistant', 'Doctor', 'Nurse', 'Pharmacy', 'Dispensary Assistant'],
   },
   {
+    name: 'my-profile',
+    label: 'My Profile',
+    icon: mdiAccount,
+    path: '/my-profile',
+    roles: ['Patient'],
+  },
+  {
     name: 'register',
     label: 'New Patient',
     icon: mdiAccountPlus,
@@ -121,6 +128,13 @@ const allNavigationItems = [
     icon: mdiAccountPlus,
     path: '/accountant/patient/register',
     roles: ['Accountant'],
+  },
+  {
+    name: 'view-patients',
+    label: 'View Patients',
+    icon: mdiAccountGroup,
+    path: '/patients',
+    roles: ['Admin'],
   },
   {
     name: 'prescriptions',
