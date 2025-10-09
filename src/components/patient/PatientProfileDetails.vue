@@ -34,7 +34,7 @@
         <div class="module-header"><mdi-icon :path="mdiCashMultiple" size="32" /><h3>BILLING AND INVOICES</h3></div>
         <div class="module-actions">
           <m3-button variant="filled" size="small" @click="navigateTo(`/patient/${patient.id}/billing`)">VIEW</m3-button>
-          <m3-button v-if="authStore.userRole === 'Accountant'" variant="outlined" size="small" @click="navigateTo(`/patient/${patient.id}/billing?mode=edit`)">EDIT</m3-button>
+          <m3-button v-if="hasPermission('billing:edit')" variant="outlined" size="small" @click="navigateTo(`/patient/${patient.id}/billing?mode=edit`)">EDIT</m3-button>
         </div>
       </div>
       <!-- Doctor's Notes -->
@@ -42,7 +42,7 @@
         <div class="module-header"><mdi-icon :path="mdiDoctor" size="32" /><h3>DOCTOR'S NOTES</h3></div>
         <div class="module-actions">
           <m3-button variant="filled" size="small" @click="openNotesModal('doctor')">VIEW</m3-button>
-          <m3-button v-if="hasPermission('doctors_notes:create')" variant="outlined" size="small" @click="openNotesModal('doctor')">ADD / EDIT</m3-button>
+          <m3-button v-if="hasPermission('doctors_notes:edit')" variant="outlined" size="small" @click="openNotesModal('doctor')">EDIT / SAVE</m3-button>
         </div>
       </div>
       <!-- Nurse's Notes -->
@@ -50,10 +50,72 @@
         <div class="module-header"><mdi-icon :path="mdiMotherNurse" size="32" /><h3>NURSE'S NOTES</h3></div>
         <div class="module-actions">
           <m3-button variant="filled" size="small" @click="openNotesModal('nurse')">VIEW</m3-button>
-          <m3-button v-if="hasPermission('nurses_notes:create')" variant="outlined" size="small" @click="openNotesModal('nurse')">ADD / EDIT</m3-button>
+          <m3-button v-if="hasPermission('nurses_notes:create')" variant="outlined" size="small" @click="openNotesModal('nurse')">ADD / SAVE</m3-button>
+          <m3-button v-if="hasPermission('nurses_notes:use_stationery')" variant="text" size="small">USE STATIONERY</m3-button>
         </div>
       </div>
-      <!-- Other modules... -->
+      <!-- Operations/Surgeries -->
+      <div v-if="hasPermission('operations:view')" class="module-card operations">
+        <div class="module-header"><mdi-icon :path="mdiStethoscope" size="32" /><h3>OPERATIONS/SURGERIES</h3></div>
+        <div class="module-actions">
+          <m3-button variant="filled" size="small" @click="openNotesModal('operation')">VIEW</m3-button>
+          <m3-button v-if="hasPermission('operations:create')" variant="outlined" size="small" @click="openNotesModal('operation')">ADD / SAVE</m3-button>
+          <m3-button v-if="hasPermission('operations:edit')" variant="outlined" size="small" @click="openNotesModal('operation')">EDIT / SAVE</m3-button>
+        </div>
+      </div>
+      <!-- Prescriptions -->
+      <div v-if="hasPermission('prescriptions:view')" class="module-card prescriptions">
+        <div class="module-header"><mdi-icon :path="mdiPill" size="32" /><h3>PRESCRIPTIONS</h3></div>
+        <div class="module-actions">
+          <m3-button variant="filled" size="small" @click="openNotesModal('prescription')">VIEW</m3-button>
+          <m3-button v-if="hasPermission('prescriptions:create')" variant="outlined" size="small" @click="openNotesModal('prescription')">ADD / SAVE</m3-button>
+          <m3-button v-if="hasPermission('prescriptions:edit')" variant="outlined" size="small" @click="openNotesModal('prescription')">EDIT / SAVE</m3-button>
+          <m3-button v-if="hasPermission('prescriptions:print')" variant="text" size="small">PRINT</m3-button>
+        </div>
+      </div>
+      <!-- Consent Forms -->
+      <div v-if="hasPermission('consent_forms:view')" class="module-card consent">
+        <div class="module-header"><mdi-icon :path="mdiFileDocumentEditOutline" size="32" /><h3>CONSENT FORMS</h3></div>
+        <div class="module-actions">
+          <m3-button variant="filled" size="small" @click="openNotesModal('consent')">VIEW</m3-button>
+          <m3-button v-if="hasPermission('consent_forms:create')" variant="outlined" size="small" @click="openNotesModal('consent')">ADD / SAVE</m3-button>
+           <m3-button v-if="hasPermission('consent_forms:edit')" variant="outlined" size="small" @click="openNotesModal('consent')">EDIT / SAVE</m3-button>
+          <m3-button v-if="hasPermission('consent_forms:print')" variant="text" size="small">PRINT</m3-button>
+        </div>
+      </div>
+      <!-- Admission & Discharge -->
+      <div v-if="hasPermission('admission_discharge:view')" class="module-card admission">
+        <div class="module-header"><mdi-icon :path="mdiFileChartOutline" size="32" /><h3>ADMISSION & DISCHARGE</h3></div>
+        <div class="module-actions">
+          <m3-button variant="filled" size="small" @click="openNotesModal('admission')">VIEW</m3-button>
+          <m3-button v-if="hasPermission('admission_discharge:create')" variant="outlined" size="small" @click="openNotesModal('admission')">ADD / SAVE</m3-button>
+          <m3-button v-if="hasPermission('admission_discharge:edit')" variant="outlined" size="small" @click="openNotesModal('admission')">EDIT / SAVE</m3-button>
+        </div>
+      </div>
+      <!-- Laboratory -->
+      <div v-if="hasPermission('laboratory:view')" class="module-card laboratory">
+        <div class="module-header"><mdi-icon :path="mdiBeaker" size="32" /><h3>LABORATORY</h3></div>
+        <div class="module-actions">
+          <m3-button variant="filled" size="small" @click="openNotesModal('lab')">VIEW</m3-button>
+          <m3-button v-if="hasPermission('lab_requests:update')" variant="outlined" size="small" @click="openNotesModal('lab')">RECEIVE & POST</m3-button>
+        </div>
+      </div>
+      <!-- Radiology -->
+      <div v-if="hasPermission('radiology:view')" class="module-card radiology">
+        <div class="module-header"><mdi-icon :path="mdiRadiologyBox" size="32" /><h3>RADIOLOGY</h3></div>
+        <div class="module-actions">
+          <m3-button variant="filled" size="small" @click="openNotesModal('radiology')">VIEW</m3-button>
+          <m3-button v-if="hasPermission('radiology_requests:update')" variant="outlined" size="small" @click="openNotesModal('radiology')">RECEIVE & POST</m3-button>
+        </div>
+      </div>
+      <!-- Rehabilitation Notes -->
+      <div v-if="hasPermission('rehabilitation_notes:view')" class="module-card rehabilitation">
+        <div class="module-header"><mdi-icon :path="mdiRun" size="32" /><h3>REHABILITATION NOTES</h3></div>
+        <div class="module-actions">
+          <m3-button variant="filled" size="small" @click="openNotesModal('rehab')">VIEW</m3-button>
+          <m3-button v-if="hasPermission('rehabilitation_notes:create')" variant="outlined" size="small" @click="openNotesModal('rehab')">ADD / EDIT</m3-button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -65,7 +127,8 @@ import { useAuthStore } from '@/stores/authStore'
 import MdiIcon from '@/components/common/MdiIcon.vue'
 import M3Button from '@/components/common/M3Button.vue'
 import {
-  mdiCashMultiple, mdiDoctor, mdiMotherNurse
+  mdiCashMultiple, mdiDoctor, mdiMotherNurse, mdiStethoscope, mdiPill,
+  mdiFileDocumentEditOutline, mdiFileChartOutline, mdiBeaker, mdiRadiologyBox, mdiRun
 } from '@mdi/js'
 
 const props = defineProps({
