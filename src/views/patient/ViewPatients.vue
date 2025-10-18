@@ -1,43 +1,50 @@
 <template>
-  <div class="space-y-6">
-    <h1 class="text-2xl font-bold text-text-light">View Patients</h1>
+  <div class="p-6 bg-background-dark min-h-screen">
+    <h1 class="text-4xl font-bold text-text-light tracking-wider mb-8">View Patients</h1>
 
     <!-- Search Bar -->
-    <div class="p-6 bg-surface-dark rounded-lg">
-      <h2 class="text-lg font-semibold mb-4">Find a Patient</h2>
+    <div class="mb-8">
       <div class="relative">
-        <MdiIcon :path="mdiMagnify" size="20" class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+        <MdiIcon :path="mdiMagnify" size="24" class="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
         <input
           v-model="searchQuery"
           type="text"
           placeholder="Search by name or hospital number..."
-          class="w-full pl-10 pr-4 py-2 bg-background-dark border border-gray-600 rounded-lg focus:ring-primary focus:border-primary"
+          class="w-full pl-12 pr-4 py-4 bg-surface-dark border border-border-futuristic rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-lg"
         />
       </div>
     </div>
 
     <!-- Patient Cards -->
-    <div v-if="filteredPatients.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div v-for="patient in filteredPatients" :key="patient.id" class="p-6 bg-surface-dark rounded-lg">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-xl font-bold text-text-light">{{ patient.name }} {{ patient.surname }}</p>
-            <p class="text-sm text-text-muted">Hospital No: {{ patient.hospitalNumber }}</p>
+    <div v-if="filteredPatients.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div v-for="patient in filteredPatients" :key="patient.id"
+        class="glass-card p-6 flex flex-col justify-between transition-all duration-300 hover:border-primary cursor-pointer"
+        @click="viewPatient(patient.id)">
+        <div>
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <p class="text-2xl font-bold text-primary">{{ patient.name }} {{ patient.surname }}</p>
+              <p class="text-sm text-text-muted">#{{ patient.hospitalNumber }}</p>
+            </div>
+            <div class="p-3 rounded-full bg-primary/20 text-primary">
+              <MdiIcon :path="mdiAccountHeart" size="28" />
+            </div>
           </div>
-          <button @click="viewPatient(patient.id)" class="flex items-center text-primary hover:underline">
-            <MdiIcon :path="mdiEye" size="20" class="mr-1" />
-            View
-          </button>
+          <div class="space-y-2 text-text-light">
+            <p><MdiIcon :path="mdiCakeVariant" size="16" class="inline mr-2" /> Age: {{ patient.age }}</p>
+            <p><MdiIcon :path="mdiGenderMaleFemale" size="16" class="inline mr-2" /> Gender: {{ patient.gender }}</p>
+            <p><MdiIcon :path="mdiPhone" size="16" class="inline mr-2" /> Phone: {{ patient.phone }}</p>
+          </div>
         </div>
-        <div class="mt-4 space-y-2">
-          <p><span class="font-semibold">Age:</span> {{ patient.age }}</p>
-          <p><span class="font-semibold">Gender:</span> {{ patient.gender }}</p>
-          <p><span class="font-semibold">Phone:</span> {{ patient.phone }}</p>
+        <div class="text-right mt-4 text-sm text-primary hover:underline">
+          View Profile &rarr;
         </div>
       </div>
     </div>
-    <div v-else class="text-center text-text-muted py-10">
-      <p>No patients found.</p>
+    <div v-else class="text-center text-text-muted py-20">
+      <MdiIcon :path="mdiAccountSearch" size="64" class="mx-auto mb-4" />
+      <p class="text-xl">No patients found.</p>
+      <p v-if="searchQuery">Try adjusting your search query.</p>
     </div>
   </div>
 </template>
@@ -47,7 +54,14 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { usePatientStore } from '@/stores/patientStore';
 import MdiIcon from '@/components/common/MdiIcon.vue';
-import { mdiMagnify, mdiEye } from '@mdi/js';
+import {
+  mdiMagnify,
+  mdiAccountHeart,
+  mdiCakeVariant,
+  mdiGenderMaleFemale,
+  mdiPhone,
+  mdiAccountSearch
+} from '@mdi/js';
 
 const router = useRouter();
 const patientStore = usePatientStore();

@@ -1,231 +1,89 @@
 <template>
-  <div class="patient-registration">
+  <div class="p-6 bg-background-dark min-h-screen">
     <!-- Page Header -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="breadcrumb">
-          <router-link to="/" class="breadcrumb-link">Home</router-link>
-          <mdi-icon :path="mdiChevronRight" size="16" />
-          <span class="breadcrumb-current">Patient Registration</span>
-        </div>
-        <h1 class="page-title">NEW PATIENT REGISTRATION</h1>
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-4xl font-bold text-text-light tracking-wider">New Patient Registration</h1>
+      <div class="flex items-center text-sm text-text-muted">
+        <router-link to="/" class="hover:text-primary">Home</router-link>
+        <MdiIcon :path="mdiChevronRight" size="16" class="mx-2" />
+        <span>Patient Registration</span>
       </div>
     </div>
 
     <!-- Registration Form -->
-    <div class="form-container">
-      <form @submit.prevent="handleSubmit" class="registration-form">
-        <!-- Hospital Number (Auto-generated) -->
-        <div class="form-section">
-          <h2 class="section-title">Hospital Information</h2>
-          <div class="form-grid">
-            <m3-text-field
-              v-model="form.hospitalNumber"
-              label="Hospital Number"
-              variant="outlined"
-              readonly
-              helper-text="Auto-generated upon registration"
-            />
-          </div>
+    <form @submit.prevent="handleSubmit" class="glass-card p-8 space-y-8">
+
+      <FormSection title="Hospital Information" :icon="mdiHospitalBuilding">
+        <InputField v-model="form.hospitalNumber" label="Hospital Number" :icon="mdiPound" readonly placeholder="Auto-generated upon registration" />
+      </FormSection>
+
+      <FormSection title="Patient Demographics" :icon="mdiAccountBox">
+        <div class="grid md:grid-cols-2 gap-6">
+          <InputField v-model="form.idNumber" label="ID Number" :icon="mdiCardAccountDetails" required :error="errors.idNumber" />
+          <InputField v-model="form.name" label="Name" :icon="mdiAccount" required :error="errors.name" />
+          <InputField v-model="form.surname" label="Surname" :icon="mdiAccount" required :error="errors.surname" />
+          <InputField v-model="form.phone" label="Phone Number" type="tel" :icon="mdiPhone" required :error="errors.phone" />
         </div>
+      </FormSection>
 
-        <!-- Patient Demographics -->
-        <div class="form-section">
-          <h2 class="section-title">Patient Demographics</h2>
-          <div class="form-grid">
-            <m3-text-field
-              v-model="form.idNumber"
-              label="ID Number"
-              variant="outlined"
-              required
-              :error="errors.idNumber"
-            />
-
-            <m3-text-field
-              v-model="form.name"
-              label="Name"
-              variant="outlined"
-              required
-              :error="errors.name"
-            />
-
-            <m3-text-field
-              v-model="form.surname"
-              label="Surname"
-              variant="outlined"
-              required
-              :error="errors.surname"
-            />
-
-            <m3-text-field
-              v-model="form.phone"
-              label="Phone Number"
-              variant="outlined"
-              type="tel"
-              required
-              :error="errors.phone"
-            />
-          </div>
+      <FormSection title="Address & Personal Information" :icon="mdiHomeAccount">
+        <InputField v-model="form.address" label="Residential Address" type="textarea" :icon="mdiMapMarker" required :error="errors.address" />
+        <div class="grid md:grid-cols-3 gap-6 mt-6">
+          <InputField v-model="form.dob" label="Date of Birth" type="date" :icon="mdiCalendar" required :error="errors.dob" @input="calculateAge" />
+          <InputField v-model="form.age" label="Age" readonly :icon="mdiNumeric" placeholder="Calculated from DOB" />
+          <SelectField v-model="form.gender" label="Gender" :icon="mdiGenderMaleFemale" :options="['Male', 'Female', 'Other']" required :error="errors.gender" />
         </div>
-
-        <!-- Address & Personal Info -->
-        <div class="form-section">
-          <h2 class="section-title">Address & Personal Information</h2>
-          <div class="form-grid">
-            <div class="form-group full-width">
-              <m3-text-field
-                v-model="form.address"
-                label="Residential Address"
-                variant="outlined"
-                type="textarea"
-                :rows="3"
-                required
-                :error="errors.address"
-              />
-            </div>
-
-            <m3-text-field
-              v-model="form.dob"
-              label="Date of Birth"
-              variant="outlined"
-              type="date"
-              required
-              :error="errors.dob"
-              @input="calculateAge"
-            />
-
-            <m3-text-field
-              v-model="form.age"
-              label="Age"
-              variant="outlined"
-              readonly
-              helper-text="Calculated from date of birth"
-            />
-
-            <div class="form-group">
-              <label class="form-label">Gender *</label>
-              <select
-                v-model="form.gender"
-                class="form-select"
-                required
-              >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-              <span v-if="errors.gender" class="error-text">{{ errors.gender }}</span>
-            </div>
-
-            <m3-text-field
-              v-model="form.countryOfBirth"
-              label="Country of Birth"
-              variant="outlined"
-              required
-              :error="errors.countryOfBirth"
-            />
-
-            <div class="form-group">
-              <label class="form-label">Marital Status</label>
-              <select
-                v-model="form.maritalStatus"
-                class="form-select"
-              >
-                <option value="">Select Status</option>
-                <option value="Single">Single</option>
-                <option value="Married">Married</option>
-                <option value="Divorced">Divorced</option>
-                <option value="Widowed">Widowed</option>
-              </select>
-            </div>
-          </div>
+        <div class="grid md:grid-cols-2 gap-6 mt-6">
+          <InputField v-model="form.countryOfBirth" label="Country of Birth" :icon="mdiEarth" required :error="errors.countryOfBirth" />
+          <SelectField v-model="form.maritalStatus" label="Marital Status" :icon="mdiRing" :options="['Single', 'Married', 'Divorced', 'Widowed']" />
         </div>
+      </FormSection>
 
-        <!-- Next of Kin Information -->
-        <div class="form-section">
-          <h2 class="section-title">Next of Kin Information</h2>
-          <div class="form-grid">
-            <m3-text-field
-              v-model="form.nokName"
-              label="N.O.K Name"
-              variant="outlined"
-              required
-              :error="errors.nokName"
-            />
-
-            <m3-text-field
-              v-model="form.nokSurname"
-              label="N.O.K Surname"
-              variant="outlined"
-              required
-              :error="errors.nokSurname"
-            />
-
-            <m3-text-field
-              v-model="form.nokPhone"
-              label="N.O.K Phone Number"
-              variant="outlined"
-              type="tel"
-              required
-              :error="errors.nokPhone"
-            />
-
-            <div class="form-group full-width">
-              <m3-text-field
-                v-model="form.nokAddress"
-                label="N.O.K Address"
-                variant="outlined"
-                type="textarea"
-                :rows="3"
-                required
-                :error="errors.nokAddress"
-              />
-            </div>
-          </div>
+      <FormSection title="Next of Kin Information" :icon="mdiAccountMultiple">
+        <div class="grid md:grid-cols-2 gap-6">
+          <InputField v-model="form.nokName" label="N.O.K Name" :icon="mdiAccount" required :error="errors.nokName" />
+          <InputField v-model="form.nokSurname" label="N.O.K Surname" :icon="mdiAccount" required :error="errors.nokSurname" />
         </div>
-
-        <!-- Form Actions -->
-        <div class="form-actions">
-          <m3-button
-            variant="outlined"
-            @click="resetForm"
-            :disabled="loading"
-          >
-            Reset Form
-          </m3-button>
-
-          <m3-button
-            type="submit"
-            variant="filled"
-            :disabled="loading"
-            :icon="loading ? mdiLoading : mdiAccountPlus"
-          >
-            <span v-if="loading">Registering...</span>
-            <span v-else>Register Patient</span>
-          </m3-button>
+        <div class="grid md:grid-cols-2 gap-6 mt-6">
+          <InputField v-model="form.nokPhone" label="N.O.K Phone Number" type="tel" :icon="mdiPhone" required :error="errors.nokPhone" />
+          <InputField v-model="form.nokAddress" label="N.O.K Address" type="textarea" :icon="mdiMapMarker" required :error="errors.nokAddress" />
         </div>
-      </form>
-    </div>
+      </FormSection>
+
+      <!-- Form Actions -->
+      <div class="flex justify-end space-x-4 pt-6 border-t border-border-futuristic">
+        <button type="button" @click="resetForm" :disabled="loading" class="px-6 py-2 text-text-muted rounded-md hover:bg-surface-dark">
+          Reset
+        </button>
+        <button type="submit" :disabled="loading" class="futuristic-button">
+          <MdiIcon v-if="!loading" :path="mdiAccountPlus" size="20" class="mr-2" />
+          <MdiIcon v-if="loading" :path="mdiLoading" size="20" class="mr-2 animate-spin" />
+          {{ loading ? 'Registering...' : 'Register Patient' }}
+        </button>
+      </div>
+    </form>
 
     <!-- Success Modal -->
-    <div v-if="showSuccessModal" class="modal-overlay" @click="closeSuccessModal">
-      <div class="success-modal" @click.stop>
-        <div class="success-icon">
-          <mdi-icon :path="mdiCheckCircle" size="64" color="#16A34A" />
+    <div v-if="showSuccessModal" class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
+      <div class="glass-card p-8 rounded-lg text-center max-w-lg w-full">
+        <div class="mx-auto bg-green-500/20 text-green-400 rounded-full h-20 w-20 flex items-center justify-center mb-6">
+          <MdiIcon :path="mdiCheckCircle" size="48" />
         </div>
-        <h2>Patient Registered Successfully!</h2>
-        <p>
+        <h2 class="text-3xl font-bold text-green-400 mb-4">Success!</h2>
+        <p class="text-text-light text-lg">
           <strong>{{ registeredPatient.name }} {{ registeredPatient.surname }}</strong>
-          has been registered with hospital number:
-          <strong>{{ registeredPatient.hospitalNumber }}</strong>
+          has been registered.
         </p>
-        <div class="modal-actions">
-          <m3-button variant="outlined" @click="closeSuccessModal">
+        <p class="text-text-muted mt-2">
+          Hospital Number: <strong>{{ registeredPatient.hospitalNumber }}</strong>
+        </p>
+        <div class="mt-8 flex justify-center space-x-4">
+          <button @click="closeSuccessModal" class="px-6 py-2 text-text-muted rounded-md hover:bg-surface-dark">
             Register Another
-          </m3-button>
-          <m3-button variant="filled" @click="viewPatientProfile">
+          </button>
+          <button @click="viewPatientProfile" class="futuristic-button">
             View Profile
-          </m3-button>
+          </button>
         </div>
       </div>
     </div>
@@ -237,13 +95,28 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePatientStore } from '@/stores/patientStore'
 import MdiIcon from '@/components/common/MdiIcon.vue'
-import M3Button from '@/components/common/M3Button.vue'
-import M3TextField from '@/components/common/M3TextField.vue'
+import InputField from '@/components/common/InputField.vue'
+import SelectField from '@/components/common/SelectField.vue'
+import FormSection from '@/components/common/FormSection.vue'
 import {
   mdiChevronRight,
   mdiAccountPlus,
   mdiCheckCircle,
-  mdiLoading
+  mdiLoading,
+  mdiHospitalBuilding,
+  mdiPound,
+  mdiAccountBox,
+  mdiCardAccountDetails,
+  mdiAccount,
+  mdiPhone,
+  mdiHomeAccount,
+  mdiMapMarker,
+  mdiCalendar,
+  mdiNumeric,
+  mdiGenderMaleFemale,
+  mdiEarth,
+  mdiRing,
+  mdiAccountMultiple
 } from '@mdi/js'
 
 const router = useRouter()

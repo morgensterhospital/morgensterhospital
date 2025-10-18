@@ -1,22 +1,26 @@
 <template>
   <div class="p-6 bg-background-dark min-h-screen">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold text-text-light">User Management</h1>
-      <button @click="openAddDepartmentModal" class="px-6 py-2 bg-primary text-white rounded-lg shadow hover:bg-primary-dark transition-colors">
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-4xl font-bold text-text-light tracking-wider">User Management</h1>
+      <button @click="openAddDepartmentModal" class="futuristic-button">
+        <MdiIcon :path="mdiPlus" size="20" class="mr-2" />
         Add Department
       </button>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       <div v-for="(group, department) in groupedUsers" :key="department"
-        class="bg-surface-dark rounded-lg shadow-lg p-5 flex flex-col justify-between cursor-pointer hover:shadow-primary/50 transition-shadow border border-transparent hover:border-primary"
+        class="glass-card p-5 flex flex-col justify-between cursor-pointer transition-all duration-300 hover:border-primary"
         @click="openDepartmentModal(department)">
         <div class="flex items-center mb-4">
-          <MdiIcon :path="departmentIcons[department] || mdiAccountGroup" size="32" class="text-primary mr-4" />
+          <MdiIcon :path="departmentIcons[department] || mdiAccountGroup" size="36" class="text-primary mr-4" />
           <div>
-            <h2 class="text-xl font-semibold text-primary mb-1">{{ department }}</h2>
+            <h2 class="text-2xl font-semibold text-primary mb-1">{{ department }}</h2>
             <p class="text-text-muted">{{ group.length }} user(s)</p>
           </div>
+        </div>
+        <div class="text-right text-sm text-primary hover:underline">
+          View Details &rarr;
         </div>
       </div>
     </div>

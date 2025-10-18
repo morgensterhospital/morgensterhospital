@@ -1,59 +1,56 @@
 <template>
-  <div class="profile-content">
+  <div class="space-y-8">
     <!-- Patient Demographics Card -->
-    <div class="demographics-card">
-      <div class="card-header">
-        <h2>Patient Demographics</h2>
-        <div class="patient-id">{{ patient.hospitalNumber }}</div>
+    <div class="glass-card p-8">
+      <div class="flex justify-between items-center mb-6 pb-4 border-b border-border-futuristic">
+        <h2 class="text-2xl font-bold text-primary flex items-center">
+          <MdiIcon :path="mdiAccountBox" size="28" class="mr-3" />
+          Patient Demographics
+        </h2>
+        <div class="text-lg font-mono text-accent bg-surface-dark/50 px-4 py-1 rounded">#{{ patient.hospitalNumber }}</div>
       </div>
-      <div class="demographics-grid">
-        <div class="demo-item"><label>Full Name</label><span>{{ patient.name }} {{ patient.surname }}</span></div>
-        <div class="demo-item"><label>ID Number</label><span>{{ patient.idNumber }}</span></div>
-        <div class="demo-item"><label>Phone Number</label><span>{{ patient.phone }}</span></div>
-        <div class="demo-item"><label>Date of Birth</label><span>{{ formatDate(patient.dob) }}</span></div>
-        <div class="demo-item"><label>Age</label><span>{{ patient.age }} years</span></div>
-        <div class="demo-item"><label>Gender</label><span>{{ patient.gender }}</span></div>
-        <div class="demo-item"><label>Country of Birth</label><span>{{ patient.countryOfBirth }}</span></div>
-        <div class="demo-item"><label>Marital Status</label><span>{{ patient.maritalStatus || 'Not specified' }}</span></div>
-        <div class="demo-item full-width"><label>Address</label><span>{{ patient.address }}</span></div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <InfoItem icon="mdiAccount" label="Full Name" :value="`${patient.name} ${patient.surname}`" />
+        <InfoItem icon="mdiCardAccountDetails" label="ID Number" :value="patient.idNumber" />
+        <InfoItem icon="mdiPhone" label="Phone Number" :value="patient.phone" />
+        <InfoItem icon="mdiCalendar" label="Date of Birth" :value="formatDate(patient.dob)" />
+        <InfoItem icon="mdiNumeric" label="Age" :value="`${patient.age} years`" />
+        <InfoItem icon="mdiGenderMaleFemale" label="Gender" :value="patient.gender" />
+        <InfoItem icon="mdiEarth" label="Country of Birth" :value="patient.countryOfBirth" />
+        <InfoItem icon="mdiRing" label="Marital Status" :value="patient.maritalStatus || 'N/A'" />
+        <InfoItem icon="mdiMapMarker" label="Address" :value="patient.address" class="lg:col-span-3" />
       </div>
-      <div class="nok-section">
-        <h3>Next of Kin Information</h3>
-        <div class="demographics-grid">
-          <div class="demo-item"><label>N.O.K Name</label><span>{{ patient.nokName }} {{ patient.nokSurname }}</span></div>
-          <div class="demo-item"><label>N.O.K Phone</label><span>{{ patient.nokPhone }}</span></div>
-          <div class="demo-item full-width"><label>N.O.K Address</label><span>{{ patient.nokAddress }}</span></div>
+      <div class="mt-8 pt-6 border-t border-border-futuristic">
+        <h3 class="text-xl font-semibold text-primary mb-4 flex items-center">
+          <MdiIcon :path="mdiAccountMultiple" size="24" class="mr-3" />
+          Next of Kin
+        </h3>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <InfoItem icon="mdiAccount" label="N.O.K Name" :value="`${patient.nokName} ${patient.nokSurname}`" />
+          <InfoItem icon="mdiPhone" label="N.O.K Phone" :value="patient.nokPhone" />
+          <InfoItem icon="mdiMapMarker" label="N.O.K Address" :value="patient.nokAddress" class="lg:col-span-3" />
         </div>
       </div>
     </div>
 
     <!-- Medical Modules Grid -->
-    <div class="modules-grid">
-      <!-- Billing -->
-      <div v-if="hasPermission('billing:view')" class="module-card billing">
-        <div class="module-header"><mdi-icon :path="mdiCashMultiple" size="32" /><h3>BILLING AND INVOICES</h3></div>
-        <div class="module-actions">
-          <m3-button variant="filled" size="small" @click="navigateTo(`/patient/${patient.id}/billing`)">VIEW</m3-button>
-          <m3-button v-if="authStore.userRole === 'Accountant'" variant="outlined" size="small" @click="navigateTo(`/patient/${patient.id}/billing?mode=edit`)">EDIT</m3-button>
-        </div>
-      </div>
-      <!-- Doctor's Notes -->
-      <div v-if="hasPermission('doctors_notes:view')" class="module-card doctors-notes">
-        <div class="module-header"><mdi-icon :path="mdiDoctor" size="32" /><h3>DOCTOR'S NOTES</h3></div>
-        <div class="module-actions">
-          <m3-button variant="filled" size="small" @click="openNotesModal('doctor')">VIEW</m3-button>
-          <m3-button v-if="hasPermission('doctors_notes:create')" variant="outlined" size="small" @click="openNotesModal('doctor')">ADD / EDIT</m3-button>
-        </div>
-      </div>
-      <!-- Nurse's Notes -->
-      <div v-if="hasPermission('nurses_notes:view')" class="module-card nurses-notes">
-        <div class="module-header"><mdi-icon :path="mdiMotherNurse" size="32" /><h3>NURSE'S NOTES</h3></div>
-        <div class="module-actions">
-          <m3-button variant="filled" size="small" @click="openNotesModal('nurse')">VIEW</m3-button>
-          <m3-button v-if="hasPermission('nurses_notes:create')" variant="outlined" size="small" @click="openNotesModal('nurse')">ADD / EDIT</m3-button>
-        </div>
-      </div>
-      <!-- Other modules... -->
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <ModuleCard v-if="hasPermission('billing:view')" title="Billing & Invoices" :icon="mdiCashMultiple" color="text-green-400">
+        <button class="futuristic-button" @click="navigateTo(`/patient/${patient.id}/billing`)">View</button>
+        <button v-if="authStore.userRole === 'Accountant'" class="futuristic-button !bg-accent" @click="navigateTo(`/patient/${patient.id}/billing?mode=edit`)">Edit</button>
+      </ModuleCard>
+
+      <ModuleCard v-if="hasPermission('doctors_notes:view')" title="Doctor's Notes" :icon="mdiDoctor" color="text-blue-400">
+        <button class="futuristic-button" @click="openNotesModal('doctor')">View</button>
+        <button v-if="hasPermission('doctors_notes:create')" class="futuristic-button !bg-accent" @click="openNotesModal('doctor')">Add/Edit</button>
+      </ModuleCard>
+
+      <ModuleCard v-if="hasPermission('nurses_notes:view')" title="Nurse's Notes" :icon="mdiMotherNurse" color="text-purple-400">
+        <button class="futuristic-button" @click="openNotesModal('nurse')">View</button>
+        <button v-if="hasPermission('nurses_notes:create')" class="futuristic-button !bg-accent" @click="openNotesModal('nurse')">Add/Edit</button>
+      </ModuleCard>
+
+      <!-- Placeholder for other modules -->
     </div>
   </div>
 </template>
@@ -63,9 +60,12 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import MdiIcon from '@/components/common/MdiIcon.vue'
-import M3Button from '@/components/common/M3Button.vue'
+import InfoItem from '@/components/common/InfoItem.vue'
+import ModuleCard from '@/components/common/ModuleCard.vue'
 import {
-  mdiCashMultiple, mdiDoctor, mdiMotherNurse
+  mdiCashMultiple, mdiDoctor, mdiMotherNurse, mdiAccountBox, mdiAccount,
+  mdiCardAccountDetails, mdiPhone, mdiCalendar, mdiNumeric, mdiGenderMaleFemale,
+  mdiEarth, mdiRing, mdiMapMarker, mdiAccountMultiple
 } from '@mdi/js'
 
 const props = defineProps({

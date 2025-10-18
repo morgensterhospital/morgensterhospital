@@ -1,37 +1,28 @@
 <template>
-  <div class="patient-profile">
+  <div class="p-6 bg-background-dark min-h-screen">
     <!-- Page Header -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="breadcrumb">
-          <router-link to="/" class="breadcrumb-link">Home</router-link>
-          <mdi-icon :path="mdiChevronRight" size="16" />
-          <span class="breadcrumb-current">Patient Profile</span>
-        </div>
-        <h1 class="page-title">PATIENT PROFILE</h1>
-      </div>
-      <div class="header-actions">
-        <m3-button variant="outlined" @click="printProfile">
-          <mdi-icon :path="mdiPrinter" size="20" />
-          Print Profile
-        </m3-button>
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-4xl font-bold text-text-light tracking-wider">Patient Profile</h1>
+      <div class="flex items-center text-sm text-text-muted">
+        <router-link to="/patients" class="hover:text-primary">View Patients</router-link>
+        <MdiIcon :path="mdiChevronRight" size="16" class="mx-2" />
+        <span>Patient Profile</span>
       </div>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-container">
-      <div class="loading-spinner"></div>
-      <p>Loading patient information...</p>
+    <div v-if="loading" class="flex justify-center items-center h-96">
+      <MdiIcon :path="mdiLoading" size="64" class="text-primary animate-spin" />
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="error-container">
-      <mdi-icon :path="mdiAlertCircle" size="48" color="#DC2626" />
-      <h2>Error Loading Patient</h2>
-      <p>{{ error }}</p>
-      <m3-button variant="filled" @click="loadPatient">
+    <div v-else-if="error" class="glass-card p-8 text-center">
+      <MdiIcon :path="mdiAlertCircle" size="64" class="text-red-500 mx-auto mb-4" />
+      <h2 class="text-2xl font-bold text-red-500">Error Loading Patient</h2>
+      <p class="text-text-muted mt-2 mb-6">{{ error }}</p>
+      <button @click="loadPatient" class="futuristic-button">
         Try Again
-      </m3-button>
+      </button>
     </div>
 
     <PatientProfileDetails v-else-if="patient" :patient="patient" @open-notes-modal="openNotesModal" />
@@ -51,11 +42,10 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { usePatientStore } from '@/stores/patientStore'
 import MdiIcon from '@/components/common/MdiIcon.vue'
-import M3Button from '@/components/common/M3Button.vue'
 import NotesListModal from '@/components/common/NotesListModal.vue'
 import PatientProfileDetails from '@/components/patient/PatientProfileDetails.vue'
 import {
-  mdiChevronRight, mdiPrinter, mdiAlertCircle
+  mdiChevronRight, mdiAlertCircle, mdiLoading
 } from '@mdi/js'
 
 const route = useRoute()

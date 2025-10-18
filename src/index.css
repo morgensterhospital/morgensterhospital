@@ -9,3 +9,29 @@
     @apply bg-background-dark text-text-light font-sans;
   }
 }
+
+@layer utilities {
+  .glass-card {
+    @apply bg-surface-dark/60 backdrop-blur-xl border border-border-futuristic rounded-lg shadow-futuristic;
+  }
+
+  .futuristic-button {
+    @apply px-6 py-2 bg-primary text-white rounded-lg shadow-md hover:bg-primary-hover transition-all duration-300 transform hover:scale-105;
+  }
+
+  /* Custom Scrollbar for Webkit Browsers */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #161B22; /* surface-dark */
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #58A6FF; /* primary */
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #79B8FF; /* primary-hover */
+  }
+}
