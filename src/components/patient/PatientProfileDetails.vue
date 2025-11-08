@@ -1,59 +1,44 @@
 <template>
-  <div class="profile-content">
+  <div class="max-w-7xl mx-auto p-4 md:p-8 space-y-8">
     <!-- Patient Demographics Card -->
-    <div class="demographics-card">
-      <div class="card-header">
-        <h2>Patient Demographics</h2>
-        <div class="patient-id">{{ patient.hospitalNumber }}</div>
+    <div class="bg-card/50 dark:bg-card/80 backdrop-blur-lg rounded-2xl p-6 md:p-8 shadow-lg border border-accent/10 transition-all duration-300 hover:shadow-aqua-glow">
+      <div class="flex justify-between items-center pb-4 mb-4 border-b border-accent/20">
+        <h2 class="text-2xl font-bold text-text-main">Patient Demographics</h2>
+        <div class="bg-accent text-black font-bold text-sm px-4 py-1 rounded-full">{{ patient.hospitalNumber }}</div>
       </div>
-      <div class="demographics-grid">
-        <div class="demo-item"><label>Full Name</label><span>{{ patient.name }} {{ patient.surname }}</span></div>
-        <div class="demo-item"><label>ID Number</label><span>{{ patient.idNumber }}</span></div>
-        <div class="demo-item"><label>Phone Number</label><span>{{ patient.phone }}</span></div>
-        <div class="demo-item"><label>Date of Birth</label><span>{{ formatDate(patient.dob) }}</span></div>
-        <div class="demo-item"><label>Age</label><span>{{ patient.age }} years</span></div>
-        <div class="demo-item"><label>Gender</label><span>{{ patient.gender }}</span></div>
-        <div class="demo-item"><label>Country of Birth</label><span>{{ patient.countryOfBirth }}</span></div>
-        <div class="demo-item"><label>Marital Status</label><span>{{ patient.maritalStatus || 'Not specified' }}</span></div>
-        <div class="demo-item full-width"><label>Address</label><span>{{ patient.address }}</span></div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-text-main">
+        <div v-for="item in demographics" :key="item.label" :class="item.fullWidth ? 'md:col-span-2 lg:col-span-3' : ''">
+          <label class="text-xs uppercase font-semibold text-accent/70">{{ item.label }}</label>
+          <p class="text-base">{{ item.value }}</p>
+        </div>
       </div>
-      <div class="nok-section">
-        <h3>Next of Kin Information</h3>
-        <div class="demographics-grid">
-          <div class="demo-item"><label>N.O.K Name</label><span>{{ patient.nokName }} {{ patient.nokSurname }}</span></div>
-          <div class="demo-item"><label>N.O.K Phone</label><span>{{ patient.nokPhone }}</span></div>
-          <div class="demo-item full-width"><label>N.O.K Address</label><span>{{ patient.nokAddress }}</span></div>
+      <div class="mt-8 pt-6 border-t border-accent/20">
+        <h3 class="text-xl font-bold text-text-main mb-4">Next of Kin Information</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-text-main">
+          <div v-for="item in nok" :key="item.label" :class="item.fullWidth ? 'md:col-span-2' : ''">
+            <label class="text-xs uppercase font-semibold text-accent/70">{{ item.label }}</label>
+            <p class="text-base">{{ item.value }}</p>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Medical Modules Grid -->
-    <div class="modules-grid">
-      <!-- Billing -->
-      <div v-if="hasPermission('billing:view')" class="module-card billing">
-        <div class="module-header"><mdi-icon :path="mdiCashMultiple" size="32" /><h3>BILLING AND INVOICES</h3></div>
-        <div class="module-actions">
-          <m3-button variant="filled" size="small" @click="navigateTo(`/patient/${patient.id}/billing`)">VIEW</m3-button>
-          <m3-button v-if="authStore.userRole === 'Accountant'" variant="outlined" size="small" @click="navigateTo(`/patient/${patient.id}/billing?mode=edit`)">EDIT</m3-button>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-for="(card, index) in moduleCards" v-if="hasPermission(card.permission)" :key="card.title"
+           class="bg-card/50 dark:bg-card/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-accent/10 transition-all duration-300 hover:scale-105 hover:shadow-aqua-glow animate-fade-in-up"
+           :style="{ animationDelay: `${index * 100}ms` }">
+        <div class="flex items-center gap-4 mb-4">
+          <MdiIcon :path="card.icon" size="32" class="text-accent" />
+          <h3 class="text-lg font-bold uppercase tracking-wider text-text-main">{{ card.title }}</h3>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button v-for="action in card.actions" v-if="hasPermission(action.permission)" :key="action.label" @click="action.handler"
+                  :class="[action.primary ? 'bg-accent text-black' : 'bg-transparent border border-accent text-accent', 'px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-300 hover:shadow-aqua-glow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent focus:ring-offset-background']">
+            {{ action.label }}
+          </button>
         </div>
       </div>
-      <!-- Doctor's Notes -->
-      <div v-if="hasPermission('doctors_notes:view')" class="module-card doctors-notes">
-        <div class="module-header"><mdi-icon :path="mdiDoctor" size="32" /><h3>DOCTOR'S NOTES</h3></div>
-        <div class="module-actions">
-          <m3-button variant="filled" size="small" @click="openNotesModal('doctor')">VIEW</m3-button>
-          <m3-button v-if="hasPermission('doctors_notes:create')" variant="outlined" size="small" @click="openNotesModal('doctor')">ADD / EDIT</m3-button>
-        </div>
-      </div>
-      <!-- Nurse's Notes -->
-      <div v-if="hasPermission('nurses_notes:view')" class="module-card nurses-notes">
-        <div class="module-header"><mdi-icon :path="mdiMotherNurse" size="32" /><h3>NURSE'S NOTES</h3></div>
-        <div class="module-actions">
-          <m3-button variant="filled" size="small" @click="openNotesModal('nurse')">VIEW</m3-button>
-          <m3-button v-if="hasPermission('nurses_notes:create')" variant="outlined" size="small" @click="openNotesModal('nurse')">ADD / EDIT</m3-button>
-        </div>
-      </div>
-      <!-- Other modules... -->
     </div>
   </div>
 </template>
@@ -63,23 +48,22 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import MdiIcon from '@/components/common/MdiIcon.vue'
-import M3Button from '@/components/common/M3Button.vue'
 import {
-  mdiCashMultiple, mdiDoctor, mdiMotherNurse
+  mdiCashMultiple, mdiDoctor, mdiMotherNurse, mdiStethoscope, mdiPill,
+  mdiFileDocumentEditOutline, mdiFileChartOutline, mdiBeaker, mdiRadiologyBox, mdiRun
 } from '@mdi/js'
 
 const props = defineProps({
-  patient: {
-    type: Object,
-    required: true,
-  },
+  patient: { type: Object, required: true },
 })
 
 const router = useRouter()
 const authStore = useAuthStore()
+const emit = defineEmits(['open-notes-modal'])
 
-const hasPermission = (permission) => authStore.hasPermission(permission)
+const hasPermission = (permission) => !permission || authStore.hasPermission(permission)
 const navigateTo = (path) => router.push(path)
+const openNotesModal = (noteType) => emit('open-notes-modal', noteType)
 
 const formatDate = (date) => {
   if (!date) return 'Not specified'
@@ -87,31 +71,71 @@ const formatDate = (date) => {
   return dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
-const emit = defineEmits(['open-notes-modal']);
-const openNotesModal = (noteType) => {
-  emit('open-notes-modal', noteType);
-}
-</script>
+const demographics = computed(() => [
+  { label: 'Full Name', value: `${props.patient.name} ${props.patient.surname}` },
+  { label: 'ID Number', value: props.patient.idNumber },
+  { label: 'Phone Number', value: props.patient.phone },
+  { label: 'Date of Birth', value: formatDate(props.patient.dob) },
+  { label: 'Age', value: `${props.patient.age} years` },
+  { label: 'Gender', value: props.patient.gender },
+  { label: 'Country of Birth', value: props.patient.countryOfBirth },
+  { label: 'Marital Status', value: props.patient.maritalStatus || 'Not specified' },
+  { label: 'Address', value: props.patient.address, fullWidth: true },
+])
 
-<style scoped>
-.profile-content { max-width: 1400px; margin: 0 auto; padding: 32px; display: flex; flex-direction: column; gap: 32px; }
-.demographics-card { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #E5E7EB; }
-.card-header h2 { font-size: 24px; font-weight: 600; color: #1F2937; margin: 0; }
-.patient-id { background: #0066B2; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 14px; }
-.demographics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-.demo-item { display: flex; flex-direction: column; gap: 4px; }
-.demo-item.full-width { grid-column: 1 / -1; }
-.demo-item label { font-size: 12px; font-weight: 600; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; }
-.demo-item span { font-size: 16px; color: #1F2937; font-weight: 500; }
-.nok-section { margin-top: 32px; padding-top: 24px; border-top: 1px solid #E5E7EB; }
-.nok-section h3 { font-size: 18px; font-weight: 600; color: #1F2937; margin: 0 0 20px 0; }
-.modules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
-.module-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-.module-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
-.module-header h3 { font-size: 14px; font-weight: 600; color: #1F2937; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
-.module-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.module-card.billing .module-header { color: #059669; }
-.module-card.doctors-notes .module-header { color: #0066B2; }
-.module-card.nurses-notes .module-header { color: #7C3AED; }
-</style>
+const nok = computed(() => [
+  { label: 'N.O.K Name', value: `${props.patient.nokName} ${props.patient.nokSurname}` },
+  { label: 'N.O.K Phone', value: props.patient.nokPhone },
+  { label: 'N.O.K Address', value: props.patient.nokAddress, fullWidth: true },
+])
+
+const moduleCards = computed(() => [
+  { title: 'Billing and Invoices', icon: mdiCashMultiple, permission: 'billing:view', actions: [
+    { label: 'View', handler: () => navigateTo(`/patient/${props.patient.id}/billing`), primary: true },
+    { label: 'Edit', handler: () => navigateTo(`/patient/${props.patient.id}/billing?mode=edit`), permission: 'billing:edit' },
+  ]},
+  { title: 'Doctor\'s Notes', icon: mdiDoctor, permission: 'doctors_notes:view', actions: [
+    { label: 'View', handler: () => openNotesModal('doctor'), primary: true },
+    { label: 'Edit/Save', handler: () => openNotesModal('doctor'), permission: 'doctors_notes:edit' },
+  ]},
+  { title: 'Nurse\'s Notes', icon: mdiMotherNurse, permission: 'nurses_notes:view', actions: [
+    { label: 'View', handler: () => openNotesModal('nurse'), primary: true },
+    { label: 'Add/Save', handler: () => openNotesModal('nurse'), permission: 'nurses_notes:create' },
+    { label: 'Use Stationery', handler: () => {}, permission: 'nurses_notes:use_stationery' },
+  ]},
+  { title: 'Operations/Surgeries', icon: mdiStethoscope, permission: 'operations:view', actions: [
+    { label: 'View', handler: () => openNotesModal('operation'), primary: true },
+    { label: 'Add/Save', handler: () => openNotesModal('operation'), permission: 'operations:create' },
+    { label: 'Edit/Save', handler: () => openNotesModal('operation'), permission: 'operations:edit' },
+  ]},
+  { title: 'Prescriptions', icon: mdiPill, permission: 'prescriptions:view', actions: [
+    { label: 'View', handler: () => openNotesModal('prescription'), primary: true },
+    { label: 'Add/Save', handler: () => openNotesModal('prescription'), permission: 'prescriptions:create' },
+    { label: 'Edit/Save', handler: () => openNotesModal('prescription'), permission: 'prescriptions:edit' },
+    { label: 'Print', handler: () => {}, permission: 'prescriptions:print' },
+  ]},
+  { title: 'Consent Forms', icon: mdiFileDocumentEditOutline, permission: 'consent_forms:view', actions: [
+    { label: 'View', handler: () => openNotesModal('consent'), primary: true },
+    { label: 'Add/Save', handler: () => openNotesModal('consent'), permission: 'consent_forms:create' },
+    { label: 'Edit/Save', handler: () => openNotesModal('consent'), permission: 'consent_forms:edit' },
+    { label: 'Print', handler: () => {}, permission: 'consent_forms:print' },
+  ]},
+  { title: 'Admission & Discharge', icon: mdiFileChartOutline, permission: 'admission_discharge:view', actions: [
+    { label: 'View', handler: () => openNotesModal('admission'), primary: true },
+    { label: 'Add/Save', handler: () => openNotesModal('admission'), permission: 'admission_discharge:create' },
+    { label: 'Edit/Save', handler: () => openNotesModal('admission'), permission: 'admission_discharge:edit' },
+  ]},
+  { title: 'Laboratory', icon: mdiBeaker, permission: 'laboratory:view', actions: [
+    { label: 'View', handler: () => openNotesModal('lab'), primary: true },
+    { label: 'Receive & Post', handler: () => openNotesModal('lab'), permission: 'lab_requests:update' },
+  ]},
+  { title: 'Radiology', icon: mdiRadiologyBox, permission: 'radiology:view', actions: [
+    { label: 'View', handler: () => openNotesModal('radiology'), primary: true },
+    { label: 'Receive & Post', handler: () => openNotesModal('radiology'), permission: 'radiology_requests:update' },
+  ]},
+  { title: 'Rehabilitation Notes', icon: mdiRun, permission: 'rehabilitation_notes:view', actions: [
+    { label: 'View', handler: () => openNotesModal('rehab'), primary: true },
+    { label: 'Add/Edit', handler: () => openNotesModal('rehab'), permission: 'rehabilitation_notes:create' },
+  ]},
+])
+</script>

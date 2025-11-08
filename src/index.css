@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito+Sans:wght@400;600;700&family=Poppins:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,6 +6,52 @@
 
 @layer base {
   body {
-    @apply bg-background-dark text-text-light font-sans;
+    /* Default to light mode styles */
+    @apply bg-gray-100 text-gray-900 font-sans transition-colors duration-500;
+  }
+
+  /* Apply dark mode styles when .dark class is present */
+  .dark body {
+    @apply bg-background text-text-main;
+  }
+
+  /* Style for scrollbar to match dark theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #1E1E1E;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: #00FFFF;
+    border-radius: 10px;
+    border: 2px solid #1E1E1E;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 255, 255, 0.8);
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.5s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
   }
 }
